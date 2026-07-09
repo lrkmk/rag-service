@@ -30,7 +30,7 @@ COPY scripts/rag_search.py scripts/mcp_server.py scripts/parents_lookup.json ./s
 
 ENV MCP_TRANSPORT=streamable-http
 ENV MCP_HOST=0.0.0.0
-ENV MCP_PORT=8000
-EXPOSE 8000
+ENV MCP_PORT=5000
+EXPOSE 5000
 
 CMD ["python", "scripts/mcp_server.py"]

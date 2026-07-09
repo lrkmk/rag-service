@@ -2,7 +2,7 @@ services:
   atlas-docs-mcp:
     build: .
     ports:
-      - "8000:8000"
+      - "5000:5000"
     volumes:
       # chroma_db is built offline (python scripts/ingest_chroma.py &&
       # python scripts/ingest_api_docs.py) and mounted read-only here — the
