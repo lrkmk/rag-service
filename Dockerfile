@@ -11,10 +11,8 @@ WORKDIR /app
 
 # Only the retrieval-side dependencies — no requests/bs4/curl-equivalents for
 # crawling, no ingest-time-only tooling.
-RUN pip install --no-cache-dir \
-    chromadb \
-    sentence-transformers \
-    mcp
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Pre-download and cache the embedding model at build time, not first request:
 # avoids a slow/network-dependent cold start and keeps the container usable
