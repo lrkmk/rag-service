@@ -1,0 +1,32 @@
+{
+  "field": "status",
+  "endpoint": "/queryOrderDetails.do",
+  "source_path": "API文档\\04-API参考\\booking-apis\\查询订单.md",
+  "ref": "RetrieveBookingResponseStatus",
+  "entries": [
+    {
+      "code": "800",
+      "meaning": "Order not exists"
+    },
+    {
+      "code": "701",
+      "meaning": "Multi-order are identified, please request again with extra parameters added"
+    },
+    {
+      "code": "702",
+      "meaning": "airlinePNR and carrier are mandatory to fill in for order retrieval, please check and request again"
+    },
+    {
+      "code": "703",
+      "meaning": "No order found, please check the parameter"
+    },
+    {
+      "code": "704",
+      "meaning": "Parameters don't match, please check and retry"
+    },
+    {
+      "code": "705",
+      "meaning": "Timeout"
+    }
+  ]
+}

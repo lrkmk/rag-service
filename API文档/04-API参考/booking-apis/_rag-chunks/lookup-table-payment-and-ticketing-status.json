@@ -1,0 +1,68 @@
+{
+  "field": "status",
+  "endpoint": "/pay.do",
+  "source_path": "API文档\\04-API参考\\booking-apis\\支付与出票.md",
+  "ref": "PaymentResponseStatus",
+  "entries": [
+    {
+      "code": "400",
+      "meaning": "Illegal request param. Description: Check and correct the request parameters according to the error message."
+    },
+    {
+      "code": "401",
+      "meaning": "Later than the payment deadline. Description: Payment for the booking was initiated later than the payment deadline."
+    },
+    {
+      "code": "402",
+      "meaning": "Order status does not support payment. Description: The order status maybe “ticketing” or “ticketed” where the payment has already been made. Check if the order status is unpaid"
+    },
+    {
+      "code": "403",
+      "meaning": "Unsupported payment method. Description: The payment method is not supported for this order."
+    },
+    {
+      "code": "404",
+      "meaning": "The order is already paid. Description: Check if the order has been paid. If “yes”, do not send the payment request"
+    },
+    {
+      "code": "406",
+      "meaning": "Payment operation is in progress. Description: The previous payment request is still in process. Wait for the airline PNR to be received in the PNR details response."
+    },
+    {
+      "code": "407",
+      "meaning": "Some mandatory element for the passenger has not been submitted.. Description: Check the information and correct the same and resubmit."
+    },
+    {
+      "code": "408",
+      "meaning": "Passenger can not board alone. Description: Create a new order and add an adult passenger with the child passenger"
+    },
+    {
+      "code": "409",
+      "meaning": "Additional baggage does not match the flight segment. Description: Luggage purchased for each segment of a connecting flight must be the same."
+    },
+    {
+      "code": "410",
+      "meaning": "The contact information is not in the correct format.. Description: Check the contact information and confirm that it matches the required format."
+    },
+    {
+      "code": "411",
+      "meaning": "Some error happened with the payment gateway. Description: Some error happened with the payment gateway"
+    },
+    {
+      "code": "412",
+      "meaning": "No available payment methods. Description: No available payment methods for this order"
+    },
+    {
+      "code": "413",
+      "meaning": "Card is not supported. Description: For MoR, the brand of the card sent by customer is not supported by Atlas."
+    },
+    {
+      "code": "414",
+      "meaning": "Card mismatch. Description: The brand of the card sent during payment is inconsistent with the \"cardType\" sent when generating the order."
+    },
+    {
+      "code": "415",
+      "meaning": "order is not confirmed by user. Description: order is not confirmed by user"
+    }
+  ]
+}

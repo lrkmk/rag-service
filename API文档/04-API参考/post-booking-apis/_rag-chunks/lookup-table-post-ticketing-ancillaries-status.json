@@ -1,0 +1,32 @@
+{
+  "field": "status",
+  "endpoint": "/postBookingAncillarySearch.do",
+  "source_path": "API文档\\04-API参考\\post-booking-apis\\出票后附加服务.md",
+  "ref": "PostBookingAncillarySearchResponseStatus",
+  "entries": [
+    {
+      "code": "117",
+      "meaning": "Baggage is not allowed for this order as it is not in the ticketed status"
+    },
+    {
+      "code": "118",
+      "meaning": "Atlas currently does not support seat or baggage for this airline"
+    },
+    {
+      "code": "119",
+      "meaning": "Baggage or seat selection is not supported for orders with infants"
+    },
+    {
+      "code": "120",
+      "meaning": "Baggage or seat selection for the flight has been closed"
+    },
+    {
+      "code": "121",
+      "meaning": "It's not allowed to purchase ancillary in 24 hours before departure"
+    },
+    {
+      "code": "125",
+      "meaning": "Post booking ancillary search timeout"
+    }
+  ]
+}

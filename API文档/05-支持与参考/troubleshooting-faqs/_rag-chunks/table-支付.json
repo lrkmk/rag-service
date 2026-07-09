@@ -1,0 +1,365 @@
+{
+  "source_path": "05-支持与参考/troubleshooting-faqs/支付.md",
+  "rows": [
+    {
+      "航空公司代码": "4N",
+      "航空公司名称": "Air North",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "5J",
+      "航空公司名称": "Cebu Pacific Air",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "8P",
+      "航空公司名称": "Pacific Coastal",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "必填",
+      "cardHolderCity": "非必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "9M",
+      "航空公司名称": "Central Mountain Air",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "必填",
+      "cardHolderCity": "非必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "A3",
+      "航空公司名称": "Aegean Airlines",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "AN",
+      "航空公司名称": "Advanced Airlines",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "AS",
+      "航空公司名称": "Alaska Airlines",
+      "cardHolderCountry": "非必填",
+      "cardHoldProvince": "必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "BT",
+      "航空公司名称": "Air Baltic",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "非必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "BV",
+      "航空公司名称": "TOKI AIR",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "D8",
+      "航空公司名称": "Norwegian Air Sweden",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "非必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "DE",
+      "航空公司名称": "Condor",
+      "cardHolderCountry": "非必填",
+      "cardHoldProvince": "非必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "非必填",
+      "cardHolderAddress": "非必填"
+    },
+    {
+      "航空公司代码": "DG",
+      "航空公司名称": "Cebgo",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "DI",
+      "航空公司名称": "Cebu Pacific Air",
+      "cardHolderCountry": "非必填",
+      "cardHoldProvince": "非必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "非必填",
+      "cardHolderAddress": "非必填"
+    },
+    {
+      "航空公司代码": "DM",
+      "航空公司名称": "Arajet",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "DY",
+      "航空公司名称": "Norwegian Air Shuttle ASA",
+      "cardHolderCountry": "非必填",
+      "cardHoldProvince": "必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "E6",
+      "航空公司名称": "Eurowings Europe",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "EI",
+      "航空公司名称": "Aer Lingus",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "EW",
+      "航空公司名称": "Eurowings",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "F9",
+      "航空公司名称": "Frontier Airlines (美国地址)",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "非必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "F9",
+      "航空公司名称": "Frontier Airlines (非美国地址)",
+      "cardHolderCountry": "非必填",
+      "cardHoldProvince": "非必填",
+      "cardHolderCity": "非必填",
+      "cardHolderPostCode": "非必填",
+      "cardHolderAddress": "非必填"
+    },
+    {
+      "航空公司代码": "FA",
+      "航空公司名称": "Fly Safair",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "G4",
+      "航空公司名称": "Allegiant Air",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "GE",
+      "航空公司名称": "Lift Airline",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "GQ",
+      "航空公司名称": "Skyexpress",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "H4",
+      "航空公司名称": "HiSky",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "非必填",
+      "cardHolderCity": "非必填",
+      "cardHolderPostCode": "非必填",
+      "cardHolderAddress": "非必填"
+    },
+    {
+      "航空公司代码": "H7",
+      "航空公司名称": "HiSky",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "非必填",
+      "cardHolderCity": "非必填",
+      "cardHolderPostCode": "非必填",
+      "cardHolderAddress": "非必填"
+    },
+    {
+      "航空公司代码": "JV",
+      "航空公司名称": "Perimeter",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "非必填",
+      "cardHolderAddress": "非必填"
+    },
+    {
+      "航空公司代码": "KM",
+      "航空公司名称": "AirMalta",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "非必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "非必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "LJ",
+      "航空公司名称": "Jin Air",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "必填",
+      "cardHolderCity": "非必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "MM",
+      "航空公司名称": "Peach Aviation",
+      "cardHolderCountry": "非必填",
+      "cardHoldProvince": "非必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "MO",
+      "航空公司名称": "Calm Air",
+      "cardHolderCountry": "非必填",
+      "cardHoldProvince": "非必填",
+      "cardHolderCity": "非必填",
+      "cardHolderPostCode": "非必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "NK",
+      "航空公司名称": "Spirit Airlines",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "OA",
+      "航空公司名称": "Olympic Air",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "OG",
+      "航空公司名称": "PLAY",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "P6",
+      "航空公司名称": "Pascan",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "PB",
+      "航空公司名称": "PAL Airlines",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "RW",
+      "航空公司名称": "Royal Air Philippines",
+      "cardHolderCountry": "非必填",
+      "cardHoldProvince": "非必填",
+      "cardHolderCity": "非必填",
+      "cardHolderPostCode": "非必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "SY",
+      "航空公司名称": "Sun Country Airlines",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "TR",
+      "航空公司名称": "Scoot Tiger Air",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "非必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    },
+    {
+      "航空公司代码": "VY",
+      "航空公司名称": "Vueling Airlines",
+      "cardHolderCountry": "必填",
+      "cardHoldProvince": "非必填",
+      "cardHolderCity": "必填",
+      "cardHolderPostCode": "必填",
+      "cardHolderAddress": "必填"
+    }
+  ]
+}

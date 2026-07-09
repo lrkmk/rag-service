@@ -1,0 +1,44 @@
+{
+  "field": "status",
+  "endpoint": "/seatAvailability.do",
+  "source_path": "API文档\\04-API参考\\booking-apis\\座位.md",
+  "ref": "SeatAvailabilityResponseStatus",
+  "entries": [
+    {
+      "code": "214",
+      "meaning": "Session ID invalid or expired."
+    },
+    {
+      "code": "215",
+      "meaning": "Segment index missing."
+    },
+    {
+      "code": "216",
+      "meaning": "Seat selection failed."
+    },
+    {
+      "code": "217",
+      "meaning": "Unknown error."
+    },
+    {
+      "code": "218",
+      "meaning": "The airline don’t support seat selection currently."
+    },
+    {
+      "code": "219",
+      "meaning": "The route don’t support seat selection currently."
+    },
+    {
+      "code": "220",
+      "meaning": "illegal request parameter."
+    },
+    {
+      "code": "221",
+      "meaning": "Fare family is empty and not configured with lowest price fare family."
+    },
+    {
+      "code": "223",
+      "meaning": "The ratio of seat quotation requests to payment orders has exceeded the allowed threshold."
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "field": "status",
+  "endpoint": "/priceCompareSearch.do",
+  "source_path": "API文档\\04-API参考\\booking-apis\\比价搜索.md",
+  "ref": null,
+  "entries": [
+    {
+      "code": "100",
+      "meaning": "Missing required request data."
+    },
+    {
+      "code": "101",
+      "meaning": "Illegal request data or invalid format."
+    },
+    {
+      "code": "102",
+      "meaning": "Illegal request parameter."
+    },
+    {
+      "code": "105",
+      "meaning": "OD is not in the client's round-trip whitelist."
+    },
+    {
+      "code": "106",
+      "meaning": "Search is not allowed for this client."
+    },
+    {
+      "code": "107",
+      "meaning": "Insufficient balance."
+    },
+    {
+      "code": "108",
+      "meaning": "Route is restricted or blocked by system limitations."
+    },
+    {
+      "code": "109",
+      "meaning": "Search limit exceeded. For price compare, this may also mean daily quota exceeded."
+    },
+    {
+      "code": "110",
+      "meaning": "Too many concurrent requests."
+    },
+    {
+      "code": "111",
+      "meaning": "Real-time search is not allowed."
+    },
+    {
+      "code": "112",
+      "meaning": "Search timed out."
+    },
+    {
+      "code": "113",
+      "meaning": "Airline is under maintenance in Atlas."
+    },
+    {
+      "code": "114",
+      "meaning": "No flights present."
+    },
+    {
+      "code": "116",
+      "meaning": "Search data was not captured."
+    },
+    {
+      "code": "123",
+      "meaning": "Too many requests but too few paid orders."
+    },
+    {
+      "code": "124",
+      "meaning": "Unsupported settlement currency."
+    },
+    {
+      "code": "126",
+      "meaning": "`requestId` does not exist or request is already ended."
+    },
+    {
+      "code": "900",
+      "meaning": "Unauthorized access."
+    },
+    {
+      "code": "9999",
+      "meaning": "Internal system error."
+    }
+  ]
+}

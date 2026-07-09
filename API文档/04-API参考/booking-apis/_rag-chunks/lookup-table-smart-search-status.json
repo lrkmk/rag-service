@@ -1,0 +1,84 @@
+{
+  "field": "status",
+  "endpoint": "/smartSearch.do",
+  "source_path": "API文档\\04-API参考\\booking-apis\\智能搜索.md",
+  "ref": "SearchResponseStatus",
+  "entries": [
+    {
+      "code": "100",
+      "meaning": "Missing required request data. Description: You should pass the necessary parameters in the HTTP request body."
+    },
+    {
+      "code": "101",
+      "meaning": "Illegal request data. Description: Check the format of request"
+    },
+    {
+      "code": "102",
+      "meaning": "Illegal request param. Description: Some parameters do not meet the requirements. Please adjust them according to the error message."
+    },
+    {
+      "code": "105",
+      "meaning": "OD is not in client's round-trip white list. Description: This city pair has not been whitelisted. Check with your account manager if there is a restriction to your account."
+    },
+    {
+      "code": "106",
+      "meaning": "You are not allowed to search. Description: Check with your account manager if there is a restriction to your account."
+    },
+    {
+      "code": "107",
+      "meaning": "Insufficient balance. Description: The account balance is below the agreed threshold. Top-up your account on a priority."
+    },
+    {
+      "code": "108",
+      "meaning": "Route is restricted / System limitations. Description: The airline has flights and quotations, but Atlas has closed sales for some reasons. The reasons can be 1) The sales were manually closed 2) The system has detected a risk of sold out 3) Prohibitions on nearby flights."
+    },
+    {
+      "code": "109",
+      "meaning": "The number of searches exceeded the limit. Description: The searches per day have exceeded the allowed limit. Check with your account manager if there is a restriction to your account."
+    },
+    {
+      "code": "110",
+      "meaning": "Too many concurrent requests.. Description: The QPS (Queries Per Second) is higher than the allowed limit. If your business requires more resources, please contact your account manager."
+    },
+    {
+      "code": "111",
+      "meaning": "Real time search is not allowed. Description: This feature is not activated for your account. Connect with your account manager if you require this service."
+    },
+    {
+      "code": "112",
+      "meaning": "Timed out. Description: The search request has timed-out. For further details please refer to FAQs --> Atlas API General Information."
+    },
+    {
+      "code": "113",
+      "meaning": "Airline is under maintenance. Description: Airline is in \"Inactive\" or \"Maintenance\" status with Atlas. This does not necessarily mean that there is an issue with the Airline website itself. Wait for the status to change to “active”."
+    },
+    {
+      "code": "114",
+      "meaning": "No flights present. Description: This may happen when: - The airline does not fly on that date for the searched city pair. Check the airline website to see if the flight is operational for that date."
+    },
+    {
+      "code": "116",
+      "meaning": "Search data not captured. Description: An error was reported during the search data stoprage at Atlas' end. If this error is not constantly reported, you can try trying again. If the error persists, then it is necessary to contact the account manager."
+    },
+    {
+      "code": "123",
+      "meaning": "Too many requests but too few paid orders. Description: The service has been blocked as the search requests are too many and the paid orders are very less."
+    },
+    {
+      "code": "124",
+      "meaning": "Unsupported settlement currency. Description: The settlement currency is different than what is accepted by Atlas. Change the currency to the currency accepted by Atlas for settlement."
+    },
+    {
+      "code": "126",
+      "meaning": "`requestId` does not exist or request is already ended. Description:"
+    },
+    {
+      "code": "900",
+      "meaning": "Unauthorized access. Description: Incorrect credentials Or the account status is incorrect Or try to access other customer's data. Check credentials. If the error still persists, contact your account manager."
+    },
+    {
+      "code": "9999",
+      "meaning": "Inner error. Description: There is a problem or a bug in the system. Contact your account manager."
+    }
+  ]
+}

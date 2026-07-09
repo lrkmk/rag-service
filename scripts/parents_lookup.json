@@ -1,0 +1,752 @@
+{
+  "atrip-yonghu-guanli": {
+    "article_id": "atrip-yonghu-guanli",
+    "title": "用户管理",
+    "level1_category": "ATRIP",
+    "level2_category": "用户管理",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "01-ATRIP/用户管理.md",
+    "summary": "说明ATRIP系统「用户管理」模块的功能与操作：如何进入用户列表查看客户名下用户信息、各字段含义及筛选功能，以及创建新用户和更新用户信息（含SSO用户限制）的具体规则。",
+    "child_chunk_ids": [
+      "um-c01",
+      "um-c02",
+      "um-c03",
+      "um-c04",
+      "um-c05"
+    ]
+  },
+  "duo-bizhong-zhinan": {
+    "article_id": "duo-bizhong-zhinan",
+    "title": "多币种指南",
+    "level1_category": "支付",
+    "level2_category": "多币种",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "02-支付/多币种指南.md",
+    "summary": "介绍Atlas多币种账户功能：支持的24种结算货币及THB充值限制、ATRIP充值与交易记录/发票管理的币种筛选、发票账单按币种拆分及余额告警邮件，以及API询价接口通过currency字段指定报价与结算币种的规则。",
+    "child_chunk_ids": [
+      "dbz-c01",
+      "dbz-c02",
+      "dbz-c03",
+      "dbz-c04",
+      "dbz-c05",
+      "dbz-c06",
+      "dbz-c07"
+    ]
+  },
+  "huilv-shiyong-shuoming": {
+    "article_id": "huilv-shiyong-shuoming",
+    "title": "汇率使用说明",
+    "level1_category": "支付",
+    "level2_category": "汇率",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "02-支付/汇率使用说明.md",
+    "summary": "说明Atlas在报价、退款、差额结算等环节统一采用实时汇率折算、不支持固定/锁定汇率：报价至支付阶段的汇差风险由Atlas承担，退款等后续环节按实际处理时点汇率折算产生的差异及原始交易与后续退款间的汇率损益则由Atlas概不承担责任。",
+    "child_chunk_ids": [
+      "hl-c01",
+      "hl-c02",
+      "hl-c03",
+      "hl-c04"
+    ]
+  },
+  "hunhe-zhifu-zhinan": {
+    "article_id": "hunhe-zhifu-zhinan",
+    "title": "混合支付指南",
+    "level1_category": "支付",
+    "level2_category": "混合支付",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "02-支付/混合支付指南.md",
+    "summary": "介绍Atlas混合支付解决方案：当VCC透传支付失败时，客户可通过ATRIP界面「重新生单」或API的regenerateOrder.do/pay.do流程切换为预存款或换卡方式重试支付。",
+    "child_chunk_ids": [
+      "hh-c01",
+      "hh-c02",
+      "hh-c03",
+      "hh-c04"
+    ]
+  },
+  "chupiao-quxiao-guize-shuoming": {
+    "article_id": "chupiao-quxiao-guize-shuoming",
+    "title": "Atlas票务出票及取消规则说明",
+    "level1_category": "售前票务",
+    "level2_category": "出票与取消规则",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "03-售前票务/Atlas票务出票及取消规则说明.md",
+    "summary": "说明Atlas票务系统的出票时效承诺（≥90%订单5分钟内出票、≥98%订单1小时内出票），以及VCC透传卡支付、预付款支付、客户特殊设置三类场景下订单被自动或协商取消的具体触发条件。",
+    "child_chunk_ids": [
+      "cq-c01",
+      "cq-c02",
+      "cq-c03",
+      "cq-c04"
+    ]
+  },
+  "ruhe-tingzhi-chupiao": {
+    "article_id": "ruhe-tingzhi-chupiao",
+    "title": "如何停止出票？",
+    "level1_category": "售前票务",
+    "level2_category": "停止出票",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "03-售前票务/如何停止出票？.md",
+    "summary": "说明如何通过ATRIP页面操作或API调用两种方式对未出票订单发起拦截（停止出票），并给出API请求/响应格式及通过orderStatus状态码确认拦截结果的规则。",
+    "child_chunk_ids": [
+      "tz-c01",
+      "tz-c02",
+      "tz-c03"
+    ]
+  },
+  "ruhe-chongxin-shengdan": {
+    "article_id": "ruhe-chongxin-shengdan",
+    "title": "如何重新生单？",
+    "level1_category": "售前票务",
+    "level2_category": "重新生单",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "03-售前票务/如何重新生单？.md",
+    "summary": "说明如何通过ATRIP的“重新生单”功能，为已取消或过期的订单快速创建乘客及行程信息一致的新订单，并给出从进入订单详情到确认支付的完整操作步骤与注意事项。",
+    "child_chunk_ids": [
+      "cs-c01",
+      "cs-c02",
+      "cs-c03",
+      "cs-c04",
+      "cs-c05"
+    ]
+  },
+  "gongdan-shiyong-shuoming": {
+    "article_id": "gongdan-shiyong-shuoming",
+    "title": "工单使用说明",
+    "level1_category": "售后票务",
+    "level2_category": "工单",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "04-售后票务/工单/工单使用说明.md",
+    "summary": "说明Atlas工单系统的功能定位、提交入口（订单类与非订单类）、通过Eva智能客服创建工单的操作流程，以及工单的四种状态与重新提交规则。",
+    "child_chunk_ids": [
+      "gd-c01",
+      "gd-c02",
+      "gd-c03",
+      "gd-c04",
+      "gd-c05",
+      "gd-c06"
+    ]
+  },
+  "feipiao-fuwu-kuaisu-zhinan": {
+    "article_id": "feipiao-fuwu-kuaisu-zhinan",
+    "title": "Atlas 废票服务快速指南",
+    "level1_category": "售后票务",
+    "level2_category": "废票",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "04-售后票务/废票/Atlas 废票服务快速指南.md",
+    "summary": "废票服务导航文章，梳理提交申请前需查看的政策说明与服务条款、通过ATRIP或API提交申请及查询进度的操作入口，并附常见问题快速索引指向对应细分文档。",
+    "child_chunk_ids": [
+      "fpk-c01",
+      "fpk-c02",
+      "fpk-c03",
+      "fpk-c04",
+      "fpk-c05"
+    ]
+  },
+  "feipiao-zhengce-shuoming": {
+    "article_id": "feipiao-zhengce-shuoming",
+    "title": "Atlas废票政策说明",
+    "level1_category": "售后票务",
+    "level2_category": "废票",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "04-售后票务/废票/Atlas废票政策说明.md",
+    "summary": "说明废票（Void）服务的定义及与退票的区别、系统受理订单需满足的条件与废票窗口期设置规则、暂不支持的场景、7×24小时自动化处理原则、废票结果与退款说明及相关服务条款入口。",
+    "child_chunk_ids": [
+      "fpz-c01",
+      "fpz-c02",
+      "fpz-c03",
+      "fpz-c04",
+      "fpz-c05",
+      "fpz-c06",
+      "fpz-c07",
+      "fpz-c08",
+      "fpz-c09",
+      "fpz-c10",
+      "fpz-c11"
+    ]
+  },
+  "ruhe-shenqing-feipiao": {
+    "article_id": "ruhe-shenqing-feipiao",
+    "title": "如何申请废票？",
+    "level1_category": "售后票务",
+    "level2_category": "废票",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "04-售后票务/废票/如何申请废票？.md",
+    "summary": "说明如何通过ATRIP系统申请废票的具体操作步骤，包括入口路径、两种废票/退款方式的选择、支付方式限制、提交前的受理限制说明，以及提交后的进度查询入口。",
+    "child_chunk_ids": [
+      "fps-c01",
+      "fps-c02",
+      "fps-c03",
+      "fps-c04",
+      "fps-c05",
+      "fps-c06",
+      "fps-c07"
+    ]
+  },
+  "gaichengke-zhengce-shuoming": {
+    "article_id": "gaichengke-zhengce-shuoming",
+    "title": "Atlas改乘客信息政策说明",
+    "level1_category": "售后票务",
+    "level2_category": "改乘客信息",
+    "applicable_carrier": "通用（含VJ/IJ/ZE/A3/7C/FZ/3F等航司专属受理清单）",
+    "updated_at": null,
+    "source_path": "04-售后票务/改乘客信息/Atlas改乘客信息政策说明.md",
+    "summary": "说明Atlas对改乘客信息（改姓名/证件信息/生日/国籍/性别）服务的受理原则：默认不直接受理，仅在航司仅允许通过代理商办理的特殊情况下按限定条件（提前24小时申请、不保证成功、收取服务费）提供协助，并列出VJ/IJ/ZE/A3/7C/FZ/3F等航司在五类变更场景下的具体受理清单及改姓名收费参考。",
+    "child_chunk_ids": [
+      "gcz-c01",
+      "gcz-c02",
+      "gcz-c03",
+      "gcz-c04",
+      "gcz-c05",
+      "gcz-c06",
+      "gcz-c07",
+      "gcz-c08"
+    ]
+  },
+  "ruhe-shenqing-gaichengke-xinxi": {
+    "article_id": "ruhe-shenqing-gaichengke-xinxi",
+    "title": "如何申请改乘客信息？",
+    "level1_category": "售后票务",
+    "level2_category": "改乘客信息",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "04-售后票务/改乘客信息/如何申请改乘客信息？.md",
+    "summary": "说明在Atlas受理范围内的改乘客信息申请流程：通过ATRIP工单提交改乘客信息申请（更改事项、乘客姓名、正确信息），一般响应时效为4小时，并提示护照信息准确性、申请不可撤回及超出受理范围时的处理建议等注意事项。",
+    "child_chunk_ids": [
+      "gcs-c01",
+      "gcs-c02",
+      "gcs-c03",
+      "gcs-c04",
+      "gcs-c05",
+      "gcs-c06"
+    ]
+  },
+  "gaiqi-zhengce-shuoming": {
+    "article_id": "gaiqi-zhengce-shuoming",
+    "title": "Atlas改期政策说明",
+    "level1_category": "售后票务",
+    "level2_category": "改期",
+    "applicable_carrier": "通用（含Atlas可协助改期航司清单）",
+    "updated_at": null,
+    "source_path": "04-售后票务/改期/Atlas改期政策说明.md",
+    "summary": "说明Atlas一般不直接受理机票改期（因流程复杂、费用无法提前精算），仅对特定航司在满足条件时提供协助改期服务，并列出可协助自愿改期、非自愿改期的两份航司清单。",
+    "child_chunk_ids": [
+      "gq-c01",
+      "gq-c02",
+      "gq-c03",
+      "gq-c04"
+    ]
+  },
+  "ruhe-shenqing-gaiqi": {
+    "article_id": "ruhe-shenqing-gaiqi",
+    "title": "如何申请改期？",
+    "level1_category": "售后票务",
+    "level2_category": "改期",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "04-售后票务/改期/如何申请改期？.md",
+    "summary": "说明在Atlas受理范围内航司如何通过工单/Eva路径提交改期申请，需提供的信息及自愿/非自愿改期的处理时效与注意事项。",
+    "child_chunk_ids": [
+      "sq-c01",
+      "sq-c02",
+      "sq-c03",
+      "sq-c04",
+      "sq-c05"
+    ]
+  },
+  "ruhe-huoqu-gaiqi-baojia": {
+    "article_id": "ruhe-huoqu-gaiqi-baojia",
+    "title": "如何获取改期的报价？",
+    "level1_category": "售后票务",
+    "level2_category": "改期",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "04-售后票务/改期/如何获取改期的报价？.md",
+    "summary": "说明自愿改期报价由“改期规则”和“新航班差价”两部分构成，并给出分别在ATRIP订单详情与手工订票功能中查询的具体路径。",
+    "child_chunk_ids": [
+      "bj-c01",
+      "bj-c02",
+      "bj-c03"
+    ]
+  },
+  "gaiqi-shenqing-tijiao-shixian": {
+    "article_id": "gaiqi-shenqing-tijiao-shixian",
+    "title": "改期申请的提交时限是多久？",
+    "level1_category": "售后票务",
+    "level2_category": "改期",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "04-售后票务/改期/改期申请的提交时限是多久？.md",
+    "summary": "说明改期申请需同时满足“航班起飞前至少48小时提交”与“在航司规定的改期提交有效期内”两个条件才可受理。",
+    "child_chunk_ids": [
+      "sx-c01"
+    ]
+  },
+  "wizz-shouhou-shuoming": {
+    "article_id": "wizz-shouhou-shuoming",
+    "title": "Wizz 航司售后处理说明",
+    "level1_category": "售后票务",
+    "level2_category": "特殊航司",
+    "applicable_carrier": "W4/W6/W9",
+    "updated_at": null,
+    "source_path": "04-售后票务/特殊航司/Wizz 航司售后处理说明.md",
+    "summary": "Wizz系列航司（W4/W6/W9）售后处理总说明：退票、改期、乘客信息更正等售后操作需由乘客本人直接向航司办理，Atlas不承接此类服务，仅协助认领航司退款；并说明辅营产品加购方式和“先转Wizz积分、再转现金”的退款处理流程。",
+    "child_chunk_ids": [
+      "w6-c01",
+      "w6-c02",
+      "w6-c03",
+      "w6-c04"
+    ]
+  },
+  "yingtong-piao-jiagou": {
+    "article_id": "yingtong-piao-jiagou",
+    "title": "如何加购婴童票？",
+    "level1_category": "售后票务",
+    "level2_category": "特殊航司",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "04-售后票务/特殊航司/如何加购婴童票？.md",
+    "summary": "说明Atlas系统目前暂不支持为已出票成人客票单独加购婴儿票或儿童票，建议乘客有此类需求时直接联系航空公司办理。",
+    "child_chunk_ids": [
+      "yt-c01"
+    ]
+  },
+  "hangbian-buchang-shenqing-shuoming": {
+    "article_id": "hangbian-buchang-shenqing-shuoming",
+    "title": "Atlas 航变补偿申请服务说明",
+    "level1_category": "售后票务",
+    "level2_category": "航班及客票状态",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "04-售后票务/航班及客票状态/Atlas 航变补偿申请服务说明.md",
+    "summary": "说明因航班变更、取消或延误导致的旅客经济损失（住宿、交通、餐饮、误工等）赔偿申请由航空公司依据其运输条款和责任认定进行审核决定，Atlas不代为申请或参与责任判定，仅可在职责范围内协助提供订单信息、出票记录等交易相关证明材料。",
+    "child_chunk_ids": [
+      "hbc-c01",
+      "hbc-c02"
+    ]
+  },
+  "baohu-hangban-zhinan": {
+    "article_id": "baohu-hangban-zhinan",
+    "title": "保护航班：信息查询与后续操作指南",
+    "level1_category": "售后票务",
+    "level2_category": "航班及客票状态",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "04-售后票务/航班及客票状态/保护航班：信息查询与后续操作指南.md",
+    "summary": "说明国际航班因航司原因产生保护航班后的处理方式：廉航保护航班无需额外确认可凭证件直接登机；保护航班信息通过航司邮件获取（区分是否使用Atlas邮箱服务两种查看路径）；若不满意保护航班安排，可按航司邮件提供的退票或改签方案处理，一切以航司官方邮件为准。",
+    "child_chunk_ids": [
+      "bhf-c01",
+      "bhf-c02",
+      "bhf-c03"
+    ]
+  },
+  "ruhe-panduan-hangbian": {
+    "article_id": "ruhe-panduan-hangbian",
+    "title": "如何判断是否发生航变？",
+    "level1_category": "售后票务",
+    "level2_category": "航班及客票状态",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "04-售后票务/航班及客票状态/如何判断是否发生航变？.md",
+    "summary": "提供判断是否发生航变的三步排查流程：依次检查是否收到航变通知邮件、航司MMB系统是否显示航变信息、航司Flight Status页面的航班状态，任一环节确认到航变信息即可判定发生航变。",
+    "child_chunk_ids": [
+      "pdhb-c01",
+      "pdhb-c02",
+      "pdhb-c03"
+    ]
+  },
+  "ruhe-heshi-kepiao-zhuangtai": {
+    "article_id": "ruhe-heshi-kepiao-zhuangtai",
+    "title": "如何核实客票状态？",
+    "level1_category": "售后票务",
+    "level2_category": "航班及客票状态",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "04-售后票务/航班及客票状态/如何核实客票状态？.md",
+    "summary": "提供核实客票状态（是否已使用、是否已取消等）的两种查询方法：通过航司官网“管理预订”入口查看航段状态，或联系航司客服人工核实，并给出无法访问航司官网时的应对办法。",
+    "child_chunk_ids": [
+      "hskp-c01",
+      "hskp-c02"
+    ]
+  },
+  "ruhe-huoqu-hangbian-pingzheng": {
+    "article_id": "ruhe-huoqu-hangbian-pingzheng",
+    "title": "如何获取航变凭证？",
+    "level1_category": "售后票务",
+    "level2_category": "航班及客票状态",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "04-售后票务/航班及客票状态/如何获取航变凭证？.md",
+    "summary": "提供获取航变凭证的两种方法：通过航司官方邮件（区分是否使用Atlas邮箱服务）查看通知，或通过航司官网“管理预订/航班状态”页面查询并截图或导出行程单作为凭证，并给出官网无法访问时的应对办法。",
+    "child_chunk_ids": [
+      "hqpz-c01",
+      "hqpz-c02"
+    ]
+  },
+  "chuzhu-yuliu-xinxi-chaxun": {
+    "article_id": "chuzhu-yuliu-xinxi-chaxun",
+    "title": "如何查询出票预留信息？",
+    "level1_category": "售后票务",
+    "level2_category": "获取出票信息",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "04-售后票务/获取出票信息/如何查询出票预留信息？.md",
+    "summary": "说明如何在ATRIP平台查询订单相关的出票预留邮箱、MMB登录密码、支付卡号后四位及乘客联系方式，并给出各项信息的具体查询路径。",
+    "child_chunk_ids": [
+      "cp-c01",
+      "cp-c02",
+      "cp-c03",
+      "cp-c04"
+    ]
+  },
+  "xingchengdan-huoqu": {
+    "article_id": "xingchengdan-huoqu",
+    "title": "如何获取行程单？",
+    "level1_category": "售后票务",
+    "level2_category": "获取出票信息",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "04-售后票务/获取出票信息/如何获取行程单？.md",
+    "summary": "说明获取电子行程单的两种途径——通过出票预留邮箱（区分是否使用Atlas邮件服务）与通过航司官网自助查询下载，并提供航司官网无法打开时的排查建议。",
+    "child_chunk_ids": [
+      "xc-c01",
+      "xc-c02",
+      "xc-c03"
+    ]
+  },
+  "fuying-erci-jiagou": {
+    "article_id": "fuying-erci-jiagou",
+    "title": "Atlas 辅营服务二次加购范围说明",
+    "level1_category": "售后票务",
+    "level2_category": "辅营服务",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "04-售后票务/辅营服务/Atlas 辅营服务二次加购范围说明.md",
+    "summary": "说明Atlas对航空辅营业务的售后受理范围：目前仅支持所有已完成业务对接航司的售后行李额度加购，选座、餐食、特殊服务申请等其他辅营产品暂未开通线上办理通道，建议改为直接联系航司官方渠道处理。",
+    "child_chunk_ids": [
+      "fy-c01",
+      "fy-c02",
+      "fy-c03"
+    ]
+  },
+  "ruhe-tianjia-shouhou-xingli": {
+    "article_id": "ruhe-tianjia-shouhou-xingli",
+    "title": "如何添加售后行李？",
+    "level1_category": "售后票务",
+    "level2_category": "辅营服务",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "04-售后票务/辅营服务/如何添加售后行李？.md",
+    "summary": "说明如何通过ATRIP系统为已有订单添加售后行李：在订单详情页点击“添加辅营”，选购手提/托运行李后完成支付（提交后不可撤回），可在订单详情页“辅营信息”中查看购买结果。",
+    "child_chunk_ids": [
+      "xl-c01",
+      "xl-c02"
+    ]
+  },
+  "tuipiao-fuwu-shuoming": {
+    "article_id": "tuipiao-fuwu-shuoming",
+    "title": "Atlas退票服务说明",
+    "level1_category": "售后票务",
+    "level2_category": "退票",
+    "applicable_carrier": "通用",
+    "updated_at": "2026-07-07",
+    "source_path": "04-售后票务/退票/Atlas退票服务说明.md",
+    "summary": "退票服务总纲：定义退票受理范围（哪些订单可退/不可退），列出五类退票申请方式（自愿退票、非自愿航变退票、病退/亡退、紧急退票、Refund Claim）的适用条件与流程，并给出Atlas的SLA承诺（4小时履约、跟进升级、拒单复核期、超期订单自动完结规则）。",
+    "child_chunk_ids": [
+      "tps-c01",
+      "tps-c02",
+      "tps-c03",
+      "tps-c04",
+      "tps-c05",
+      "tps-c06",
+      "tps-c07",
+      "tps-c08",
+      "tps-c09",
+      "tps-c10",
+      "tps-c11",
+      "tps-c12",
+      "tps-c13"
+    ]
+  },
+  "tuikuan-jisuan-guize": {
+    "article_id": "tuikuan-jisuan-guize",
+    "title": "Atlas 退款到账金额计算规则",
+    "level1_category": "售后票务",
+    "level2_category": "退票",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "04-售后票务/退票/Atlas 退款到账金额计算规则.md",
+    "summary": "说明Atlas退款到账金额的两种计算方式——全额退款（按原订单成交价原币种退还）与部分退款（按航司实退金额，以退款前一日汇率折算原币种退还），并说明出票服务费不予退还。",
+    "child_chunk_ids": [
+      "tkjg-c01",
+      "tkjg-c02",
+      "tkjg-c03"
+    ]
+  },
+  "fr-feizyuan-tuipiao": {
+    "article_id": "fr-feizyuan-tuipiao",
+    "title": "瑞安航空（FR）非自愿退票规则",
+    "level1_category": "售后票务",
+    "level2_category": "退票",
+    "applicable_carrier": "FR",
+    "updated_at": null,
+    "source_path": "04-售后票务/退票/瑞安航空（FR）非自愿退票规则.md",
+    "summary": "瑞安航空（FR）专属售后规则：Atlas仅受理非自愿退、座位退款、政府税费退款、亡退四类事宜；改期、加购、改名等其他售后需求需乘客直接前往瑞安航空官网办理。",
+    "child_chunk_ids": [
+      "fr-c01",
+      "fr-c02",
+      "fr-c03",
+      "fr-c04"
+    ]
+  },
+  "ij-teshu-tuipiao": {
+    "article_id": "ij-teshu-tuipiao",
+    "title": "关于IJ航空特殊退票政策与操作流程的说明",
+    "level1_category": "售后票务",
+    "level2_category": "退票",
+    "applicable_carrier": "IJ",
+    "updated_at": null,
+    "source_path": "04-售后票务/退票/关于IJ航空特殊退票政策与操作流程的说明.md",
+    "summary": "Spring Japan（IJ）专属特殊退票操作说明：航司实际统一按“自愿退票”作为唯一申请入口处理，需先在Atlas系统提交自愿退票申请，再通过工单单独申请退还服务费（工单类目选【反馈/争议】）。",
+    "child_chunk_ids": [
+      "ij-c01",
+      "ij-c02"
+    ]
+  },
+  "tuipiao-shixian-shuoming": {
+    "article_id": "tuipiao-shixian-shuoming",
+    "title": "退票申请提交时限说明（逾期将无法受理）",
+    "level1_category": "售后票务",
+    "level2_category": "退票",
+    "applicable_carrier": "通用（含131家航司差异化时限）",
+    "updated_at": "2026-07-07",
+    "source_path": "04-售后票务/退票/退票申请提交时限说明（逾期将无法受理）.md",
+    "summary": "说明退票最晚提交时限的判定逻辑：以航司Fare Rule规定与客票有效期（通常一年）中较严格者为准，Atlas系统提交时自动校验。具体131家航司的时限数值已抽取为结构化表 退票时限结构化表.json，不做语义切片。",
+    "child_chunk_ids": [
+      "tps2-c01"
+    ],
+    "structured_data_ref": "_rag-chunks/退票时限结构化表.json"
+  },
+  "rmb-zidong-chongzhi-zhinan": {
+    "article_id": "rmb-zidong-chongzhi-zhinan",
+    "title": "人民币自动充值操作指南",
+    "level1_category": "财务",
+    "level2_category": "人民币充值",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "05-财务/人民币自动充值操作指南.md",
+    "summary": "说明中国主体客户通过易宝完成人民币充值的主体一致性与币种/支付方式要求，新客户需完成的易宝开户、信息配置、首笔充值三步开通流程及到账时限，以及在ATRIP查询充值记录的路径。",
+    "child_chunk_ids": [
+      "rmb-c01",
+      "rmb-c02",
+      "rmb-c03",
+      "rmb-c04",
+      "rmb-c05",
+      "rmb-c06"
+    ]
+  },
+  "chongzhi-yonghu-zhinan": {
+    "article_id": "chongzhi-yonghu-zhinan",
+    "title": "充值用户指南",
+    "level1_category": "财务",
+    "level2_category": "账户充值",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "05-财务/充值用户指南.md",
+    "summary": "说明在ATRIP（Flight Deck）提交充值请求的操作步骤（填写金额币种、上传银行转账凭证），充值金额需按扣除银行手续费后的实际到账金额填写的计算规则，以及查看充值历史与转账凭证的路径。",
+    "child_chunk_ids": [
+      "cz-c01",
+      "cz-c02",
+      "cz-c03"
+    ]
+  },
+  "invoice-guanli": {
+    "article_id": "invoice-guanli",
+    "title": "Invoice管理",
+    "level1_category": "账单管理",
+    "level2_category": "Invoice管理",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "06-账单管理/Invoice管理.md",
+    "summary": "说明ATRIP系统【Invoice管理】模块的功能定位、操作权限与入口、发票接收规则配置方式，并详细列出账单核心字段与账单汇总字段（含Usage、期末余额等计算公式）的含义。",
+    "child_chunk_ids": [
+      "inv-c01",
+      "inv-c02",
+      "inv-c03",
+      "inv-c04",
+      "inv-c05",
+      "inv-c06"
+    ]
+  },
+  "jipiao-yanchi-tongzhi": {
+    "article_id": "jipiao-yanchi-tongzhi",
+    "title": "机票延迟通知",
+    "level1_category": "通知提醒",
+    "level2_category": "机票延迟通知",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "07-通知提醒/机票延迟通知.md",
+    "summary": "说明机票出票延迟时订单进入异常队列后，客户可通过邮件、钉钉、Slack三种渠道接收延迟通知，并给出各渠道的配置方式、延迟原因分类、ATRIP查看方法及服务请求创建条件。",
+    "child_chunk_ids": [
+      "yc-c01",
+      "yc-c02",
+      "yc-c03",
+      "yc-c04",
+      "yc-c05",
+      "yc-c06",
+      "yc-c07",
+      "yc-c08",
+      "yc-c09",
+      "yc-c10"
+    ]
+  },
+  "tongzhi-dingyue": {
+    "article_id": "tongzhi-dingyue",
+    "title": "通知订阅",
+    "level1_category": "通知提醒",
+    "level2_category": "通知订阅",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "07-通知提醒/通知订阅.md",
+    "summary": "介绍ATRIP Flight Deck的通知订阅自助配置功能（需Admin权限），客户可自行配置Webhook通知类型，以及航空公司状态更改、余额不足警报两类电子邮件通知的接收邮箱与触发条件。",
+    "child_chunk_ids": [
+      "dy-c01",
+      "dy-c02",
+      "dy-c03",
+      "dy-c04",
+      "dy-c05"
+    ]
+  },
+  "youjian-liebiao": {
+    "article_id": "youjian-liebiao",
+    "title": "邮件列表",
+    "level1_category": "通知提醒",
+    "level2_category": "邮件列表",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "07-通知提醒/邮件列表.md",
+    "summary": "说明因部分航司屏蔽OTA邮箱导致客户收不到航司原始邮件，Atlas通过“邮件列表”功能（含ATRIP界面、查询API、Webhook通知三种访问方式）让客户运营团队查看、下载并处理这些邮件，并给出邮件分类、处理状态选项及API/Webhook字段说明。",
+    "child_chunk_ids": [
+      "yj-c01",
+      "yj-c02",
+      "yj-c03",
+      "yj-c04",
+      "yj-c05",
+      "yj-c06",
+      "yj-c07",
+      "yj-c08",
+      "yj-c09",
+      "yj-c10",
+      "yj-c11",
+      "yj-c12"
+    ]
+  },
+  "aq-anquan-heguishuoming": {
+    "article_id": "aq-anquan-heguishuoming",
+    "title": "安全与合规说明",
+    "level1_category": "安全与合规",
+    "level2_category": "账户安全与访问控制",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "08-安全与合规/安全与合规说明.md",
+    "summary": "介绍Atlas账户在ATRIP Flight Deck上可用的六项安全与合规能力——访问密钥（AK/SK）、单点登录（SSO）、密码策略、多因素认证（MFA）、IP白名单与审核日志——的功能说明及具体配置操作步骤。",
+    "child_chunk_ids": [
+      "aq-c01",
+      "aq-c02",
+      "aq-c03",
+      "aq-c04",
+      "aq-c05",
+      "aq-c06",
+      "aq-c07",
+      "aq-c08",
+      "aq-c09",
+      "aq-c10",
+      "aq-c11",
+      "aq-c12",
+      "aq-c13",
+      "aq-c14",
+      "aq-c15"
+    ]
+  },
+  "aq-shaxiang-shengchan-zhanghao": {
+    "article_id": "aq-shaxiang-shengchan-zhanghao",
+    "title": "通过Atrip创建沙箱和生产环境账号",
+    "level1_category": "安全与合规",
+    "level2_category": "沙箱与生产环境账号",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "08-安全与合规/通过Atrip创建沙箱和生产环境账号.md",
+    "summary": "说明如何在ATRIP Flight Deck上创建沙箱测试账号，以及生产环境账号（需通过UAT用户验收测试认证后解锁）的AK/SK获取流程。",
+    "child_chunk_ids": [
+      "aq-c16",
+      "aq-c17"
+    ]
+  },
+  "af-atlas-security-compliance": {
+    "article_id": "af-atlas-security-compliance",
+    "title": "Atlas Security and Compliance",
+    "level1_category": "Atlas功能",
+    "level2_category": "账户安全与合规条款",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "09-Atlas功能/Atlas Security and Compliance.md",
+    "summary": "Atlas安全与合规服务条款（英文ToS，源文档无中文对照）：定义AK/SK访问密钥并说明其设置、权限限制及续期到期规则，同时概述SSO单点登录、IP白名单、多因素认证、密码策略与审核日志等安全能力的适用范围；与08-安全与合规/安全与合规说明.md覆盖同一批安全功能但角度不同（详见本目录README的重复度说明）。",
+    "child_chunk_ids": [
+      "af-c01",
+      "af-c02",
+      "af-c03",
+      "af-c04",
+      "af-c05",
+      "af-c06",
+      "af-c07",
+      "af-c08",
+      "af-c09",
+      "af-c10"
+    ]
+  },
+  "af-atlas-piaowu-chengnuo": {
+    "article_id": "af-atlas-piaowu-chengnuo",
+    "title": "Atlas票务承诺",
+    "level1_category": "Atlas功能",
+    "level2_category": "票务保证服务",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "09-Atlas功能/Atlas票务承诺.md",
+    "summary": "Atlas票务保证服务条款：客户购票即自动加入该服务，条款规定了购票信息不符、航班满座、PNR状态异常、航班取消或时刻表变更四类场景下的通知时限与具体补救/赔偿措施。",
+    "child_chunk_ids": [
+      "af-c11",
+      "af-c12",
+      "af-c13",
+      "af-c14",
+      "af-c15",
+      "af-c16",
+      "af-c17"
+    ]
+  },
+  "af-atlas-youjian-fuwu": {
+    "article_id": "af-atlas-youjian-fuwu",
+    "title": "Atlas邮件服务",
+    "level1_category": "Atlas功能",
+    "level2_category": "邮件服务",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "09-Atlas功能/Atlas邮件服务.md",
+    "summary": "Atlas邮件服务条款：说明该邮件地址仅用于配合Atlas生单功能接收邮件（不支持发送/回复），默认未激活需联系客户经理开通，邮件相关数据自收到之日起2年后自动删除，并规定了责任限制范围。",
+    "child_chunk_ids": [
+      "af-c18",
+      "af-c19",
+      "af-c20",
+      "af-c21",
+      "af-c22"
+    ]
+  }
+}

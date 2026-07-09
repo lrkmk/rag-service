@@ -1,0 +1,139 @@
+"""
+Shared search helpers against the Chroma store built by ingest_chroma.py.
+Imported by both query_example.py (fixed demo queries) and ask.py (CLI tool
+for ad hoc natural-language questions).
+
+BGE asymmetric embedding note:
+  BAAI/bge-large-zh-v1.5 (used in ingest_chroma.py) recommends prefixing
+  *queries* with an instruction string, but leaving *documents* unprefixed.
+  Chroma's `query_texts=` would embed the query with the exact same
+  (unprefixed) code path used for documents, silently losing that signal.
+  So here we load the model directly, encode the query with the prefix
+  ourselves, and pass `query_embeddings=` instead of `query_texts=`.
+"""
+
+import json
+import os
+
+import chromadb
+from sentence_transformers import SentenceTransformer
+
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DB_PATH = os.path.join(REPO_ROOT, "chroma_db")
+PARENTS_LOOKUP_PATH = os.path.join(REPO_ROOT, "scripts", "parents_lookup.json")
+
+# Must match the model used in ingest_chroma.py's EMBEDDER — the two sides
+# have to produce vectors in the same space.
+MODEL_NAME = "BAAI/bge-large-zh-v1.5"
+QUERY_INSTRUCTION = "为这个句子生成表示以用于检索相关文章："
+
+_model = None
+_client = None
+_rule_coll = None
+_faq_coll = None
+_api_coll = None
+_api_faq_coll = None
+_parents = None
+
+
+def _lazy_init():
+    global _model, _client, _rule_coll, _faq_coll, _api_coll, _api_faq_coll, _parents
+    if _model is not None:
+        return
+    _model = SentenceTransformer(MODEL_NAME)
+    _client = chromadb.PersistentClient(path=DB_PATH)
+    # No embedding_function passed to get_collection on purpose: we only ever
+    # call these with query_embeddings=/pre-embedded documents, so Chroma
+    # never needs to invoke an embedder itself on this side.
+    _rule_coll = _client.get_collection(name="atlas_rule_chunks")
+    _faq_coll = _client.get_collection(name="atlas_faq_chunks")
+    _api_coll = _client.get_collection(name="atlas_api_chunks")
+    _api_faq_coll = _client.get_collection(name="atlas_api_faq_chunks")
+    with open(PARENTS_LOOKUP_PATH, encoding="utf-8") as f:
+        _parents = json.load(f)
+
+
+def embed_query(text: str) -> list[float]:
+    _lazy_init()
+    return _model.encode(QUERY_INSTRUCTION + text, normalize_embeddings=True).tolist()
+
+
+def search_rules(query: str, n_results: int = 3, where: dict | None = None):
+    _lazy_init()
+    res = _rule_coll.query(query_embeddings=[embed_query(query)], n_results=n_results, where=where)
+    hits = []
+    for i in range(len(res["ids"][0])):
+        meta = res["metadatas"][0][i]
+        parent = _parents.get(meta.get("parent_id"), {})
+        hits.append({
+            "chunk_id": res["ids"][0][i],
+            "distance": res["distances"][0][i],
+            "level1_category": meta.get("level1_category"),
+            "level2_category": meta.get("level2_category"),
+            "section": meta.get("section"),
+            "text": meta.get("text"),
+            "applicable_carrier": meta.get("applicable_carrier"),
+            "parent_title": parent.get("title"),
+            "parent_summary": parent.get("summary"),
+            "source_path": parent.get("source_path"),
+        })
+    return hits
+
+
+def search_faq(query: str, n_results: int = 3):
+    _lazy_init()
+    res = _faq_coll.query(query_embeddings=[embed_query(query)], n_results=n_results)
+    hits = []
+    for i in range(len(res["ids"][0])):
+        meta = res["metadatas"][0][i]
+        hits.append({
+            "chunk_id": res["ids"][0][i],
+            "distance": res["distances"][0][i],
+            "topic": meta.get("topic"),
+            "question": meta.get("question"),
+            "answer": meta.get("answer"),
+        })
+    return hits
+
+
+def search_api_docs(query: str, n_results: int = 3, where: dict | None = None):
+    """Search API文档 (developer/API reference corpus) — separate collection
+    from 帮助中心 on purpose, see RAG-切片设计总览.md. No parent-summary
+    bolt-on here: API文档 chunks have no parent tier (the C-type "端点概览"
+    chunk_type serves that role for OpenAPI endpoints, A/B-type chunks stand
+    alone)."""
+    _lazy_init()
+    res = _api_coll.query(query_embeddings=[embed_query(query)], n_results=n_results, where=where)
+    hits = []
+    for i in range(len(res["ids"][0])):
+        meta = res["metadatas"][0][i]
+        hits.append({
+            "chunk_id": res["ids"][0][i],
+            "distance": res["distances"][0][i],
+            "doc_type": meta.get("doc_type"),
+            "level1_category": meta.get("level1_category"),
+            "level2_category": meta.get("level2_category"),
+            "section": meta.get("section"),
+            "text": meta.get("text"),
+            "applicable_carrier": meta.get("applicable_carrier"),
+            "compares": meta.get("compares"),
+            "endpoint": meta.get("endpoint"),
+            "source_path": meta.get("source_path"),
+        })
+    return hits
+
+
+def search_api_faq(query: str, n_results: int = 3):
+    _lazy_init()
+    res = _api_faq_coll.query(query_embeddings=[embed_query(query)], n_results=n_results)
+    hits = []
+    for i in range(len(res["ids"][0])):
+        meta = res["metadatas"][0][i]
+        hits.append({
+            "chunk_id": res["ids"][0][i],
+            "distance": res["distances"][0][i],
+            "topic": meta.get("topic"),
+            "question": meta.get("question"),
+            "answer": meta.get("answer"),
+        })
+    return hits

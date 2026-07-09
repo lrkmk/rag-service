@@ -1,0 +1,236 @@
+[
+  {
+    "code": "429",
+    "meaning": "请求限制已超出",
+    "retryable": "部分",
+    "next_step": "等待 `retryAfter` 并降低请求频率"
+  },
+  {
+    "code": "107",
+    "meaning": "余额低于允许的阈值",
+    "retryable": "否",
+    "next_step": "充值账户，然后重试"
+  },
+  {
+    "code": "108",
+    "meaning": "航线暂时受限或关闭",
+    "retryable": "部分",
+    "next_step": "稍后重试，不要立即重试"
+  },
+  {
+    "code": "110",
+    "meaning": "搜索 QPS 限制命中",
+    "retryable": "部分",
+    "next_step": "增加指数退避，然后重试"
+  },
+  {
+    "code": "112",
+    "meaning": "搜索超时",
+    "retryable": "是",
+    "next_step": "短暂等待后重试"
+  },
+  {
+    "code": "123",
+    "meaning": "付费订单的搜索量过高",
+    "retryable": "否",
+    "next_step": "减少不必要的搜索流量"
+  },
+  {
+    "code": "126",
+    "meaning": "智能搜索 `requestId` 无效或过期",
+    "retryable": "否",
+    "next_step": "开始新的智能搜索"
+  },
+  {
+    "code": "127",
+    "meaning": "搜索超时且请求已结束",
+    "retryable": "是",
+    "next_step": "运行新的搜索"
+  },
+  {
+    "code": "202",
+    "meaning": "`routingIdentifier` 在 6 小时后过期",
+    "retryable": "否",
+    "next_step": "重新运行搜索并使用新的标识符"
+  },
+  {
+    "code": "205",
+    "meaning": "验证超时",
+    "retryable": "是",
+    "next_step": "短暂等待后重试验证"
+  },
+  {
+    "code": "206",
+    "meaning": "搜索后航班不再可用",
+    "retryable": "否",
+    "next_step": "从搜索重新开始"
+  },
+  {
+    "code": "210",
+    "meaning": "票价等级已售罄",
+    "retryable": "否",
+    "next_step": "从搜索重新开始并重新预订"
+  },
+  {
+    "code": "222",
+    "meaning": "验证期间行李查询失败",
+    "retryable": "部分",
+    "next_step": "重试验证，如果重复则升级"
+  },
+  {
+    "code": "299",
+    "meaning": "由于临时平台问题导致验证失败",
+    "retryable": "部分",
+    "next_step": "重试验证一次，如果需要则从搜索重新开始"
+  },
+  {
+    "code": "301",
+    "meaning": "`sessionId` 在 2 小时后过期",
+    "retryable": "否",
+    "next_step": "重新运行 `verify.do` 并获取新会话"
+  },
+  {
+    "code": "302",
+    "meaning": "验证和订单之间航班变更或售罄",
+    "retryable": "否",
+    "next_step": "从搜索重新开始并重新预订"
+  },
+  {
+    "code": "307",
+    "meaning": "预订输入无效",
+    "retryable": "否",
+    "next_step": "修复请求字段并重新提交"
+  },
+  {
+    "code": "308",
+    "meaning": "验证和订单之间价格变动",
+    "retryable": "否",
+    "next_step": "重新生成或重新启动预订流程"
+  },
+  {
+    "code": "309",
+    "meaning": "附加服务 `productCode` 无效或过时",
+    "retryable": "否",
+    "next_step": "使用当前验证响应中的 `productCode`"
+  },
+  {
+    "code": "316",
+    "meaning": "预订期间航空公司侧超时",
+    "retryable": "是",
+    "next_step": "短暂等待后重试预订流程"
+  },
+  {
+    "code": "317",
+    "meaning": "航空公司侧预订失败",
+    "retryable": "部分",
+    "next_step": "小心重试，如果重复则升级"
+  },
+  {
+    "code": "324",
+    "meaning": "订单期间航空公司系统问题",
+    "retryable": "部分",
+    "next_step": "稍后重试，如果重复则联系运营团队"
+  },
+  {
+    "code": "406",
+    "meaning": "支付已在进行中",
+    "retryable": "部分",
+    "next_step": "在任何重试前等待并查询订单状态"
+  },
+  {
+    "code": "409",
+    "meaning": "行李 `productCode` 与航段不匹配",
+    "retryable": "否",
+    "next_step": "重新检查附加服务映射并重新提交"
+  },
+  {
+    "code": "410",
+    "meaning": "联系电话格式无效",
+    "retryable": "否",
+    "next_step": "修复电话格式并重新提交"
+  },
+  {
+    "code": "411",
+    "meaning": "由于余额或账户检查导致支付失败",
+    "retryable": "否",
+    "next_step": "首先验证余额和支付输入"
+  },
+  {
+    "code": "415",
+    "meaning": "FR 订单未确认",
+    "retryable": "部分",
+    "next_step": "先调用 `orderCommit.do`，然后重试 `pay.do`"
+  },
+  {
+    "code": "604",
+    "meaning": "航空公司拒绝 VCC",
+    "retryable": "是",
+    "next_step": "使用不同的有效卡重试"
+  },
+  {
+    "code": "615",
+    "meaning": "支付成功但航空公司 PNR 仍待处理",
+    "retryable": "否",
+    "next_step": "不要重试支付；而是监控订单状态"
+  },
+  {
+    "code": "616",
+    "meaning": "卡需要 3DS",
+    "retryable": "是",
+    "next_step": "使用非 3DS 卡或存款模式"
+  },
+  {
+    "code": "617",
+    "meaning": "出票时存款余额过低",
+    "retryable": "否",
+    "next_step": "重试前充值余额"
+  },
+  {
+    "code": "631",
+    "meaning": "执行期间行李费用变动",
+    "retryable": "否",
+    "next_step": "从验证重新开始"
+  },
+  {
+    "code": "633",
+    "meaning": "航空公司风险控制拒绝支付",
+    "retryable": "部分",
+    "next_step": "使用存款模式或其他有效卡重试"
+  },
+  {
+    "code": "703",
+    "meaning": "未找到订单",
+    "retryable": "否",
+    "next_step": "重新检查订单查询值"
+  },
+  {
+    "code": "705",
+    "meaning": "订单查询超时",
+    "retryable": "是",
+    "next_step": "短暂等待后重试"
+  },
+  {
+    "code": "805",
+    "meaning": "`refundOfferId` 过期",
+    "retryable": "否",
+    "next_step": "请求新的退款报价"
+  },
+  {
+    "code": "809",
+    "meaning": "出票完成前尝试退款",
+    "retryable": "否",
+    "next_step": "等待出票完成"
+  },
+  {
+    "code": "811",
+    "meaning": "退款请求缺少必需的行程航段",
+    "retryable": "否",
+    "next_step": "提交完整行程"
+  },
+  {
+    "code": "824",
+    "meaning": "退款请求是针对附加服务订单的",
+    "retryable": "否",
+    "next_step": "使用原始主订单号"
+  }
+]

@@ -1,0 +1,28 @@
+{
+  "field": "status",
+  "endpoint": "/getLuggage.do",
+  "source_path": "API文档\\04-API参考\\booking-apis\\行李.md",
+  "ref": null,
+  "entries": [
+    {
+      "code": "212",
+      "meaning": "illegal parameter."
+    },
+    {
+      "code": "214",
+      "meaning": "offer not exists."
+    },
+    {
+      "code": "205",
+      "meaning": "timed out."
+    },
+    {
+      "code": "299",
+      "meaning": "airline error."
+    },
+    {
+      "code": "9999",
+      "meaning": "system error."
+    }
+  ]
+}

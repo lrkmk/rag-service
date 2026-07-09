@@ -1,0 +1,52 @@
+{
+  "field": "status",
+  "endpoint": "/verify.do",
+  "source_path": "API文档\\04-API参考\\booking-apis\\验证.md",
+  "ref": "VerifyResponseStatus",
+  "entries": [
+    {
+      "code": "200",
+      "meaning": "Illegal routing identifier. Description: The \"routingIdentifier\" in request contains invalid content. Please check the content of this field to ensure that the content returned by the search is passed back exactly as it is."
+    },
+    {
+      "code": "201",
+      "meaning": "Invalid routing. Description: The airline has flights and quotations, but Atlas has closed sales for some reasons. The reasons can be 1) The sales were manually closed 2) The system has detected a risk of sold out 3) Prohibitions on nearby flights. Try booking after some time."
+    },
+    {
+      "code": "202",
+      "meaning": "Routing identifier expired. Description: The routingIdentifier has a certain validity period. If the “routingIdentifier” is used after this time period, then this error is displayed. Conduct “Search” again and use the new “routingIdentifier”."
+    },
+    {
+      "code": "203",
+      "meaning": "Airline closed. Description: The airline is no longer in business."
+    },
+    {
+      "code": "205",
+      "meaning": "Timed out. Description:"
+    },
+    {
+      "code": "207",
+      "meaning": "Flight not available. Description: The required flight is no longer available at the airline's side, possibly due to the flight being sold out."
+    },
+    {
+      "code": "210",
+      "meaning": "Fare family sold out. Description: The flight or the fare family is no longer available with the airline. Conduct the search again and rebook."
+    },
+    {
+      "code": "212",
+      "meaning": "Illegal Request Parameter. Description: Some parameters do not meet the requirements. Please adjust them according to the error message."
+    },
+    {
+      "code": "213",
+      "meaning": "Flight information changed. Description: Conduct the search again and rebook."
+    },
+    {
+      "code": "222",
+      "meaning": "Fail to obtain baggage from airline. Description: Fail to obtain baggage from airline, pls retry the request."
+    },
+    {
+      "code": "299",
+      "meaning": "Verify failed. Description: This is an error for which Atlas needs to take action. In some uncontrollable situations, such as network issues, upgrades, and restarts, 299 errors may occur. It is possible that the airline is not available or there are challenges at Atlas' end. Atlas needs to handle these errors internally."
+    }
+  ]
+}

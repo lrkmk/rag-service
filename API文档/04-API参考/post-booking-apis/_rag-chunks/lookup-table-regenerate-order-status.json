@@ -1,0 +1,112 @@
+{
+  "field": "status",
+  "endpoint": "/regenerateOrder.do",
+  "source_path": "API文档\\04-API参考\\post-booking-apis\\重新生成订单.md",
+  "ref": "OrderResponseStatus",
+  "entries": [
+    {
+      "code": "301",
+      "meaning": "Session does not exist or timed out. Description: The \"sessionID\" has a validity of 2 hrs. If the “sessionID” is used after this time period, then this error is displayed"
+    },
+    {
+      "code": "302",
+      "meaning": "The target flight is no longer available. Description: In the period between verify and book, the flight has been sold out. This can also be due to the number of passengers booked. The number of pax when booking and the number of pax when verifying may be different. When create a booking, the price is verified based on the actual number of pax booked"
+    },
+    {
+      "code": "303",
+      "meaning": "Airline closed. Description: Airline has either ceased to exist or not operational."
+    },
+    {
+      "code": "304",
+      "meaning": "Verify failed. Description: In some uncontrollable situations, such as network issues, upgrades, and restarts, 304 error may occur, but not many. If there are many 304 errors, it is possible that the airline is not available or some technical issue at Atlas' end. Contact your account manager if this error keeps on repeating."
+    },
+    {
+      "code": "305",
+      "meaning": "Invalid routing. Description: When generating an order, the system found that the flight was no longer sold for various reasons, such as 1) L2B 2) The system has identified that there may be a risk of the flight being sold out 3) The airline's sales have been closed"
+    },
+    {
+      "code": "307",
+      "meaning": "Illegal booking request parameters. Description: Some request parameters have problem. Please check the message."
+    },
+    {
+      "code": "308",
+      "meaning": "Price changed. Description: The price has changed between the price verification and order. Please verify the price again and generate the order."
+    },
+    {
+      "code": "309",
+      "meaning": "Ancillary not found. Description: Incorrect ancillary product code has been entered. Check and enter the correct ancillary product code."
+    },
+    {
+      "code": "310",
+      "meaning": "Infant not allowed. Description: The offer does not support infant. Create a new booking without infant passenger type."
+    },
+    {
+      "code": "312",
+      "meaning": "Too many seats booked. Description: The number of pax booked exceeds the remaining (or allowed) seats on the current flight."
+    },
+    {
+      "code": "313",
+      "meaning": "Fare family sold out. Description: Selected offer is no longer available. Conduct the search again and rebook."
+    },
+    {
+      "code": "315",
+      "meaning": "Not enough seats. Description: Seats have been sold out"
+    },
+    {
+      "code": "316",
+      "meaning": "Timed out. Description: There is a time-out error at the airline’s end"
+    },
+    {
+      "code": "317",
+      "meaning": "Booking unsuccessful with Airline. Description: An error has happened at the airline’s end."
+    },
+    {
+      "code": "318",
+      "meaning": "Check if a booking with the same passenger details and flight numbers exists. After confirming, ignore this booking."
+    },
+    {
+      "code": "319",
+      "meaning": "Flight information has changed. Description: Re-verify the price (query the latest flight information) and generate the order."
+    },
+    {
+      "code": "320",
+      "meaning": "The requested seats were not found or they are already occupied. Description: Rebook seats and submit a new order."
+    },
+    {
+      "code": "322",
+      "meaning": "Seat price changed. Description: Seat price changed. Re-query the seat map and select seats"
+    },
+    {
+      "code": "323",
+      "meaning": "The format of the e-mail in the contact information is incorrect"
+    },
+    {
+      "code": "324",
+      "meaning": "Airline system issues. Description: Retry after some time. If the issue persists, please contact our operations team."
+    },
+    {
+      "code": "325",
+      "meaning": "The airline has deemed the passenger unserviceable"
+    },
+    {
+      "code": "326",
+      "meaning": "Your account balance on the airline side is insufficient(BYOA scenario)"
+    },
+    {
+      "code": "327",
+      "meaning": "Passenger information does not meet the requirements. Description: Check and correct the passenger information according to the error message"
+    },
+    {
+      "code": "328",
+      "meaning": "Selected seat is no longer available. Description: The selected seat has been occupied."
+    },
+    {
+      "code": "329",
+      "meaning": "No payment method is available. Description: No payment method is available. Please check whether the quotation currency or account configuration is correct."
+    },
+    {
+      "code": "330",
+      "meaning": "operation is in progress. Description: operation is in progress"
+    }
+  ]
+}
