@@ -7,33 +7,44 @@ chunks/FAQ) as MCP tools. Same BGE model, same asymmetric query-prefix
 handling, same Chroma store — this is a thin protocol adapter, not a
 reimplementation.
 
-Run directly for local testing (stdio transport):
+Local stdio mode (default — for `claude mcp add` / Claude Desktop, no network):
     python mcp_server.py
 
-Register with Claude Code:
-    claude mcp add atlas-docs -- <path-to-venv-python> <path-to-this-file>
+    Register with Claude Code:
+        claude mcp add atlas-docs -- <path-to-venv-python> <path-to-this-file>
 
-Register with Claude Desktop: add to claude_desktop_config.json:
-    {
-      "mcpServers": {
-        "atlas-docs": {
-          "command": "<path-to-venv-python>",
-          "args": ["<path-to-this-file>"]
+    Register with Claude Desktop, add to claude_desktop_config.json:
+        {
+          "mcpServers": {
+            "atlas-docs": {
+              "command": "<path-to-venv-python>",
+              "args": ["<path-to-this-file>"]
+            }
+          }
         }
-      }
-    }
 
-Both need ABSOLUTE paths — MCP client processes don't inherit this project's
-venv activation or working directory.
+    Both need ABSOLUTE paths — MCP client processes don't inherit this
+    project's venv activation or working directory.
+
+Container / network mode (set by the Dockerfile, see ../Dockerfile):
+    MCP_TRANSPORT=streamable-http MCP_PORT=8000 python mcp_server.py
+
+    Then register as a remote MCP server, e.g. for Claude Code:
+        claude mcp add --transport http atlas-docs http://<host>:8000/mcp
 """
 
+import os
 from typing import Optional
 
 from mcp.server.fastmcp import FastMCP
 
 import rag_search
 
-mcp = FastMCP("atlas-docs")
+TRANSPORT = os.environ.get("MCP_TRANSPORT", "stdio")
+HOST = os.environ.get("MCP_HOST", "0.0.0.0")
+PORT = int(os.environ.get("MCP_PORT", "8000"))
+
+mcp = FastMCP("atlas-docs", host=HOST, port=PORT)
 
 
 @mcp.tool()
@@ -161,4 +172,4 @@ def search_api_docs_faq(query: str, top_k: int = 3) -> list[dict]:
 
 
 if __name__ == "__main__":
-    mcp.run()
+    mcp.run(transport=TRANSPORT)

@@ -1,0 +1,14 @@
+.venv/
+chroma_db/
+.git/
+.claude/
+帮助中心/
+API文档/
+scripts/chunk_*.py
+scripts/ingest_*.py
+scripts/extract_*.py
+scripts/ask.py
+scripts/query_example.py
+scripts/test_mcp_server.py
+scripts/organize_api.sh
+*.md
