@@ -38,6 +38,7 @@ from typing import Optional
 
 from mcp.server.fastmcp import FastMCP
 
+import lookup_tables
 import rag_search
 
 TRANSPORT = os.environ.get("MCP_TRANSPORT", "stdio")
@@ -169,6 +170,57 @@ def search_api_docs_faq(query: str, top_k: int = 3) -> list[dict]:
         List of hits, each with: chunk_id, distance, topic, question, answer.
     """
     return rag_search.search_api_faq(query, n_results=top_k)
+
+
+@mcp.tool()
+def list_lookup_tables() -> list[dict]:
+    """List the structured reference tables (error codes, refund/void time
+    limits, sandbox test data, locale codes, payment card requirements —
+    17 tables total) that are NOT covered by the search_* tools. These are
+    exact-lookup data (e.g. "what does error code 308 mean", "what's the
+    refund deadline for airline FR"), deliberately kept out of semantic
+    search because chunking a lookup table destroys its queryability — use
+    query_lookup_table against the table_name this returns instead of
+    trying to find this data via search_help_center/search_api_docs.
+
+    Returns:
+        List of tables, each with: table_name, path, row_count, columns
+        (the field names present in each row), meta (any wrapper-level
+        info the source file carried, e.g. which API endpoint an error
+        code table belongs to).
+    """
+    return lookup_tables.list_tables()
+
+
+@mcp.tool()
+def query_lookup_table(
+    table_name: str,
+    filters: Optional[dict] = None,
+    limit: int = 50,
+) -> dict:
+    """Query one of the structured reference tables by exact/substring
+    field match. Call list_lookup_tables first if you don't already know
+    the exact table_name and column names — a wrong table_name returns a
+    did_you_mean suggestion, but getting the columns right the first time
+    avoids a round trip.
+
+    Args:
+        table_name: Exact name from list_lookup_tables (e.g.
+            "退票时限结构化表", "错误码速查表", "lookup-table-search-status").
+        filters: Optional dict of {column: value} to narrow results, e.g.
+            {"carrier_code": "FR"} or {"code": "308"}. String values match
+            case-insensitively as substrings; non-string values (numbers)
+            match exactly. Omit to get the whole table (capped by limit).
+        limit: Max rows to return (default 50). If total_matched exceeds
+            this, the response is truncated — narrow with filters instead
+            of raising limit for large tables like the 131-row refund
+            deadline table.
+
+    Returns:
+        {table_name, meta, total_matched, rows, truncated} — or
+        {error, did_you_mean} if table_name doesn't match any table.
+    """
+    return lookup_tables.query_table(table_name, filters=filters, limit=limit)
 
 
 if __name__ == "__main__":

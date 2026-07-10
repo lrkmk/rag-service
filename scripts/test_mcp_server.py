@@ -42,6 +42,18 @@ async def main():
             r = await session.call_tool("search_api_docs_faq", {"query": "如何开始使用API", "top_k": 1})
             print(r.content[0].text[:300])
 
+            print("\n=== call: list_lookup_tables() ===")
+            r = await session.call_tool("list_lookup_tables", {})
+            print(r.content[0].text[:300] + " ...")
+
+            print("\n=== call: query_lookup_table('退票时限结构化表', {'carrier_code': 'FR'}) ===")
+            r = await session.call_tool("query_lookup_table", {"table_name": "退票时限结构化表", "filters": {"carrier_code": "FR"}})
+            print(r.content[0].text[:300])
+
+            print("\n=== call: query_lookup_table('错误码表') — bad name, expect did_you_mean ===")
+            r = await session.call_tool("query_lookup_table", {"table_name": "错误码表"})
+            print(r.content[0].text[:300])
+
 
 if __name__ == "__main__":
     asyncio.run(main())
