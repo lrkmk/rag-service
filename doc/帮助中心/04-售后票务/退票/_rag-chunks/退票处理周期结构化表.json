@@ -1,0 +1,877 @@
+[
+  {
+    "carrier_code": "7C",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 1,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "JT",
+    "reply_days_voluntary": 45,
+    "reply_days_involuntary": 45,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "VJ",
+    "reply_days_voluntary": 20,
+    "reply_days_involuntary": 20,
+    "refund_days_voluntary": 15,
+    "refund_days_involuntary": 15
+  },
+  {
+    "carrier_code": "U2",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "EC",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "F9",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 1,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "5J",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "6E",
+    "reply_days_voluntary": 5,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "W4",
+    "reply_days_voluntary": 20,
+    "reply_days_involuntary": 20,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "W6",
+    "reply_days_voluntary": 20,
+    "reply_days_involuntary": 20,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "W9",
+    "reply_days_voluntary": 20,
+    "reply_days_involuntary": 20,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "IU",
+    "reply_days_voluntary": 45,
+    "reply_days_involuntary": 45,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "BC",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 1,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "EW",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "TR",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 1,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "SL",
+    "reply_days_voluntary": 20,
+    "reply_days_involuntary": 20,
+    "refund_days_voluntary": 40,
+    "refund_days_involuntary": 40
+  },
+  {
+    "carrier_code": "MM",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 1,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "PC",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 1,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "IX",
+    "reply_days_voluntary": 5,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "TO",
+    "reply_days_voluntary": 5,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "DD",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 45,
+    "refund_days_involuntary": 45
+  },
+  {
+    "carrier_code": "VZ",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 45,
+    "refund_days_involuntary": 45
+  },
+  {
+    "carrier_code": "BX",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 1,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "SM",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "HV",
+    "reply_days_voluntary": 5,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "RS",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 1,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "LJ",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 1,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "ID",
+    "reply_days_voluntary": 45,
+    "reply_days_involuntary": 45,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "8B",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "KC",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "G4",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 1,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "LS",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "FA",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "XQ",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "3F",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "Z0",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "XY",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "D8",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "QH",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "F3",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "5W",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "QG",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "DG",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "DY",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "H4",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "AK",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "5F",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "FY",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "FD",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "VY",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "3O",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "SY",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "DE",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "H7",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "ZG",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "AS",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "OV",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "J9",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "DS",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "QP",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "IT",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "7G",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "A3",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "QZ",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "HD",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "XR",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "9P",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "IW",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "G9",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "JH",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "I5",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "NK",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "XC",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "FZ",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "3L",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "DM",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "FH",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "V7",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "EI",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "NQ",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "OD",
+    "reply_days_voluntary": 45,
+    "reply_days_involuntary": 45,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "T3",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "Z2",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "BT",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "GQ",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "XZ",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "DX",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "SG",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "D7",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "E5",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "FT",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "GR",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "N0",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "HP",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "RW",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "MZ",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "6J",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "3K",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "YT",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "U8",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "GK",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "TW",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "Q9",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "A2",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "QN",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "XJ",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "BV",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "KT",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "AD",
+    "reply_days_voluntary": 10,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "8P",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "TF",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "NO",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "OG",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "QQ",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "E4",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "4N",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "YQ",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "AN",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "KM",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "PB",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 10,
+    "refund_days_involuntary": 10
+  },
+  {
+    "carrier_code": "BF",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "OA",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "GM",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "P6",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  },
+  {
+    "carrier_code": "CD",
+    "reply_days_voluntary": 1,
+    "reply_days_involuntary": 10,
+    "refund_days_voluntary": 30,
+    "refund_days_involuntary": 30
+  }
+]
