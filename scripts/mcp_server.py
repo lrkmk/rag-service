@@ -223,5 +223,32 @@ def query_lookup_table(
     return lookup_tables.query_table(table_name, filters=filters, limit=limit)
 
 
+@mcp.tool()
+def get_full_article(source_path: str) -> dict:
+    """Fetch the complete source article a search hit came from, when a
+    chunk's snippet isn't enough context. Equivalent to the old GitBook
+    MCP's getPage(url) tool, but takes the source_path field already
+    present on every search_help_center/search_api_docs hit instead of a
+    URL — call a search tool first, then pass its source_path here if you
+    need more surrounding context than that one chunk gives you.
+
+    Most questions are answerable from a single chunk (each one is a
+    complete rule/concept on its own) — reach for this when a procedure
+    spans multiple chunks and you need to see them in original order, or
+    when the chunk text references something ("见上文"/"如下表") that got
+    cut at the chunk boundary.
+
+    Args:
+        source_path: The source_path value from a search_help_center or
+            search_api_docs hit, e.g. "04-售后票务/退票/Atlas退票服务说明.md".
+
+    Returns:
+        {source_path, title, text} with the article's full cleaned
+        markdown (GitBook-specific {% hint %} boilerplate stripped), or
+        {error} if source_path doesn't resolve to a file in either corpus.
+    """
+    return rag_search.get_full_article(source_path)
+
+
 if __name__ == "__main__":
     mcp.run(transport=TRANSPORT)

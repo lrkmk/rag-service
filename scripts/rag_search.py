@@ -14,13 +14,18 @@ BGE asymmetric embedding note:
 
 import json
 import os
+import re
 
 import chromadb
 from sentence_transformers import SentenceTransformer
 
+import chunk_diff
+
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB_PATH = os.path.join(REPO_ROOT, "chroma_db")
 PARENTS_LOOKUP_PATH = os.path.join(REPO_ROOT, "scripts", "parents_lookup.json")
+HELP_CENTER_ROOT = os.path.join(REPO_ROOT, "帮助中心")
+API_DOCS_ROOT = os.path.join(REPO_ROOT, "API文档")
 
 # Must match the model used in ingest_chroma.py's EMBEDDER — the two sides
 # have to produce vectors in the same space.
@@ -135,6 +140,32 @@ def search_api_docs(query: str, n_results: int = 3, where: dict | None = None):
             "source_path": meta.get("source_path"),
         })
     return hits
+
+
+def get_full_article(source_path: str) -> dict:
+    """Reads the full source article for a source_path as returned by
+    search_rules/search_api_docs (帮助中心 chunks get it via parent lookup,
+    API文档 chunks carry it directly). This is the get_full_article
+    equivalent of the old GitBook MCP's getPage(url) tool — for when a
+    chunk's snippet doesn't have enough context and the whole article is
+    needed (a chunk is one rule/concept; an article can cover several).
+
+    Tries both corpus roots since source_path alone doesn't say which one
+    it came from (the two roots use the same relative-path convention)."""
+    for root in (HELP_CENTER_ROOT, API_DOCS_ROOT):
+        candidate = os.path.normpath(os.path.join(root, source_path))
+        if not candidate.startswith(os.path.normpath(root)):
+            continue  # reject path traversal, same guard as webapp.py's _resolve_doc
+        if os.path.isfile(candidate):
+            raw = open(candidate, encoding="utf-8").read()
+            cleaned = chunk_diff.strip_boilerplate(raw)
+            title_m = re.search(r"^#\s+(.+)$", cleaned, re.MULTILINE)
+            return {
+                "source_path": source_path,
+                "title": title_m.group(1).strip() if title_m else None,
+                "text": cleaned.strip(),
+            }
+    return {"error": f"no source file found for source_path='{source_path}'"}
 
 
 def search_api_faq(query: str, n_results: int = 3):
