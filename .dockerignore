@@ -2,7 +2,6 @@
 chroma_db/
 .git/
 .claude/
-doc/
 scripts/chunk_*.py
 scripts/ingest_*.py
 scripts/extract_*.py

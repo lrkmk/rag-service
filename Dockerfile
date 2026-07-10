@@ -1,9 +1,14 @@
-# Retrieval-only service: exposes the 4 search tools over MCP (streamable-http).
-# Deliberately excludes crawl/chunk/ingest scripts and the raw doc/ source
-# trees — those are build-time/offline tooling, not part of the runtime
-# service. The vector data (chroma_db/) is NOT baked into this image; it's
-# supplied at container-run time via a volume mount (see docker-compose.yml),
-# so re-ingesting updated docs doesn't require rebuilding the image.
+# Retrieval-only service: exposes the search/lookup tools over MCP
+# (streamable-http). Deliberately excludes crawl/chunk/ingest scripts —
+# those are build-time/offline tooling, not part of the runtime service. The
+# vector data (chroma_db/) is NOT baked into this image; it's supplied at
+# container-run time via a volume mount (see docker-compose.yml), so
+# re-ingesting updated docs doesn't require rebuilding the image.
+#
+# doc/ (the raw source .md trees) IS baked in, despite being crawl/offline
+# output: get_full_article() reads directly from doc/帮助中心, doc/API文档,
+# doc/产品介绍 on disk (source_path -> file), not from Chroma — without it
+# every get_full_article call 404s. Text only, small.
 
 FROM python:3.11-slim
 
@@ -25,6 +30,7 @@ RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTr
 # <repo_root>/scripts/rag_search.py layout — flattening it would silently
 # point DB_PATH at the filesystem root instead of /app/chroma_db.
 COPY scripts/rag_search.py scripts/mcp_server.py scripts/parents_lookup.json ./scripts/
+COPY doc/ ./doc/
 
 ENV MCP_TRANSPORT=streamable-http
 ENV MCP_HOST=0.0.0.0
