@@ -56,9 +56,14 @@ def split_h3_sections(body: str) -> list[tuple[str, str]]:
     for chunk in parts[1:]:
         lines = chunk.split("\n", 1)
         heading = lines[0].strip()
-        content = lines[1].strip() if len(lines) > 1 else ""
-        # strip nested #### subheadings down to plain text but keep them as inline labels
-        content = re.sub(r"\n#### (.+)\n", r"\n【\1】", content)
+        content = lines[1] if len(lines) > 1 else ""
+        # strip nested #### subheadings down to plain text but keep them as inline
+        # labels. Substitute BEFORE strip(): stripping first eats the leading \n
+        # that (?:^|\n) needs when a section's first line is itself an H4 (no
+        # lead-in prose) — that silently left the first #### of a section as
+        # literal "#### heading" text while later ones in the same section still
+        # converted fine. Caught via the same bug in chunk_product_intro.py.
+        content = re.sub(r"(?:^|\n)#### (.+?)(?:\n|$)", r"\n【\1】", content)
         content = re.sub(r"\n+", " ", content).strip()
         sections.append((heading, content))
     return sections

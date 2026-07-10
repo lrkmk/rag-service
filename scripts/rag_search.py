@@ -39,11 +39,13 @@ _rule_coll = None
 _faq_coll = None
 _api_coll = None
 _api_faq_coll = None
+_intro_coll = None
+_news_coll = None
 _parents = None
 
 
 def _lazy_init():
-    global _model, _client, _rule_coll, _faq_coll, _api_coll, _api_faq_coll, _parents
+    global _model, _client, _rule_coll, _faq_coll, _api_coll, _api_faq_coll, _intro_coll, _news_coll, _parents
     # Guard on the LAST value set, not the first: if init fails partway
     # (e.g. get_collection raises after _model/_client are already
     # assigned), a "if _model is not None: return" guard would treat
@@ -65,11 +67,14 @@ def _lazy_init():
     faq_coll = client.get_collection(name="atlas_faq_chunks")
     api_coll = client.get_collection(name="atlas_api_chunks")
     api_faq_coll = client.get_collection(name="atlas_api_faq_chunks")
+    intro_coll = client.get_collection(name="atlas_intro_chunks")
+    news_coll = client.get_collection(name="atlas_news_chunks")
     with open(PARENTS_LOOKUP_PATH, encoding="utf-8") as f:
         parents = json.load(f)
 
     _model, _client = model, client
     _rule_coll, _faq_coll, _api_coll, _api_faq_coll = rule_coll, faq_coll, api_coll, api_faq_coll
+    _intro_coll, _news_coll = intro_coll, news_coll
     _parents = parents
 
 
@@ -167,6 +172,84 @@ def get_full_article(source_path: str) -> dict:
                 "text": cleaned.strip(),
             }
     return {"error": f"no source file found for source_path='{source_path}'"}
+
+
+def search_product_intro(query: str, n_results: int = 3):
+    """Search 产品总览 (Atlas product overview + 10 role-based guide pages)
+    — evergreen concept prose, no recency handling needed (contrast with
+    search_product_news below)."""
+    _lazy_init()
+    res = _intro_coll.query(query_embeddings=[embed_query(query)], n_results=n_results)
+    hits = []
+    for i in range(len(res["ids"][0])):
+        meta = res["metadatas"][0][i]
+        hits.append({
+            "chunk_id": res["ids"][0][i],
+            "distance": res["distances"][0][i],
+            "title": meta.get("title"),
+            "section": meta.get("section"),
+            "text": meta.get("text"),
+            "source_path": meta.get("source_path"),
+        })
+    return hits
+
+
+def search_product_news(query: str, n_results: int = 3):
+    """Search Atlas资讯 (product news/announcements) — unlike every other
+    search_* here, this corpus can have MULTIPLE posts about the same
+    subject where a later one supersedes an earlier one's conclusion (e.g.
+    "精神航空停运" followed later by "精神航空已恢复运营"). Returning both
+    un-ranked would let a stale announcement outrank the current status.
+
+    Fix: over-fetch candidates, then collapse by entity_tags — when two
+    candidates share an entity (an airline/product code extracted from the
+    title, e.g. "NK"), keep only the one with the lower recency_rank (site's
+    own listing order; 1 = newest — see chunk_product_news.py for why an
+    ordinal rank is used instead of a real timestamp). Candidates with no
+    entity_tags (one-off posts, not part of a recurring status thread) are
+    never collapsed against each other.
+    """
+    _lazy_init()
+    fetch_n = max(n_results * 4, 12)
+    res = _news_coll.query(query_embeddings=[embed_query(query)], n_results=fetch_n)
+    candidates = []
+    for i in range(len(res["ids"][0])):
+        meta = res["metadatas"][0][i]
+        entity_tags_raw = meta.get("entity_tags", "")
+        try:
+            entity_tags = json.loads(entity_tags_raw) if entity_tags_raw else []
+        except (json.JSONDecodeError, TypeError):
+            entity_tags = []
+        candidates.append({
+            "chunk_id": res["ids"][0][i],
+            "distance": res["distances"][0][i],
+            "title": meta.get("title"),
+            "entity_tags": entity_tags,
+            "recency_rank": meta.get("recency_rank"),
+            "text": meta.get("text"),
+            "source_path": meta.get("source_path"),
+        })
+
+    kept: list[dict] = []
+    best_rank_by_entity: dict[str, int] = {}
+    for c in candidates:
+        tags = c["entity_tags"]
+        if not tags:
+            kept.append(c)
+            continue
+        # Has this entity already been kept by a MORE recent post? Skip.
+        superseded = any(tag in best_rank_by_entity and best_rank_by_entity[tag] < c["recency_rank"] for tag in tags)
+        if superseded:
+            continue
+        # This is the most recent post seen so far for all its entities —
+        # drop any already-kept OLDER posts about the same entity, then keep this one.
+        kept = [k for k in kept if not (set(k.get("entity_tags", [])) & set(tags))]
+        for tag in tags:
+            best_rank_by_entity[tag] = c["recency_rank"]
+        kept.append(c)
+
+    kept.sort(key=lambda c: c["distance"])
+    return kept[:n_results]
 
 
 def search_api_faq(query: str, n_results: int = 3):

@@ -173,6 +173,57 @@ def search_api_docs_faq(query: str, top_k: int = 3) -> list[dict]:
 
 
 @mcp.tool()
+def search_product_intro(query: str, top_k: int = 3) -> list[dict]:
+    """Search Atlas 产品介绍 (product overview + 10 role-based guide pages:
+    what Atlas is, how search/booking/payment/webhook/customer-service
+    capabilities fit together). Evergreen positioning/capability content —
+    NOT policy rules (use search_help_center) and NOT API field reference
+    (use search_api_docs). Use this for "what is Atlas" / "what can Atlas
+    do" / "how do the pieces fit together" questions, e.g. "Atlas支持哪些
+    支付方式" at a product level (vs. search_help_center for the detailed
+    policy) or "MCP辅助开发是什么".
+
+    Args:
+        query: Natural-language question, Chinese or English.
+        top_k: Number of results to return (default 3).
+
+    Returns:
+        List of hits, each with: chunk_id, distance, title, section, text,
+        source_path.
+    """
+    return rag_search.search_product_intro(query, n_results=top_k)
+
+
+@mcp.tool()
+def search_product_news(query: str, top_k: int = 3) -> list[dict]:
+    """Search Atlas资讯 — product news and announcements (new airline
+    integrations, policy changes, feature launches, service disruptions and
+    their resolutions). Use this for "什么时候上线的" / "现在还能订吗" /
+    "最近有什么变化" style questions about a specific airline or feature,
+    NOT for stable policy rules (use search_help_center) or product
+    positioning (use search_product_intro).
+
+    Important: some subjects (mainly airlines) get MULTIPLE posts over time
+    where a later one supersedes an earlier one's conclusion (e.g. an
+    airline stops operating, then later resumes) — this tool already
+    collapses same-subject hits down to the most recent post before
+    returning, so you do NOT need to cross-check dates yourself or warn the
+    user about conflicting older posts. Every result IS the current status.
+
+    Args:
+        query: Natural-language question, Chinese or English.
+        top_k: Number of results to return (default 3).
+
+    Returns:
+        List of hits, each with: chunk_id, distance, title, entity_tags
+        (airline/product codes this post is about, if any), recency_rank
+        (site listing order, 1=newest — informational only, already applied),
+        text, source_path.
+    """
+    return rag_search.search_product_news(query, n_results=top_k)
+
+
+@mcp.tool()
 def list_lookup_tables() -> list[dict]:
     """List the structured reference tables (error codes, refund/void time
     limits, sandbox test data, locale codes, payment card requirements —
