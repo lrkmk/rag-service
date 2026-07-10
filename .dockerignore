@@ -3,6 +3,7 @@ chroma_db/
 .git/
 .claude/
 scripts/chunk_*.py
+!scripts/chunk_diff.py
 scripts/ingest_*.py
 scripts/extract_*.py
 scripts/ask.py
