@@ -38,19 +38,33 @@ _parents = None
 
 def _lazy_init():
     global _model, _client, _rule_coll, _faq_coll, _api_coll, _api_faq_coll, _parents
-    if _model is not None:
+    # Guard on the LAST value set, not the first: if init fails partway
+    # (e.g. get_collection raises after _model/_client are already
+    # assigned), a "if _model is not None: return" guard would treat
+    # future calls as already-initialized and skip retrying forever —
+    # this actually happened against the deployed service (a bad read-only
+    # volume mount made get_collection fail, and every call after the
+    # first returned "'NoneType' object has no attribute 'query'" instead
+    # of retrying). Build everything into locals first and only publish to
+    # the module globals once every step has succeeded, so a failed
+    # attempt leaves nothing half-set and the next call retries cleanly.
+    if _parents is not None:
         return
-    _model = SentenceTransformer(MODEL_NAME)
-    _client = chromadb.PersistentClient(path=DB_PATH)
+    model = SentenceTransformer(MODEL_NAME)
+    client = chromadb.PersistentClient(path=DB_PATH)
     # No embedding_function passed to get_collection on purpose: we only ever
     # call these with query_embeddings=/pre-embedded documents, so Chroma
     # never needs to invoke an embedder itself on this side.
-    _rule_coll = _client.get_collection(name="atlas_rule_chunks")
-    _faq_coll = _client.get_collection(name="atlas_faq_chunks")
-    _api_coll = _client.get_collection(name="atlas_api_chunks")
-    _api_faq_coll = _client.get_collection(name="atlas_api_faq_chunks")
+    rule_coll = client.get_collection(name="atlas_rule_chunks")
+    faq_coll = client.get_collection(name="atlas_faq_chunks")
+    api_coll = client.get_collection(name="atlas_api_chunks")
+    api_faq_coll = client.get_collection(name="atlas_api_faq_chunks")
     with open(PARENTS_LOOKUP_PATH, encoding="utf-8") as f:
-        _parents = json.load(f)
+        parents = json.load(f)
+
+    _model, _client = model, client
+    _rule_coll, _faq_coll, _api_coll, _api_faq_coll = rule_coll, faq_coll, api_coll, api_faq_coll
+    _parents = parents
 
 
 def embed_query(text: str) -> list[float]:

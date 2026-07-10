@@ -5,10 +5,16 @@ services:
       - "5000:5000"
     volumes:
       # chroma_db is built offline (python scripts/ingest_chroma.py &&
-      # python scripts/ingest_api_docs.py) and mounted read-only here — the
-      # service never writes to it, and re-ingesting updated docs on the
-      # host doesn't require rebuilding or restarting this container's image,
-      # only a restart to pick up the new data (Chroma's PersistentClient
-      # reads from disk on each query, no in-memory cache to invalidate).
-      - ./chroma_db:/app/chroma_db:ro
+      # python scripts/ingest_api_docs.py) and mounted here so re-ingesting
+      # updated docs on the host doesn't require rebuilding this container's
+      # image, only a restart to pick up the new data (Chroma's
+      # PersistentClient reads from disk on each query, no in-memory cache
+      # to invalidate).
+      #
+      # NOT mounted :ro — that was tried and breaks even pure queries: Chroma
+      # is backed by SQLite, which needs write access to the *directory*
+      # (WAL/journal/lock files) regardless of whether the workload is
+      # read-only. A read-only mount produced "attempt to write a readonly
+      # database" on the very first query against the deployed service.
+      - ./chroma_db:/app/chroma_db
     restart: unless-stopped
