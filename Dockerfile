@@ -29,7 +29,14 @@ RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTr
 # DB_PATH and PARENTS_LOOKUP_PATH from its own file location assuming a
 # <repo_root>/scripts/rag_search.py layout — flattening it would silently
 # point DB_PATH at the filesystem root instead of /app/chroma_db.
-COPY scripts/rag_search.py scripts/mcp_server.py scripts/parents_lookup.json ./scripts/
+#
+# lookup_tables.py and chunk_diff.py are runtime imports (mcp_server imports
+# lookup_tables directly; rag_search imports chunk_diff for strip_boilerplate
+# in get_full_article) even though chunk_diff.py also gets swept up in the
+# broader "chunk_*.py are offline tooling" .dockerignore rule — without an
+# explicit COPY here the container crash-loops on startup with
+# ModuleNotFoundError.
+COPY scripts/rag_search.py scripts/mcp_server.py scripts/parents_lookup.json scripts/lookup_tables.py scripts/chunk_diff.py ./scripts/
 COPY doc/ ./doc/
 
 ENV MCP_TRANSPORT=streamable-http
