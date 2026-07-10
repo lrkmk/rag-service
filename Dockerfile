@@ -1,6 +1,6 @@
 # Retrieval-only service: exposes the 4 search tools over MCP (streamable-http).
-# Deliberately excludes crawl/chunk/ingest scripts and the raw 帮助中心/API文档
-# source trees — those are build-time/offline tooling, not part of the runtime
+# Deliberately excludes crawl/chunk/ingest scripts and the raw doc/ source
+# trees — those are build-time/offline tooling, not part of the runtime
 # service. The vector data (chroma_db/) is NOT baked into this image; it's
 # supplied at container-run time via a volume mount (see docker-compose.yml),
 # so re-ingesting updated docs doesn't require rebuilding the image.

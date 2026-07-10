@@ -24,8 +24,9 @@ import chunk_diff
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB_PATH = os.path.join(REPO_ROOT, "chroma_db")
 PARENTS_LOOKUP_PATH = os.path.join(REPO_ROOT, "scripts", "parents_lookup.json")
-HELP_CENTER_ROOT = os.path.join(REPO_ROOT, "帮助中心")
-API_DOCS_ROOT = os.path.join(REPO_ROOT, "API文档")
+HELP_CENTER_ROOT = os.path.join(REPO_ROOT, "doc", "帮助中心")
+API_DOCS_ROOT = os.path.join(REPO_ROOT, "doc", "API文档")
+PRODUCT_INTRO_ROOT = os.path.join(REPO_ROOT, "doc", "产品介绍")
 
 # Must match the model used in ingest_chroma.py's EMBEDDER — the two sides
 # have to produce vectors in the same space.
@@ -150,9 +151,9 @@ def get_full_article(source_path: str) -> dict:
     chunk's snippet doesn't have enough context and the whole article is
     needed (a chunk is one rule/concept; an article can cover several).
 
-    Tries both corpus roots since source_path alone doesn't say which one
-    it came from (the two roots use the same relative-path convention)."""
-    for root in (HELP_CENTER_ROOT, API_DOCS_ROOT):
+    Tries all corpus roots since source_path alone doesn't say which one
+    it came from (the roots use the same relative-path convention)."""
+    for root in (HELP_CENTER_ROOT, API_DOCS_ROOT, PRODUCT_INTRO_ROOT):
         candidate = os.path.normpath(os.path.join(root, source_path))
         if not candidate.startswith(os.path.normpath(root)):
             continue  # reject path traversal, same guard as webapp.py's _resolve_doc

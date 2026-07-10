@@ -20,7 +20,7 @@ from flask import Flask, jsonify, request, send_from_directory
 import chunk_diff
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-ROOTS = ["帮助中心", "API文档"]
+ROOTS = ["doc/帮助中心", "doc/API文档", "doc/产品介绍"]
 
 app = Flask(__name__)
 

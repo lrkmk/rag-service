@@ -2,8 +2,7 @@
 chroma_db/
 .git/
 .claude/
-帮助中心/
-API文档/
+doc/
 scripts/chunk_*.py
 scripts/ingest_*.py
 scripts/extract_*.py

@@ -30,7 +30,7 @@ import chromadb
 from chromadb.utils import embedding_functions
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-API_DOCS_ROOT = os.path.join(REPO_ROOT, "API文档")
+API_DOCS_ROOT = os.path.join(REPO_ROOT, "doc", "API文档")
 DB_PATH = os.path.join(REPO_ROOT, "chroma_db")
 
 MODEL_NAME = "BAAI/bge-large-zh-v1.5"

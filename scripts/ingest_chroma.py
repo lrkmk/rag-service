@@ -31,7 +31,7 @@ import chromadb
 from chromadb.utils import embedding_functions
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-HELP_CENTER = os.path.join(REPO_ROOT, "帮助中心")
+HELP_CENTER = os.path.join(REPO_ROOT, "doc", "帮助中心")
 DB_PATH = os.path.join(REPO_ROOT, "chroma_db")
 PARENTS_LOOKUP_PATH = os.path.join(REPO_ROOT, "scripts", "parents_lookup.json")
 

@@ -7,7 +7,7 @@ import json
 import re
 from pathlib import Path
 
-md_path = Path("API文档/05-支持与参考/errors-handing/错误码.md")
+md_path = Path("doc/API文档/05-支持与参考/errors-handing/错误码.md")
 text = md_path.read_text(encoding="utf-8")
 
 # find the markdown table block (starts with "| 代码", ends at first blank-ish line after rows)

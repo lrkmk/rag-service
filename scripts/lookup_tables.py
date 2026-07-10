@@ -22,8 +22,8 @@ import json
 import os
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-HELP_CENTER = os.path.join(REPO_ROOT, "帮助中心")
-API_DOCS = os.path.join(REPO_ROOT, "API文档")
+HELP_CENTER = os.path.join(REPO_ROOT, "doc", "帮助中心")
+API_DOCS = os.path.join(REPO_ROOT, "doc", "API文档")
 
 _ROW_KEYS = ("entries", "rows")
 
