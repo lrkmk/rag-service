@@ -25,6 +25,7 @@ idempotent — you can just re-run after re-generating the source jsonl files.
 import glob
 import json
 import os
+import time
 
 import chromadb
 from chromadb.utils import embedding_functions
@@ -34,6 +35,31 @@ HELP_CENTER = os.path.join(REPO_ROOT, "帮助中心")
 DB_PATH = os.path.join(REPO_ROOT, "chroma_db")
 PARENTS_LOOKUP_PATH = os.path.join(REPO_ROOT, "scripts", "parents_lookup.json")
 
+MODEL_NAME = "BAAI/bge-large-zh-v1.5"
+
+
+def _build_embedder():
+    """Try HF_HUB_OFFLINE first if the model looks cached, to skip the
+    network round-trip entirely — on a server with a slow/unstable path to
+    huggingface.co, that round-trip (an etag/freshness check hit even when
+    files are already cached) can hang for a long time after the weights
+    finish downloading, which reads as "stuck" with no indication that it's
+    actually a network wait rather than the CPU embedding step. Only used
+    when a cache hit is likely; falls back to a normal (online) load
+    otherwise so the very first run still downloads normally.
+    """
+    cache_hint = os.path.expanduser("~/.cache/huggingface/hub/models--BAAI--bge-large-zh-v1.5")
+    if os.path.isdir(cache_hint) and "HF_HUB_OFFLINE" not in os.environ:
+        os.environ["HF_HUB_OFFLINE"] = "1"
+        try:
+            return embedding_functions.SentenceTransformerEmbeddingFunction(model_name=MODEL_NAME)
+        except Exception:
+            # Cache dir existed but wasn't actually complete/usable — fall
+            # back to a normal online load rather than failing outright.
+            del os.environ["HF_HUB_OFFLINE"]
+    return embedding_functions.SentenceTransformerEmbeddingFunction(model_name=MODEL_NAME)
+
+
 # Chroma's built-in default embedder (all-MiniLM-L6-v2) is English-tuned and
 # performs poorly on Chinese text. This corpus is ~100% Chinese policy/FAQ
 # text, so a Chinese-specific model (BGE) outperforms a general multilingual
@@ -42,9 +68,7 @@ PARENTS_LOOKUP_PATH = os.path.join(REPO_ROOT, "scripts", "parents_lookup.json")
 # only applies to *queries*, handled separately in query_example.py.
 # Swap for embedding_functions.OpenAIEmbeddingFunction(...) or another
 # provider if you'd rather call a hosted API than run local inference.
-EMBEDDER = embedding_functions.SentenceTransformerEmbeddingFunction(
-    model_name="BAAI/bge-large-zh-v1.5"
-)
+EMBEDDER = _build_embedder()
 
 
 def load_jsonl(path):
@@ -111,7 +135,12 @@ def ingest_rule_chunks(client, parents_slim):
             }))
 
     if ids:
+        print(f"[atlas_rule_chunks] embedding {len(ids)} chunks (CPU inference on a "
+              f"large Chinese model can take several minutes with no output in between "
+              f"— this is expected, not a hang)...", flush=True)
+        t0 = time.time()
         coll.upsert(ids=ids, documents=docs, metadatas=metas)
+        print(f"[atlas_rule_chunks] embedding done in {time.time() - t0:.0f}s")
     print(f"[atlas_rule_chunks] ingested {len(ids)} chunks from {len(paths)} files"
           + (f" ({skipped} had no matching parent record)" if skipped else ""))
     return coll
@@ -139,7 +168,10 @@ def ingest_faq_chunks(client):
             }))
 
     if ids:
+        print(f"[atlas_faq_chunks] embedding {len(ids)} QA pairs...", flush=True)
+        t0 = time.time()
         coll.upsert(ids=ids, documents=docs, metadatas=metas)
+        print(f"[atlas_faq_chunks] embedding done in {time.time() - t0:.0f}s")
     print(f"[atlas_faq_chunks] ingested {len(ids)} QA pairs from {len(paths)} files")
     return coll
 

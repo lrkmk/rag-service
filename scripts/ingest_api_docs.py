@@ -24,6 +24,7 @@ Usage:
 import glob
 import json
 import os
+import time
 
 import chromadb
 from chromadb.utils import embedding_functions
@@ -32,12 +33,28 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 API_DOCS_ROOT = os.path.join(REPO_ROOT, "API文档")
 DB_PATH = os.path.join(REPO_ROOT, "chroma_db")
 
+MODEL_NAME = "BAAI/bge-large-zh-v1.5"
+
+
+def _build_embedder():
+    """Same rationale as ingest_chroma.py's _build_embedder: prefer
+    HF_HUB_OFFLINE when the model is already cached, so a slow/unstable
+    path to huggingface.co can't hang on a post-download freshness check
+    that looks identical to "still embedding" from the terminal."""
+    cache_hint = os.path.expanduser("~/.cache/huggingface/hub/models--BAAI--bge-large-zh-v1.5")
+    if os.path.isdir(cache_hint) and "HF_HUB_OFFLINE" not in os.environ:
+        os.environ["HF_HUB_OFFLINE"] = "1"
+        try:
+            return embedding_functions.SentenceTransformerEmbeddingFunction(model_name=MODEL_NAME)
+        except Exception:
+            del os.environ["HF_HUB_OFFLINE"]
+    return embedding_functions.SentenceTransformerEmbeddingFunction(model_name=MODEL_NAME)
+
+
 # Must match ingest_chroma.py's model choice so both corpora live in a
 # consistent embedding space (not strictly required since they're separate
 # collections, but keeps the whole pipeline using one model).
-EMBEDDER = embedding_functions.SentenceTransformerEmbeddingFunction(
-    model_name="BAAI/bge-large-zh-v1.5"
-)
+EMBEDDER = _build_embedder()
 
 
 def load_jsonl(path):
@@ -82,7 +99,12 @@ def ingest_chunks(client):
             }))
 
     if ids:
+        print(f"[atlas_api_chunks] embedding {len(ids)} chunks (CPU inference on a large "
+              f"Chinese model can take several minutes with no output in between — this "
+              f"is expected, not a hang)...", flush=True)
+        t0 = time.time()
         coll.upsert(ids=ids, documents=docs, metadatas=metas)
+        print(f"[atlas_api_chunks] embedding done in {time.time() - t0:.0f}s")
     print(f"[atlas_api_chunks] ingested {len(ids)} chunks from {len(paths)} files")
     return coll
 
@@ -110,7 +132,10 @@ def ingest_faq(client):
         }))
 
     if ids:
+        print(f"[atlas_api_faq_chunks] embedding {len(ids)} QA pairs...", flush=True)
+        t0 = time.time()
         coll.upsert(ids=ids, documents=docs, metadatas=metas)
+        print(f"[atlas_api_faq_chunks] embedding done in {time.time() - t0:.0f}s")
     print(f"[atlas_api_faq_chunks] ingested {len(ids)} QA pairs")
     return coll
 
