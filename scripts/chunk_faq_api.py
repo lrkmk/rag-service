@@ -52,7 +52,8 @@ def main():
 
     title_m = re.search(r"^# (.+)$", text, re.MULTILINE)
     title = title_m.group(1).strip() if title_m else md_path.stem
-    source_path = str(md_path).split("API文档")[-1].lstrip("\\/").replace("\\", "/")
+    # maxsplit=1, take [1] not [-1] — same dormant-bug fix as chunk_disambiguation.py.
+    source_path = str(md_path).split("API文档", 1)[1].lstrip("\\/").replace("\\", "/")
 
     # pull out the reference table (if any) before splitting into Q&A, so its
     # pipe characters don't get mistaken for section content

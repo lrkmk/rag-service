@@ -110,7 +110,11 @@ def main():
             "compares": compares,
             "level1_category": args.level1_category,
             "level2_category": args.level2_category,
-            "source_path": str(md_path).split("API文档")[-1].lstrip("\\/").replace("\\", "/"),
+            # maxsplit=1, take [1] not [-1]: dormant version of the bug fixed in
+            # chunk_product_intro.py — no current API文档 filename contains
+            # "API文档" itself, but split(marker)[-1] would silently break the
+            # moment one did, so fix the pattern defensively here too.
+            "source_path": str(md_path).split("API文档", 1)[1].lstrip("\\/").replace("\\", "/"),
             "section": heading,
             "text": f"{'/'.join(compares) if compares else title}：{heading}。{content}",
         })

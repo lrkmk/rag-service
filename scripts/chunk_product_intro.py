@@ -1,9 +1,11 @@
 """
-Chunk 产品总览 pages (doc/产品介绍/产品总览/*.md) — Atlas 产品介绍 overview +
-10 role-based guide pages. Evergreen concept prose, not time-stamped news
-(see chunk_product_news.py for Atlas资讯), so no recency handling needed here.
+Chunk 产品总览 pages (doc/产品介绍/产品总览/*.md) plus the two standalone
+concept pages that sit directly under doc/产品介绍/ (Atlas Pay.md, Smart
+Search.md — same H3/H4 heading convention, just not filed under a
+subfolder). Evergreen concept prose, not time-stamped news (see
+chunk_product_news.py for Atlas资讯), so no recency handling needed here.
 
-All 11 pages share one heading convention: H3 (###) sections, with H4 (####)
+All pages share one heading convention: H3 (###) sections, with H4 (####)
 sub-items nested inside. Splits by H3, same as chunk_disambiguation.py's
 split_h3_sections — H4s get folded into inline 【label】 markers rather than
 becoming their own chunks, since each H4 here is a short facet of its parent
@@ -11,7 +13,7 @@ H3's point (e.g. "### 支付方式" / "#### VCC 透传"), not independently
 retrievable content.
 
 Usage:
-    python chunk_product_intro.py  # processes the whole 产品总览/ folder
+    python chunk_product_intro.py  # processes 产品总览/ + the 2 standalone pages
 """
 import argparse
 import glob
@@ -49,20 +51,35 @@ def split_h3_sections(body: str) -> list[tuple[str, str]]:
 
 
 def main():
+    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    product_intro_root = os.path.join(repo_root, "doc", "产品介绍")
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--intro-dir",
-        default=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "doc", "产品介绍", "产品总览"),
+        default=os.path.join(product_intro_root, "产品总览"),
+        help="Output directory (and primary source folder) for the combined children.jsonl.",
     )
     args = parser.parse_args()
 
+    # 产品总览/*.md (the 11 subfolder pages) + the 2 standalone top-level pages
+    # (Atlas Pay.md, Smart Search.md) — same H3/H4 convention, just not filed
+    # under a subfolder, so they'd otherwise never get chunked at all (this
+    # was a real gap: both sat with zero coverage until this was added).
     files = sorted(glob.glob(os.path.join(args.intro_dir, "*.md")))
+    files += sorted(glob.glob(os.path.join(product_intro_root, "*.md")))
     all_chunks = []
     for fpath in files:
         text = strip_boilerplate(open(fpath, encoding="utf-8").read())
         title_m = re.search(r"^# (.+)$", text, re.MULTILINE)
         title = title_m.group(1).strip() if title_m else os.path.basename(fpath)[:-3]
-        source_path = fpath.split("产品介绍")[-1].lstrip("\\/").replace("\\", "/")
+        # maxsplit=1, take [1] not [-1]: split(marker) with no limit splits on
+        # EVERY occurrence, and [-1] grabs everything after the LAST one — this
+        # silently broke on "Atlas 产品介绍.md" (the corpus root name "产品介绍"
+        # also appears inside that file's own title), producing source_path
+        # "产品介绍/.md" instead of the real path. Only split on the first
+        # occurrence (the folder name) so a title containing the corpus name
+        # can't shift where the path gets cut.
+        source_path = fpath.split("产品介绍", 1)[1].lstrip("\\/").replace("\\", "/")
         source_path = "产品介绍/" + source_path
 
         sections = split_h3_sections(text)

@@ -115,7 +115,10 @@ def main():
         title_m = re.search(r"^#\s+(.+)$", text, re.MULTILINE)
         title = title_m.group(1).strip() if title_m else fname[:-3]
         body = text[title_m.end():].strip() if title_m else text
-        source_path = fpath.split("产品介绍")[-1].lstrip("\\/").replace("\\", "/")
+        # maxsplit=1, take [1] not [-1] — see chunk_product_intro.py for why:
+        # split(marker) with no limit cuts at every occurrence of "产品介绍",
+        # and a title containing that substring would shift where [-1] cuts.
+        source_path = fpath.split("产品介绍", 1)[1].lstrip("\\/").replace("\\", "/")
         source_path = "产品介绍/" + source_path
         # ASCII-stripped title alone isn't unique: two Spirit Airlines posts
         # both reduce to "spiritairlinesnk", and several all-Chinese titles
