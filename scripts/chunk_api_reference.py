@@ -244,7 +244,17 @@ def main():
     spec = extract_openapi_block(md_text)
     prose = extract_prose_before_json(md_text)
 
-    chunks, lookup_tables = chunk_endpoint(spec, prose, args.endpoint_id, args.level2_category, str(md_path))
+    # Same normalization as chunk_disambiguation.py/chunk_faq_api.py — this
+    # script used str(md_path) verbatim (whatever the CLI arg looked like,
+    # backslashes and all on Windows, still including the "API文档/" corpus
+    # root since it was never relativized), which get_full_article can't
+    # resolve: it joins source_path onto API_DOCS_ROOT, which already ends
+    # in .../doc/API文档, so a source_path that still starts with "API文档/"
+    # doubles that segment. Confirmed broken for real via a production trace
+    # (order.do's get_full_article call 404'd twice, once per slash style).
+    source_path = str(md_path).split("API文档", 1)[1].lstrip("\\/").replace("\\", "/")
+
+    chunks, lookup_tables = chunk_endpoint(spec, prose, args.endpoint_id, args.level2_category, source_path)
 
     print(f"=== {len(chunks)} chunks ===")
     for c in chunks:
