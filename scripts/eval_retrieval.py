@@ -86,7 +86,14 @@ def eval_corpus(name, rows, max_k):
     if article_n:
         print(f"  Article-level Recall@5 (same source article, any chunk): {article_hits}/{article_n} = {article_hits/article_n:.1%}")
 
-    return misses
+    summary = {
+        "name": name,
+        "n": n,
+        "recall_at_k": {k: hits_at_k[k] / n for k in K_VALUES},
+        "mrr": sum(reciprocal_ranks) / n,
+        "article_recall5": (article_hits / article_n) if article_n else None,
+    }
+    return misses, summary
 
 
 def main():
@@ -98,6 +105,7 @@ def main():
 
     corpora = [args.corpus] if args.corpus else ["帮助中心", "API文档", "产品介绍"]
     all_misses = {}
+    summaries = []
 
     t0 = time.time()
     for name in corpora:
@@ -108,10 +116,18 @@ def main():
         rows = load_jsonl(path)
         if args.sample and len(rows) > args.sample:
             rows = random.sample(rows, args.sample)
-        misses = eval_corpus(name, rows, max_k=max(K_VALUES))
+        misses, summary = eval_corpus(name, rows, max_k=max(K_VALUES))
         all_misses[name] = misses
+        summaries.append(summary)
 
     print(f"\n(total eval time: {time.time()-t0:.0f}s)")
+
+    if summaries:
+        print("\n| 语料库 | Recall@3 | Recall@5 | MRR | 文章级Recall@5 |")
+        print("|---|---|---|---|---|")
+        for s in summaries:
+            article = f"{s['article_recall5']:.1%}" if s["article_recall5"] is not None else "—"
+            print(f"| {s['name']} (n={s['n']}) | {s['recall_at_k'][3]:.1%} | {s['recall_at_k'][5]:.1%} | {s['mrr']:.3f} | {article} |")
 
     for name, misses in all_misses.items():
         if not misses:
