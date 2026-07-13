@@ -117,6 +117,7 @@ def search_faq(query: str, n_results: int = 3):
             "topic": meta.get("topic"),
             "question": meta.get("question"),
             "answer": meta.get("answer"),
+            "source_path": meta.get("source_path"),
         })
     return hits
 
@@ -264,5 +265,6 @@ def search_api_faq(query: str, n_results: int = 3):
             "topic": meta.get("topic"),
             "question": meta.get("question"),
             "answer": meta.get("answer"),
+            "source_path": meta.get("source_path"),
         })
     return hits
