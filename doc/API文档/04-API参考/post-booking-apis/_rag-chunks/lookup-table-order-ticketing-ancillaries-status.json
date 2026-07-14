@@ -1,0 +1,44 @@
+{
+  "field": "status",
+  "endpoint": "/postBookingAncillaryOrder.do",
+  "source_path": "04-API参考/post-booking-apis/出票后附加服务.md",
+  "ref": "OrderAncillaryResponseStatus",
+  "entries": [
+    {
+      "code": "501",
+      "meaning": "Add purchase not allowed. Description: Ancillary addition is not allowed for this order. Check with the airline or open a Service Request with Atlas for the same."
+    },
+    {
+      "code": "502",
+      "meaning": "The price has increased, and the order creation has failed. Please perform a new search.. Description: There is a price change from the time the ancillary order search was conducted."
+    },
+    {
+      "code": "503",
+      "meaning": "Incorrect baggage selection"
+    },
+    {
+      "code": "504",
+      "meaning": "Additional baggage not allowed. Ancillary baggage already exists in the original order. Description: Atlas only allows the attachment of ancillary baggage only once"
+    },
+    {
+      "code": "505",
+      "meaning": "Additional baggage not allowed. Baggage already booked as post-ticket ancillary.. Description: Atlas only allows the attachment of ancillary baggage only once"
+    },
+    {
+      "code": "506",
+      "meaning": "Ancillary addition is not supported for infants"
+    },
+    {
+      "code": "507",
+      "meaning": "It's not allowed to purchase ancillary in 24 hours before departure"
+    },
+    {
+      "code": "508",
+      "meaning": "No payment method is available. Please check whether the quotation currency or account configuration is correct."
+    },
+    {
+      "code": "509",
+      "meaning": "Illegal request param"
+    }
+  ]
+}

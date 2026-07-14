@@ -28,6 +28,13 @@ Produces three kinds of output for one endpoint file:
 
 Usage:
     python chunk_api_reference.py "<path to markdown file>" --endpoint-id search
+
+    A file can embed MULTIPLE endpoints, each its own H2 section with its own
+    prose + one ```json block (confirmed for real: 退款.md has 3 sections,
+    作废.md has 3, 出票后附加服务.md has 2, Webhook 注册与事件.md has 2). Pass
+    one --endpoint-id per block, in the order the blocks appear in the file:
+
+    python chunk_api_reference.py "退款.md" --endpoint-id refund-quotation refund query-refund-orders
 """
 
 import argparse
@@ -37,16 +44,32 @@ import re
 from pathlib import Path
 
 
-def extract_openapi_block(md_text: str) -> dict:
-    m = re.search(r"```json\s*\n(.*?)\n```", md_text, re.DOTALL)
-    if not m:
-        raise ValueError("No ```json block found in file")
-    return json.loads(m.group(1))
+def extract_openapi_blocks(md_text: str) -> list[tuple[int, int, dict]]:
+    """Find every fenced ```json block that parses as an OpenAPI spec (has a
+    "paths" object) and return it with its (start, end) offset in md_text.
+
+    Previously this only took the FIRST ```json block via re.search, silently
+    dropping every endpoint after it -- a file with multiple H2-delimited
+    endpoint sections (see module docstring) would only ever produce chunks
+    for its first endpoint, with no error or warning. Confirmed for real: 6
+    endpoints across 4 files (退款.md's /refund.do + /queryRefundOrders.do,
+    作废.md's /void.do + /queryVoidOrders.do, 出票后附加服务.md's Order
+    Ancillary, Webhook 注册与事件.md's Incident List) had zero chunks and
+    were unretrievable."""
+    blocks = []
+    for m in re.finditer(r"```json\s*\n(.*?)\n```", md_text, re.DOTALL):
+        try:
+            spec = json.loads(m.group(1))
+        except json.JSONDecodeError:
+            continue
+        if isinstance(spec, dict) and spec.get("paths"):
+            blocks.append((m.start(), m.end(), spec))
+    if not blocks:
+        raise ValueError("No ```json block with an OpenAPI 'paths' object found in file")
+    return blocks
 
 
-def extract_prose_before_json(md_text: str) -> str:
-    idx = md_text.find("```json")
-    prose = md_text[:idx] if idx >= 0 else md_text
+def clean_prose(prose: str) -> str:
     # strip gitbook hint/button boilerplate blocks
     prose = re.sub(r"\{% hint.*?%\}.*?\{% endhint %\}", "", prose, flags=re.DOTALL)
     # Other GitBook component tags wrap real content (unlike {% hint %},
@@ -373,14 +396,24 @@ def chunk_endpoint(spec: dict, prose: str, endpoint_id: str, level2_category: st
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("md_file")
-    parser.add_argument("--endpoint-id", required=True)
+    parser.add_argument("--endpoint-id", required=True, nargs="+",
+                         help="One id per ```json block in the file, in the order the blocks appear "
+                              "(usually one per H2 section). Must match the block count exactly — "
+                              "the script refuses to guess which id goes with which endpoint.")
     parser.add_argument("--level2-category", default="预订API")
     args = parser.parse_args()
 
     md_path = Path(args.md_file)
     md_text = md_path.read_text(encoding="utf-8")
-    spec = extract_openapi_block(md_text)
-    prose = extract_prose_before_json(md_text)
+    blocks = extract_openapi_blocks(md_text)
+
+    if len(blocks) != len(args.endpoint_id):
+        found_paths = [next(iter(spec.get("paths", {}))) for _, _, spec in blocks]
+        raise SystemExit(
+            f"Found {len(blocks)} ```json block(s) in {md_path.name} (endpoints: {found_paths}) "
+            f"but got {len(args.endpoint_id)} --endpoint-id value(s): {args.endpoint_id}. "
+            f"Pass exactly one --endpoint-id per block, in order."
+        )
 
     # Same normalization as chunk_disambiguation.py/chunk_faq_api.py — this
     # script used str(md_path) verbatim (whatever the CLI arg looked like,
@@ -392,16 +425,23 @@ def main():
     # (order.do's get_full_article call 404'd twice, once per slash style).
     source_path = str(md_path).split("API文档", 1)[1].lstrip("\\/").replace("\\", "/")
 
-    chunks, lookup_tables = chunk_endpoint(spec, prose, args.endpoint_id, args.level2_category, source_path)
+    all_chunks = []
+    all_lookup_tables = []  # list of (endpoint_id, table)
+    prev_end = 0
+    for (start, end, spec), endpoint_id in zip(blocks, args.endpoint_id):
+        prose = clean_prose(md_text[prev_end:start])
+        prev_end = end
+        chunks, lookup_tables = chunk_endpoint(spec, prose, endpoint_id, args.level2_category, source_path)
+        all_chunks.extend(chunks)
+        all_lookup_tables.extend((endpoint_id, t) for t in lookup_tables)
 
-    print(f"=== {len(chunks)} chunks ===")
-    for c in chunks:
-        preview = c["text"][:100].replace("\n", " ")
-        print(f"[{c['doc_type']}] {c['chunk_id']}: {preview}...")
-
-    print(f"\n=== {len(lookup_tables)} lookup table(s) extracted ===")
-    for t in lookup_tables:
-        print(f"field={t['field']}, {len(t['entries'])} entries, first 3: {t['entries'][:3]}")
+        print(f"=== [{endpoint_id}] {len(chunks)} chunks ===")
+        for c in chunks:
+            preview = c["text"][:100].replace("\n", " ")
+            print(f"[{c['doc_type']}] {c['chunk_id']}: {preview}...")
+        print(f"=== [{endpoint_id}] {len(lookup_tables)} lookup table(s) extracted ===")
+        for t in lookup_tables:
+            print(f"field={t['field']}, {len(t['entries'])} entries, first 3: {t['entries'][:3]}")
 
     out_dir = md_path.parent / "_rag-chunks"
     out_dir.mkdir(exist_ok=True)
@@ -417,15 +457,16 @@ def main():
         # ids like "get-offer" are literal prefixes of others like "get-offer-price",
         # so a startswith("get-offer-") filter would also delete get-offer-price's
         # chunks. This bit it for real once already; don't regress it.
-        existing = [c for c in existing if c.get("endpoint_id") != args.endpoint_id]
+        written_ids = set(args.endpoint_id)
+        existing = [c for c in existing if c.get("endpoint_id") not in written_ids]
     with open(out_file, "w", encoding="utf-8") as f:
-        for c in existing + chunks:
+        for c in existing + all_chunks:
             f.write(json.dumps(c, ensure_ascii=False) + "\n")
 
     # Lookup-table filenames must include endpoint_id too — multiple endpoints
     # commonly share a field name like `status`, which would otherwise collide.
-    for t in lookup_tables:
-        with open(out_dir / f"lookup-table-{args.endpoint_id}-{t['field']}.json", "w", encoding="utf-8") as f:
+    for endpoint_id, t in all_lookup_tables:
+        with open(out_dir / f"lookup-table-{endpoint_id}-{t['field']}.json", "w", encoding="utf-8") as f:
             json.dump(t, f, ensure_ascii=False, indent=2)
     print(f"\nWritten to {out_dir}")
 
