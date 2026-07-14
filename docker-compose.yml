@@ -4,8 +4,8 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      # chroma_db is built offline (python scripts/ingest_chroma.py &&
-      # python scripts/ingest_api_docs.py) and mounted here so re-ingesting
+      # chroma_db is built offline (python scripts/ingest/ingest_help_center.py &&
+      # python scripts/ingest/ingest_api_docs.py) and mounted here so re-ingesting
       # updated docs on the host doesn't require rebuilding this container's
       # image, only a restart to pick up the new data (Chroma's
       # PersistentClient reads from disk on each query, no in-memory cache

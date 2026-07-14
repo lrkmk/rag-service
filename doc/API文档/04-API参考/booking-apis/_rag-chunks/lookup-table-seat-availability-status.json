@@ -1,7 +1,7 @@
 {
   "field": "status",
   "endpoint": "/seatAvailability.do",
-  "source_path": "API文档\\04-API参考\\booking-apis\\座位.md",
+  "source_path": "04-API参考/booking-apis/座位.md",
   "ref": "SeatAvailabilityResponseStatus",
   "entries": [
     {

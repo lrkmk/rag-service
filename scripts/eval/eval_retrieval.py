@@ -12,12 +12,16 @@ import glob
 import json
 import os
 import random
+import sys
 import time
 
-import rag_search
-
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 EVAL_DIR = os.path.join(REPO_ROOT, "eval")
+
+# rag_search.py lives in the sibling search/ directory, not here -- add it to
+# sys.path explicitly rather than relying on same-directory import discovery.
+sys.path.insert(0, os.path.join(REPO_ROOT, "scripts", "search"))
+import rag_search  # noqa: E402
 
 TOOL_FNS = {
     "search_rules": rag_search.search_rules,

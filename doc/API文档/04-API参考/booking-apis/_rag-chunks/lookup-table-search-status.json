@@ -1,7 +1,7 @@
 {
   "field": "status",
   "endpoint": "/search.do",
-  "source_path": "API文档\\04-API参考\\booking-apis\\搜索.md",
+  "source_path": "04-API参考/booking-apis/搜索.md",
   "ref": "SearchResponseStatus",
   "entries": [
     {

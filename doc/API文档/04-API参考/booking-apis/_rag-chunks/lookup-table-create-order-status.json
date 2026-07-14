@@ -1,7 +1,7 @@
 {
   "field": "status",
   "endpoint": "/order.do",
-  "source_path": "API文档\\04-API参考\\booking-apis\\创建订单.md",
+  "source_path": "04-API参考/booking-apis/创建订单.md",
   "ref": "OrderResponseStatus",
   "entries": [
     {

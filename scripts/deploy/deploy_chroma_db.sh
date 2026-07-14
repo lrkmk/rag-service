@@ -10,7 +10,7 @@
 # restart is the safe way to be sure new data is actually visible).
 #
 # Usage:
-#   ./scripts/deploy_chroma_db.sh
+#   ./scripts/deploy/deploy_chroma_db.sh
 #
 # Requires: curl, docker compose, run from repo root.
 
@@ -19,7 +19,7 @@ set -euo pipefail
 REPO_SLUG="lrkmk/rag-service"
 TAG="chroma-db-latest"
 ARCHIVE="chroma_db.tar.gz"
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 cd "$REPO_ROOT"
 

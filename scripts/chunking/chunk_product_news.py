@@ -31,6 +31,7 @@ Usage:
 import argparse
 import glob
 import hashlib
+import html
 import json
 import os
 import re
@@ -41,10 +42,41 @@ ENTITY_RE = re.compile(r"[（(]([A-Za-z0-9]{1,4})[）)]")
 def strip_boilerplate(text: str) -> str:
     text = re.sub(r"\{% hint.*?%\}", "", text)
     text = re.sub(r"\{% endhint %\}", "", text)
+    # Other GitBook component tags wrap real content (unlike {% hint %},
+    # whose content is a throwaway "ask Eva" callout) -- strip just the tags.
+    text = re.sub(r"\{%[^}]*%\}", "", text)
     text = re.sub(r"&#x20;", " ", text)
     text = re.sub(r"[ \t]+\n", "\n", text)
     text = re.sub(r"\n{3,}", "\n\n", text)
     return text.strip()
+
+
+def clean_markdown_text(text: str) -> str:
+    """Strip inline markdown formatting markers from otherwise-real prose,
+    keeping the underlying text -- see chunk_disambiguation.py's function of
+    the same name for the full rationale. Safe to apply directly here (no
+    reordering needed unlike chunk_disambiguation.py/chunk_product_intro.py):
+    this script never collapses single/double newlines to spaces before
+    calling it, so the bold/italic regexes' single-line scoping is never
+    defeated by an earlier newline-collapse step."""
+    text = html.unescape(text)  # decode &#x624D; etc -- confirmed leaking into 资讯 chunks otherwise
+    text = re.sub(r"\{%[^}]*%\}", "", text)  # stray GitBook component tags ({% stepper %} etc.) that reached here unstripped
+    text = re.sub(r"(?m)^```\w*\s*$", "", text)  # fenced-code-block delimiters -- keep the code content, drop the ``` markers
+    text = re.sub(r"(?m)^[ \t]*(?:\*[ \t]*){3,}$", "", text)  # *** horizontal rule
+    text = re.sub(r"(?m)^[ \t]*(?:-[ \t]*){3,}$", "", text)   # --- horizontal rule
+    text = re.sub(r"(?m)^[ \t]*(?:_[ \t]*){3,}$", "", text)   # ___ horizontal rule
+    text = re.sub(r"!?\[([^\]]*)\]\([^)]*\)", r"\1", text)    # [text](url) and ![alt](url), incl. bare ![]() -> ""
+    text = re.sub(r"<(https?://[^>\s]+)>", r"\1", text)
+    text = re.sub(r"\*\*((?:[^*\n]|\\\*)+)\*\*", r"\1", text)
+    text = re.sub(r"__([^_\n]+)__", r"\1", text)
+    text = re.sub(r"(?<!\w)\*((?:[^*\n]|\\\*)+)\*(?!\w)", r"\1", text)
+    text = re.sub(r"(?<!\w)_([^_\n]+)_(?!\w)", r"\1", text)
+    text = re.sub(r"`([^`\n]+)`", r"\1", text)
+    text = re.sub(r"(?m)^(?:>\s?)?#{1,6}\s+", "", text)  # handles "### h" and blockquoted "> ### h"
+    text = re.sub(r"(?m)^>\s?", "", text)
+    text = re.sub(r"\\\n", "\n", text)
+    text = re.sub(r"\\([*_`\[\]()#>\\])", r"\1", text)
+    return text
 
 
 def extract_entities(title: str) -> list[str]:
@@ -60,7 +92,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--news-dir",
-        default=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "doc", "产品介绍", "Atlas资讯"),
+        default=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "doc", "产品介绍", "Atlas资讯"),
     )
     args = parser.parse_args()
 
@@ -113,8 +145,8 @@ def main():
         fname = os.path.basename(fpath)
         text = strip_boilerplate(open(fpath, encoding="utf-8").read())
         title_m = re.search(r"^#\s+(.+)$", text, re.MULTILINE)
-        title = title_m.group(1).strip() if title_m else fname[:-3]
-        body = text[title_m.end():].strip() if title_m else text
+        title = clean_markdown_text(title_m.group(1).strip() if title_m else fname[:-3])
+        body = clean_markdown_text(text[title_m.end():].strip() if title_m else text)
         # maxsplit=1, take [1] not [-1] — see chunk_product_intro.py for why:
         # split(marker) with no limit cuts at every occurrence of "产品介绍",
         # and a title containing that substring would shift where [-1] cuts.

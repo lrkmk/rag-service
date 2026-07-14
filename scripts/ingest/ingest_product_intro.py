@@ -25,7 +25,7 @@ import time
 import chromadb
 from chromadb.utils import embedding_functions
 
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 PRODUCT_INTRO_ROOT = os.path.join(REPO_ROOT, "doc", "产品介绍")
 DB_PATH = os.path.join(REPO_ROOT, "chroma_db")
 
@@ -33,7 +33,7 @@ MODEL_NAME = "BAAI/bge-large-zh-v1.5"
 
 
 def _build_embedder():
-    """Same rationale as ingest_chroma.py's _build_embedder."""
+    """Same rationale as ingest_help_center.py's _build_embedder."""
     cache_hint = os.path.expanduser("~/.cache/huggingface/hub/models--BAAI--bge-large-zh-v1.5")
     if os.path.isdir(cache_hint) and "HF_HUB_OFFLINE" not in os.environ:
         os.environ["HF_HUB_OFFLINE"] = "1"
@@ -64,6 +64,21 @@ def clean_meta(d: dict) -> dict:
     return out
 
 
+def reconcile(coll, current_ids: list[str]):
+    """Delete any id left in the collection that this run's source files
+    didn't produce (doc deleted, or re-chunked with new chunk_ids) — see
+    ingest_help_center.py's reconcile() for the full rationale. Skipped when
+    current_ids is empty to avoid wiping the collection on a path/glob error.
+    """
+    if not current_ids:
+        return
+    existing_ids = set(coll.get(include=[])["ids"])
+    stale_ids = existing_ids - set(current_ids)
+    if stale_ids:
+        coll.delete(ids=list(stale_ids))
+        print(f"[{coll.name}] deleted {len(stale_ids)} stale ids no longer produced by source files")
+
+
 def ingest_intro(client):
     path = os.path.join(PRODUCT_INTRO_ROOT, "产品总览", "_rag-chunks", "children.jsonl")
     coll = client.get_or_create_collection(name="atlas_intro_chunks", embedding_function=EMBEDDER)
@@ -91,6 +106,7 @@ def ingest_intro(client):
         t0 = time.time()
         coll.upsert(ids=ids, documents=docs, metadatas=metas)
         print(f"[atlas_intro_chunks] embedding done in {time.time() - t0:.0f}s")
+    reconcile(coll, ids)
     print(f"[atlas_intro_chunks] ingested {len(ids)} chunks")
     return coll
 
@@ -123,6 +139,7 @@ def ingest_news(client):
         t0 = time.time()
         coll.upsert(ids=ids, documents=docs, metadatas=metas)
         print(f"[atlas_news_chunks] embedding done in {time.time() - t0:.0f}s")
+    reconcile(coll, ids)
     print(f"[atlas_news_chunks] ingested {len(ids)} chunks")
     return coll
 

@@ -1,8 +1,9 @@
 .venv/
 chroma_db/
-eval/
+/eval/
 __pycache__/
 *.pyc
 .DS_Store
 .claude/
 *.diff.html
+scripts/eval/reports/

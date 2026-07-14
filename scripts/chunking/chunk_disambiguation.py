@@ -20,6 +20,7 @@ Usage:
 
 import argparse
 import hashlib
+import html
 import json
 import re
 from pathlib import Path
@@ -27,7 +28,48 @@ from pathlib import Path
 
 def strip_boilerplate(text: str) -> str:
     text = re.sub(r"\{% hint.*?%\}.*?\{% endhint %\}", "", text, flags=re.DOTALL)
+    # Other GitBook component tags ({% stepper %}/{% step %}/{% endstep %}/
+    # {% endstepper %}/{% file ... %}) wrap real content (unlike {% hint %},
+    # whose content is a throwaway "ask Eva" callout) -- strip just the tags,
+    # not what's between them. Confirmed leaking into 34 chunks across
+    # C类/产品总览/资讯 before this fix.
+    text = re.sub(r"\{%[^}]*%\}", "", text)
     text = re.sub(r"<a href.*?</a>", "", text)
+    return text
+
+
+def clean_markdown_text(text: str) -> str:
+    """Strip inline markdown formatting markers from otherwise-real prose,
+    keeping the underlying text. strip_boilerplate() above removes GitBook
+    structural noise ({% hint %}, <a> tags); this handles the separate,
+    previously-unaddressed problem of **/`/[]()/#/> syntax leaking verbatim
+    into embedded chunk text (confirmed for real, e.g. a chunk's text
+    containing literal "`search.do`" backticks) -- noise tokens the
+    embedding model tokenizes like any other character without conveying
+    the formatting they were meant to signal.
+
+    Must run AFTER extract_compares_fallback() has scanned the raw
+    "简要回答" section for backtick-quoted tokens -- that regex needs the
+    literal backticks intact, so this is applied at chunk-build time in
+    main(), not inside split_h3_sections()/extract_intro().
+    """
+    text = html.unescape(text)  # decode &#x624D; etc -- confirmed leaking into 资讯 chunks otherwise
+    text = re.sub(r"\{%[^}]*%\}", "", text)  # stray GitBook component tags ({% stepper %} etc.) that reached here unstripped
+    text = re.sub(r"(?m)^```\w*\s*$", "", text)  # fenced-code-block delimiters -- keep the code content, drop the ``` markers
+    text = re.sub(r"(?m)^[ \t]*(?:\*[ \t]*){3,}$", "", text)  # *** horizontal rule
+    text = re.sub(r"(?m)^[ \t]*(?:-[ \t]*){3,}$", "", text)   # --- horizontal rule
+    text = re.sub(r"(?m)^[ \t]*(?:_[ \t]*){3,}$", "", text)   # ___ horizontal rule
+    text = re.sub(r"!?\[([^\]]*)\]\([^)]*\)", r"\1", text)    # [text](url) and ![alt](url), incl. bare ![]() -> ""
+    text = re.sub(r"<(https?://[^>\s]+)>", r"\1", text)
+    text = re.sub(r"\*\*((?:[^*\n]|\\\*)+)\*\*", r"\1", text)
+    text = re.sub(r"__([^_\n]+)__", r"\1", text)
+    text = re.sub(r"(?<!\w)\*((?:[^*\n]|\\\*)+)\*(?!\w)", r"\1", text)
+    text = re.sub(r"(?<!\w)_([^_\n]+)_(?!\w)", r"\1", text)
+    text = re.sub(r"`([^`\n]+)`", r"\1", text)
+    text = re.sub(r"(?m)^(?:>\s?)?#{1,6}\s+", "", text)  # handles "### h" and blockquoted "> ### h"
+    text = re.sub(r"(?m)^>\s?", "", text)
+    text = re.sub(r"\\\n", "\n", text)
+    text = re.sub(r"\\([*_`\[\]()#>\\])", r"\1", text)
     return text
 
 
@@ -48,11 +90,40 @@ def extract_compares_fallback(brief_answer_text: str) -> list[str]:
     return seen[:5]  # cap — this is a fallback heuristic, not authoritative
 
 
+def _visible_after_stripping_links(text: str) -> str:
+    """Text with markdown links removed entirely (label included, not just
+    the URL) and formatting markers stripped -- used to tell a section with
+    real prose apart from one that's just a nav stub ("使用：" + a bullet
+    list of links), so the intro-recovery fix below doesn't also start
+    keeping pure link lists that were correctly being skipped before."""
+    stripped = re.sub(r"\[[^\]]*\]\([^)]*\)", "", text)
+    stripped = re.sub(r"[*_`>#\-]", "", stripped)
+    return re.sub(r"\s+", "", stripped)
+
+
+def extract_intro(text: str) -> str:
+    """Text between the H1 title and the first H3 heading. split_h3_sections()
+    below only returns parts[1:] -- this part (parts[0]) was previously
+    silently dropped by every caller, even though it's often a real,
+    non-boilerplate purpose statement (confirmed on 搜索 vs 报价.md:9,
+    "当您需要在 search.do 和 getOffers.do 之间做选择时，使用此页面。", which
+    had no chunk anywhere in the corpus before this fix)."""
+    body = re.sub(r"^# .+?\n", "", text, count=1)
+    first_h3 = re.search(r"\n### ", body)
+    intro = body[: first_h3.start()] if first_h3 else body
+    # Newlines are collapsed to spaces by the CALLER in main(), AFTER
+    # clean_markdown_text() has run -- not here. clean_markdown_text()'s
+    # bold/italic regexes are deliberately scoped to a single line (so a
+    # bullet list's lone "* " markers can't pair up with each other across
+    # items and get stripped as if they were an *italic span*); collapsing
+    # "\n" to " " before cleaning erases that boundary and lets exactly that
+    # happen. See split_h3_sections() below for the same fix.
+    return intro.strip()
+
+
 def split_h3_sections(body: str) -> list[tuple[str, str]]:
     parts = re.split(r"\n### ", body)
     sections = []
-    if parts and not parts[0].strip().startswith("###"):
-        pass  # parts[0] is pre-first-H3 content, handled by caller separately
     for chunk in parts[1:]:
         lines = chunk.split("\n", 1)
         heading = lines[0].strip()
@@ -64,7 +135,9 @@ def split_h3_sections(body: str) -> list[tuple[str, str]]:
         # literal "#### heading" text while later ones in the same section still
         # converted fine. Caught via the same bug in chunk_product_intro.py.
         content = re.sub(r"(?:^|\n)#### (.+?)(?:\n|$)", r"\n【\1】", content)
-        content = re.sub(r"\n+", " ", content).strip()
+        # NOT collapsed to spaces here -- see extract_intro()'s comment above;
+        # the caller (main()) cleans markdown first, then collapses newlines.
+        content = content.strip()
         sections.append((heading, content))
     return sections
 
@@ -99,11 +172,29 @@ def main():
     path_hash = hashlib.md5(str(md_path).encode("utf-8")).hexdigest()[:8]
     ascii_hint = re.sub(r"[^a-zA-Z0-9]+", "", title.lower())[:8]
     slug = f"{ascii_hint}{path_hash}" if ascii_hint else path_hash
+    source_path = str(md_path).split("API文档", 1)[1].lstrip("\\/").replace("\\", "/")
     chunks = []
+
+    intro = extract_intro(text)
+    if intro and len(_visible_after_stripping_links(intro)) >= 6:
+        intro_clean = re.sub(r"\n+", " ", clean_markdown_text(intro)).strip()
+        chunks.append({
+            "chunk_id": f"{slug}-c00",
+            "doc_type": "对比消歧",
+            "compares": compares,
+            "level1_category": args.level1_category,
+            "level2_category": args.level2_category,
+            "source_path": source_path,
+            "section": "简介",
+            "text": f"{'/'.join(compares) if compares else title}：{intro_clean}",
+        })
+
     skip_headings = {"相关页面"}  # pure link lists, no retrievable content
     for i, (heading, content) in enumerate(sections, 1):
         if heading in skip_headings or not content:
             continue
+        heading = clean_markdown_text(heading)
+        content = re.sub(r"\n+", " ", clean_markdown_text(content)).strip()
         chunks.append({
             "chunk_id": f"{slug}-c{i:02d}",
             "doc_type": "对比消歧",
@@ -114,7 +205,7 @@ def main():
             # chunk_product_intro.py — no current API文档 filename contains
             # "API文档" itself, but split(marker)[-1] would silently break the
             # moment one did, so fix the pattern defensively here too.
-            "source_path": str(md_path).split("API文档", 1)[1].lstrip("\\/").replace("\\", "/"),
+            "source_path": source_path,
             "section": heading,
             "text": f"{'/'.join(compares) if compares else title}：{heading}。{content}",
         })

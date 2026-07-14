@@ -11,7 +11,7 @@
 # the server always fetches the same URL to get whatever was last published.
 #
 # Usage:
-#   ./scripts/publish_chroma_db.sh
+#   ./scripts/deploy/publish_chroma_db.sh
 #
 # Requires: gh CLI, authenticated (gh auth login), run from repo root.
 
@@ -20,7 +20,7 @@ set -euo pipefail
 GH="${GH_BIN:-gh}"
 TAG="chroma-db-latest"
 ARCHIVE="chroma_db.tar.gz"
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 cd "$REPO_ROOT"
 
@@ -41,7 +41,7 @@ else
     echo "Creating release $TAG ..."
     "$GH" release create "$TAG" "$ARCHIVE" \
         --title "Chroma DB (latest)" \
-        --notes "Rolling snapshot of chroma_db/, published by scripts/publish_chroma_db.sh. Published: $(date -u '+%Y-%m-%d %H:%M UTC')."
+        --notes "Rolling snapshot of chroma_db/, published by scripts/deploy/publish_chroma_db.sh. Published: $(date -u '+%Y-%m-%d %H:%M UTC')."
 fi
 
 rm -f "$ARCHIVE"

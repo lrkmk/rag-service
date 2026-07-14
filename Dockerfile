@@ -24,19 +24,21 @@ RUN pip install --no-cache-dir -r requirements.txt
 # with no outbound internet access at runtime.
 RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('BAAI/bge-large-zh-v1.5')"
 
-# Only the files mcp_server.py actually needs at runtime. Kept under
-# ./scripts/ (not flattened into /app/) because rag_search.py derives
-# DB_PATH and PARENTS_LOOKUP_PATH from its own file location assuming a
-# <repo_root>/scripts/rag_search.py layout — flattening it would silently
-# point DB_PATH at the filesystem root instead of /app/chroma_db.
+# Only the files mcp_server.py actually needs at runtime. Copied preserving
+# their scripts/<category>/ subdirectory structure (not flattened into
+# ./scripts/) because rag_search.py derives DB_PATH and PARENTS_LOOKUP_PATH
+# from its own file location assuming a <repo_root>/scripts/search/rag_search.py
+# layout — flattening it would silently point DB_PATH at the wrong directory.
 #
-# lookup_tables.py and chunk_diff.py are runtime imports (mcp_server imports
-# lookup_tables directly; rag_search imports chunk_diff for strip_boilerplate
-# in get_full_article) even though chunk_diff.py also gets swept up in the
-# broader "chunk_*.py are offline tooling" .dockerignore rule — without an
-# explicit COPY here the container crash-loops on startup with
-# ModuleNotFoundError.
-COPY scripts/rag_search.py scripts/mcp_server.py scripts/parents_lookup.json scripts/lookup_tables.py scripts/chunk_diff.py ./scripts/
+# lookup_tables.py (scripts/search/) and chunk_diff.py (scripts/chunking/)
+# are runtime imports (mcp_server imports lookup_tables directly; rag_search
+# imports chunk_diff for strip_boilerplate in get_full_article) even though
+# chunk_diff.py also gets swept up in the broader "chunking scripts are
+# offline tooling" .dockerignore rule — without an explicit COPY here the
+# container crash-loops on startup with ModuleNotFoundError.
+COPY scripts/search/rag_search.py scripts/search/mcp_server.py scripts/search/lookup_tables.py ./scripts/search/
+COPY scripts/ingest/parents_lookup.json ./scripts/ingest/
+COPY scripts/chunking/chunk_diff.py ./scripts/chunking/
 COPY doc/ ./doc/
 
 ENV MCP_TRANSPORT=streamable-http
@@ -44,4 +46,4 @@ ENV MCP_HOST=0.0.0.0
 ENV MCP_PORT=5000
 EXPOSE 5000
 
-CMD ["python", "scripts/mcp_server.py"]
+CMD ["python", "scripts/search/mcp_server.py"]

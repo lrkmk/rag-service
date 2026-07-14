@@ -1,7 +1,7 @@
 {
   "field": "status",
   "endpoint": "/pay.do",
-  "source_path": "API文档\\04-API参考\\booking-apis\\支付与出票.md",
+  "source_path": "04-API参考/booking-apis/支付与出票.md",
   "ref": "PaymentResponseStatus",
   "entries": [
     {

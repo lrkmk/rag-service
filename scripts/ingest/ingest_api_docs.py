@@ -1,6 +1,6 @@
 """
 Ingest API文档 RAG chunks (API文档/**/_rag-chunks/) into the same local Chroma
-store used by ingest_chroma.py, but into SEPARATE collections from the
+store used by ingest_help_center.py, but into SEPARATE collections from the
 帮助中心 ones — this corpus is developer/API reference content, not
 customer-service policy content, and mixing them dilutes retrieval.
 
@@ -29,7 +29,7 @@ import time
 import chromadb
 from chromadb.utils import embedding_functions
 
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 API_DOCS_ROOT = os.path.join(REPO_ROOT, "doc", "API文档")
 DB_PATH = os.path.join(REPO_ROOT, "chroma_db")
 
@@ -37,7 +37,7 @@ MODEL_NAME = "BAAI/bge-large-zh-v1.5"
 
 
 def _build_embedder():
-    """Same rationale as ingest_chroma.py's _build_embedder: prefer
+    """Same rationale as ingest_help_center.py's _build_embedder: prefer
     HF_HUB_OFFLINE when the model is already cached, so a slow/unstable
     path to huggingface.co can't hang on a post-download freshness check
     that looks identical to "still embedding" from the terminal."""
@@ -51,7 +51,7 @@ def _build_embedder():
     return embedding_functions.SentenceTransformerEmbeddingFunction(model_name=MODEL_NAME)
 
 
-# Must match ingest_chroma.py's model choice so both corpora live in a
+# Must match ingest_help_center.py's model choice so both corpora live in a
 # consistent embedding space (not strictly required since they're separate
 # collections, but keeps the whole pipeline using one model).
 EMBEDDER = _build_embedder()
@@ -74,6 +74,21 @@ def clean_meta(d: dict) -> dict:
     return out
 
 
+def reconcile(coll, current_ids: list[str]):
+    """Delete any id left in the collection that this run's source files
+    didn't produce (doc deleted, or re-chunked with new chunk_ids) — see
+    ingest_help_center.py's reconcile() for the full rationale. Skipped when
+    current_ids is empty to avoid wiping the collection on a path/glob error.
+    """
+    if not current_ids:
+        return
+    existing_ids = set(coll.get(include=[])["ids"])
+    stale_ids = existing_ids - set(current_ids)
+    if stale_ids:
+        coll.delete(ids=list(stale_ids))
+        print(f"[{coll.name}] deleted {len(stale_ids)} stale ids no longer produced by source files")
+
+
 def ingest_chunks(client):
     paths = glob.glob(os.path.join(API_DOCS_ROOT, "**", "_rag-chunks", "children.jsonl"), recursive=True)
     coll = client.get_or_create_collection(name="atlas_api_chunks", embedding_function=EMBEDDER)
@@ -94,6 +109,15 @@ def ingest_chunks(client):
                 "endpoint": rec.get("endpoint"),   # only present on C-type chunks
                 "section": rec.get("section"),
                 "text": rec["text"],
+                # Full recursively-flattened field list (chunk_api_reference.py's
+                # flatten_fields) -- only present on C-type request/response/component
+                # chunks. NOT part of `text`/`doc_text` above, so it never
+                # participates in the embedding and can't be truncated out of the
+                # match computation by BGE's max_seq_length=512 -- it just rides
+                # along as metadata on every hit for whatever reads the result
+                # afterward (see rag_search.py's search_api_docs), same pattern as
+                # the 帮助中心 parent/child lookup for `text` that's too long to embed.
+                "fields": rec.get("fields"),
                 "source_path": rec.get("source_path"),
                 "source_dir": rel_dir,
             }))
@@ -105,6 +129,7 @@ def ingest_chunks(client):
         t0 = time.time()
         coll.upsert(ids=ids, documents=docs, metadatas=metas)
         print(f"[atlas_api_chunks] embedding done in {time.time() - t0:.0f}s")
+    reconcile(coll, ids)
     print(f"[atlas_api_chunks] ingested {len(ids)} chunks from {len(paths)} files")
     return coll
 
@@ -136,6 +161,7 @@ def ingest_faq(client):
         t0 = time.time()
         coll.upsert(ids=ids, documents=docs, metadatas=metas)
         print(f"[atlas_api_faq_chunks] embedding done in {time.time() - t0:.0f}s")
+    reconcile(coll, ids)
     print(f"[atlas_api_faq_chunks] ingested {len(ids)} QA pairs")
     return coll
 

@@ -17,6 +17,7 @@ Usage:
 """
 import argparse
 import glob
+import html
 import json
 import os
 import re
@@ -24,6 +25,9 @@ import re
 
 def strip_boilerplate(text: str) -> str:
     text = re.sub(r"\{% hint.*?%\}.*?\{% endhint %\}", "", text, flags=re.DOTALL)
+    # Other GitBook component tags wrap real content (unlike {% hint %},
+    # whose content is a throwaway "ask Eva" callout) -- strip just the tags.
+    text = re.sub(r"\{%[^}]*%\}", "", text)
     text = re.sub(r"<a href.*?</a>", "", text)
     text = re.sub(r"&#x20;", " ", text)
     text = re.sub(r"[ \t]+\n", "\n", text)
@@ -45,13 +49,58 @@ def split_h3_sections(body: str) -> list[tuple[str, str]]:
         # first H4 of any section with no lead-in prose stayed literal
         # "#### heading" text instead of becoming inline 【heading】).
         content = re.sub(r"(?:^|\n)#### (.+?)(?:\n|$)", r"\n【\1】", content)
-        content = re.sub(r"\n+", " ", content).strip()
+        # NOT collapsed to spaces here -- see extract_intro()'s comment below.
+        # clean_markdown_text() is scoped to a single line on purpose (so a
+        # bullet list's lone "* " markers can't pair up across items and get
+        # stripped as if they were an *italic span* -- confirmed for real on
+        # "Atlas 产品介绍.md"'s "按角色快速开始" bullet-of-links section);
+        # collapsing "\n" to " " before that cleaning runs erases the
+        # boundary that prevents it. The caller (main()) cleans first, then
+        # collapses newlines.
+        content = content.strip()
         sections.append((heading, content))
     return sections
 
 
+def clean_markdown_text(text: str) -> str:
+    """Strip inline markdown formatting markers from otherwise-real prose,
+    keeping the underlying text -- see chunk_disambiguation.py's function of
+    the same name for the full rationale."""
+    text = html.unescape(text)  # decode &#x624D; etc -- confirmed leaking into 资讯 chunks otherwise
+    text = re.sub(r"\{%[^}]*%\}", "", text)  # stray GitBook component tags ({% stepper %} etc.) that reached here unstripped
+    text = re.sub(r"(?m)^```\w*\s*$", "", text)  # fenced-code-block delimiters -- keep the code content, drop the ``` markers
+    text = re.sub(r"(?m)^[ \t]*(?:\*[ \t]*){3,}$", "", text)  # *** horizontal rule
+    text = re.sub(r"(?m)^[ \t]*(?:-[ \t]*){3,}$", "", text)   # --- horizontal rule
+    text = re.sub(r"(?m)^[ \t]*(?:_[ \t]*){3,}$", "", text)   # ___ horizontal rule
+    text = re.sub(r"!?\[([^\]]*)\]\([^)]*\)", r"\1", text)    # [text](url) and ![alt](url), incl. bare ![]() -> ""
+    text = re.sub(r"<(https?://[^>\s]+)>", r"\1", text)
+    text = re.sub(r"\*\*((?:[^*\n]|\\\*)+)\*\*", r"\1", text)
+    text = re.sub(r"__([^_\n]+)__", r"\1", text)
+    text = re.sub(r"(?<!\w)\*((?:[^*\n]|\\\*)+)\*(?!\w)", r"\1", text)
+    text = re.sub(r"(?<!\w)_([^_\n]+)_(?!\w)", r"\1", text)
+    text = re.sub(r"`([^`\n]+)`", r"\1", text)
+    text = re.sub(r"(?m)^(?:>\s?)?#{1,6}\s+", "", text)  # handles "### h" and blockquoted "> ### h"
+    text = re.sub(r"(?m)^>\s?", "", text)
+    text = re.sub(r"\\\n", "\n", text)
+    text = re.sub(r"\\([*_`\[\]()#>\\])", r"\1", text)
+    return text
+
+
+def extract_intro(text: str) -> str:
+    """Text between the H1 title and the first H3 heading -- split_h3_sections()
+    only returns parts[1:], so this was silently dropped whenever a page HAD
+    H3 sections (the no-H3 fallback branch in main() already keeps the whole
+    page, so it wasn't affected)."""
+    body = re.sub(r"^# .+?\n", "", text, count=1)
+    first_h3 = re.search(r"\n### ", body)
+    intro = body[: first_h3.start()] if first_h3 else body
+    # Newlines collapsed by the caller AFTER clean_markdown_text() runs --
+    # see split_h3_sections()'s comment for why.
+    return intro.strip()
+
+
 def main():
-    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     product_intro_root = os.path.join(repo_root, "doc", "产品介绍")
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -84,10 +133,28 @@ def main():
 
         sections = split_h3_sections(text)
         slug = re.sub(r"[^a-zA-Z0-9]+", "", title.lower())[:16] or re.sub(r"\W+", "", os.path.basename(fpath))[:16]
+        if sections:
+            intro = extract_intro(text)
+            intro_visible = re.sub(r"[*_`>#\-\s]", "", re.sub(r"\[[^\]]*\]\([^)]*\)", "", intro))
+            if intro and len(intro_visible) >= 6:
+                intro_clean = re.sub(r"\n+", " ", clean_markdown_text(intro)).strip()
+                all_chunks.append({
+                    "chunk_id": f"intro-{slug}-c00",
+                    "doc_type": "产品总览",
+                    "level1_category": "产品介绍",
+                    "level2_category": "产品总览",
+                    "title": title,
+                    "section": "简介",
+                    "source_path": source_path,
+                    "text": f"{title}：{intro_clean}",
+                })
         if not sections:
             # no H3 headings (e.g. 按角色快速开始 pages use a flatter structure) —
-            # keep the whole page as one chunk rather than dropping it.
-            body = re.sub(r"\n+", " ", text[title_m.end():] if title_m else text).strip()
+            # keep the whole page as one chunk rather than dropping it. Clean
+            # BEFORE collapsing newlines (not after) -- same ordering fix as
+            # split_h3_sections()/extract_intro() above.
+            raw_body = text[title_m.end():] if title_m else text
+            body = re.sub(r"\n+", " ", clean_markdown_text(raw_body)).strip()
             all_chunks.append({
                 "chunk_id": f"intro-{slug}-c01",
                 "doc_type": "产品总览",
@@ -101,6 +168,8 @@ def main():
         for i, (heading, content) in enumerate(sections, 1):
             if not content:
                 continue
+            heading = clean_markdown_text(heading)
+            content = re.sub(r"\n+", " ", clean_markdown_text(content)).strip()
             all_chunks.append({
                 "chunk_id": f"intro-{slug}-c{i:02d}",
                 "doc_type": "产品总览",

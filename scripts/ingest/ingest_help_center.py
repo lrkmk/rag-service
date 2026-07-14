@@ -16,10 +16,13 @@ Design (see 帮助中心/_rag-chunks-index.md for the source schema):
 
 Usage:
     pip install chromadb sentence-transformers
-    python ingest_chroma.py
+    python ingest_help_center.py
 
 Re-running is safe: everything is upserted by chunk_id, so this is
 idempotent — you can just re-run after re-generating the source jsonl files.
+Deletions/renames are handled too: after each collection's upsert, any id
+still in Chroma but no longer produced by the source files (doc deleted, or
+re-chunked with new chunk_ids) is removed via reconcile() below.
 """
 
 import glob
@@ -30,10 +33,10 @@ import time
 import chromadb
 from chromadb.utils import embedding_functions
 
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 HELP_CENTER = os.path.join(REPO_ROOT, "doc", "帮助中心")
 DB_PATH = os.path.join(REPO_ROOT, "chroma_db")
-PARENTS_LOOKUP_PATH = os.path.join(REPO_ROOT, "scripts", "parents_lookup.json")
+PARENTS_LOOKUP_PATH = os.path.join(REPO_ROOT, "scripts", "ingest", "parents_lookup.json")
 
 MODEL_NAME = "BAAI/bge-large-zh-v1.5"
 
@@ -89,6 +92,26 @@ def clean_meta(d: dict) -> dict:
     return out
 
 
+def reconcile(coll, current_ids: list[str]):
+    """Delete any id left over in the collection that this run's source
+    files didn't produce — a source doc that got deleted, or one that got
+    re-chunked with new chunk_ids, otherwise leaves orphaned vectors behind
+    forever, since upsert() only ever adds/overwrites and never removes.
+
+    Skipped when current_ids is empty: an empty result is far more likely
+    to mean "glob found nothing, check your paths" than "the entire corpus
+    was deleted", and reconciling against an empty set would wipe the
+    collection.
+    """
+    if not current_ids:
+        return
+    existing_ids = set(coll.get(include=[])["ids"])
+    stale_ids = existing_ids - set(current_ids)
+    if stale_ids:
+        coll.delete(ids=list(stale_ids))
+        print(f"[{coll.name}] deleted {len(stale_ids)} stale ids no longer produced by source files")
+
+
 def build_parents_index():
     """article_id -> full parent record, plus a slim (level1, level2) map for enrichment."""
     paths = glob.glob(os.path.join(HELP_CENTER, "**", "_rag-chunks", "parents.jsonl"), recursive=True)
@@ -141,6 +164,7 @@ def ingest_rule_chunks(client, parents_slim):
         t0 = time.time()
         coll.upsert(ids=ids, documents=docs, metadatas=metas)
         print(f"[atlas_rule_chunks] embedding done in {time.time() - t0:.0f}s")
+    reconcile(coll, ids)
     print(f"[atlas_rule_chunks] ingested {len(ids)} chunks from {len(paths)} files"
           + (f" ({skipped} had no matching parent record)" if skipped else ""))
     return coll
@@ -172,6 +196,7 @@ def ingest_faq_chunks(client):
         t0 = time.time()
         coll.upsert(ids=ids, documents=docs, metadatas=metas)
         print(f"[atlas_faq_chunks] embedding done in {time.time() - t0:.0f}s")
+    reconcile(coll, ids)
     print(f"[atlas_faq_chunks] ingested {len(ids)} QA pairs from {len(paths)} files")
     return coll
 

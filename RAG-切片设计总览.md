@@ -94,13 +94,13 @@ level2_category, source_path, section, text
 
 同时会自动识别藏在字段 `description` 里的"伪装成文字的表格"——比如 `status` 字段的 description 其实是一长串"- 100: xxx - 101: xxx"的错误码枚举，这种会被识别出来单独提取成结构化 JSON（`lookup-table-<endpoint>-<field>.json`），不进语义检索。全站还有一张更大的权威错误码表（`错误码.md` 里的 43 行 markdown 表格），同样整体提取成 JSON。
 
-脚本：[chunk_api_reference.py](scripts/chunk_api_reference.py)、[chunk_disambiguation.py](scripts/chunk_disambiguation.py)、[extract_error_code_table.py](scripts/extract_error_code_table.py)
+脚本：[chunk_api_reference.py](scripts/chunking/chunk_api_reference.py)、[chunk_disambiguation.py](scripts/chunking/chunk_disambiguation.py)、[extract_error_code_table.py](scripts/chunking/extract_error_code_table.py)
 
 ### FAQ变体：troubleshooting-faqs
 
 跟帮助中心 FAQ 同样是问答对 schema，但源文件本身有站点自己的 GitBook 生成瑕疵——很多问题会同时以 `####`（短答案）和 `###`（长答案，文字几乎一样）出现两次。写了专门的解析脚本按问题文本去重、保留更长的答案，同时把文中嵌的大数据表（如 40 家航司的持卡人信息必填矩阵）单独提出成结构化 JSON。
 
-脚本：[chunk_faq_api.py](scripts/chunk_faq_api.py)
+脚本：[chunk_faq_api.py](scripts/chunking/chunk_faq_api.py)
 
 ### 最终数据量
 

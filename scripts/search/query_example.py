@@ -1,8 +1,8 @@
 """
-Fixed demo queries against the Chroma store built by ingest_chroma.py.
+Fixed demo queries against the Chroma store built by ingest_help_center.py.
 For ad hoc natural-language questions, use `ask.py` instead.
 
-Run `python ingest_chroma.py` first. Then:
+Run `python ingest_help_center.py` first. Then:
     python query_example.py
 
 Shows three patterns:

@@ -12,14 +12,18 @@ Then open http://localhost:5001
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 import markdown as md
 from flask import Flask, jsonify, request, send_from_directory
 
-import chunk_diff
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+# chunk_diff.py lives in the sibling chunking/ directory, not here.
+sys.path.insert(0, str(REPO_ROOT / "scripts" / "chunking"))
+import chunk_diff  # noqa: E402
+
 ROOTS = ["doc/帮助中心", "doc/API文档", "doc/产品介绍"]
 
 app = Flask(__name__)

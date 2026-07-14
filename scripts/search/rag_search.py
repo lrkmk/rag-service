@@ -1,10 +1,10 @@
 """
-Shared search helpers against the Chroma store built by ingest_chroma.py.
+Shared search helpers against the Chroma store built by ingest_help_center.py.
 Imported by both query_example.py (fixed demo queries) and ask.py (CLI tool
 for ad hoc natural-language questions).
 
 BGE asymmetric embedding note:
-  BAAI/bge-large-zh-v1.5 (used in ingest_chroma.py) recommends prefixing
+  BAAI/bge-large-zh-v1.5 (used in ingest_help_center.py) recommends prefixing
   *queries* with an instruction string, but leaving *documents* unprefixed.
   Chroma's `query_texts=` would embed the query with the exact same
   (unprefixed) code path used for documents, silently losing that signal.
@@ -15,20 +15,27 @@ BGE asymmetric embedding note:
 import json
 import os
 import re
+import sys
 
 import chromadb
 from sentence_transformers import SentenceTransformer
 
-import chunk_diff
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# chunk_diff.py lives in the sibling chunking/ directory, not here -- it's a
+# chunking-QA tool by primary purpose, but get_full_article() below also
+# needs its strip_boilerplate() at runtime. Add it to sys.path explicitly
+# rather than relying on same-directory import discovery.
+sys.path.insert(0, os.path.join(REPO_ROOT, "scripts", "chunking"))
+import chunk_diff  # noqa: E402
+
 DB_PATH = os.path.join(REPO_ROOT, "chroma_db")
-PARENTS_LOOKUP_PATH = os.path.join(REPO_ROOT, "scripts", "parents_lookup.json")
+PARENTS_LOOKUP_PATH = os.path.join(REPO_ROOT, "scripts", "ingest", "parents_lookup.json")
 HELP_CENTER_ROOT = os.path.join(REPO_ROOT, "doc", "帮助中心")
 API_DOCS_ROOT = os.path.join(REPO_ROOT, "doc", "API文档")
 PRODUCT_INTRO_ROOT = os.path.join(REPO_ROOT, "doc", "产品介绍")
 
-# Must match the model used in ingest_chroma.py's EMBEDDER — the two sides
+# Must match the model used in ingest_help_center.py's EMBEDDER — the two sides
 # have to produce vectors in the same space.
 MODEL_NAME = "BAAI/bge-large-zh-v1.5"
 QUERY_INSTRUCTION = "为这个句子生成表示以用于检索相关文章："
@@ -133,6 +140,14 @@ def search_api_docs(query: str, n_results: int = 3, where: dict | None = None):
     hits = []
     for i in range(len(res["ids"][0])):
         meta = res["metadatas"][0][i]
+        # `fields` is only present on C-type request/response/component chunks,
+        # stored as a JSON string (Chroma metadata can't hold nested objects
+        # directly — see clean_meta() in ingest_api_docs.py). It's the full,
+        # uncollapsed field list that `text` intentionally trims for deeply
+        # nested fields (chunk_api_reference.py's format_fields_for_text) —
+        # read this when `text` says "还有 N 个嵌套子字段...见 fields" instead
+        # of re-fetching or guessing at the missing sub-fields.
+        fields_raw = meta.get("fields")
         hits.append({
             "chunk_id": res["ids"][0][i],
             "distance": res["distances"][0][i],
@@ -144,6 +159,7 @@ def search_api_docs(query: str, n_results: int = 3, where: dict | None = None):
             "applicable_carrier": meta.get("applicable_carrier"),
             "compares": meta.get("compares"),
             "endpoint": meta.get("endpoint"),
+            "fields": json.loads(fields_raw) if fields_raw else None,
             "source_path": meta.get("source_path"),
         })
     return hits
