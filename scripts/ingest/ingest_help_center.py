@@ -135,7 +135,6 @@ def ingest_rule_chunks(client, parents_slim):
     ids, docs, metas = [], [], []
     skipped = 0
     for p in paths:
-        rel_dir = os.path.relpath(os.path.dirname(p), HELP_CENTER)
         for rec in load_jsonl(p):
             parent_cat = parents_slim.get(rec.get("parent_id"), {})
             if not parent_cat:
@@ -145,16 +144,18 @@ def ingest_rule_chunks(client, parents_slim):
             doc_text = f"{rec.get('section', '')}\n{rec['text']}"
             ids.append(rec["chunk_id"])
             docs.append(doc_text)
+            # rule_type, updated_at, source_dir dropped: never read by
+            # search_rules() and never exposed as a filter param by
+            # mcp_server.py's search_help_center tool (which only filters on
+            # applicable_carrier) -- confirmed dead via a full grep of every
+            # meta.get() call in rag_search.py before removing.
             metas.append(clean_meta({
                 "parent_id": rec.get("parent_id"),
                 "level1_category": parent_cat.get("level1_category", ""),
                 "level2_category": parent_cat.get("level2_category", ""),
                 "section": rec.get("section"),
-                "rule_type": rec.get("rule_type"),
                 "applicable_carrier": rec.get("applicable_carrier"),
-                "updated_at": rec.get("updated_at"),
                 "text": rec["text"],
-                "source_dir": rel_dir,
             }))
 
     if ids:
@@ -181,8 +182,13 @@ def ingest_faq_chunks(client):
             # Embed the question only — user queries look like questions,
             # not like answers; embedding the answer too adds noise.
             docs.append(rec["question"])
+            # parent_id dropped: it never resolved to anything in the first
+            # place -- parents_lookup.json only has article_ids for 帮助中心
+            # rule-chunk articles, never a "faq-xxx" key, and search_faq()
+            # never did a parent lookup (unlike search_rules()). `topic`
+            # already carries the "which source file" grouping this was
+            # trying to provide.
             metas.append(clean_meta({
-                "parent_id": rec.get("parent_id"),
                 "topic": rec.get("topic"),
                 "level1_category": rec.get("level1_category"),
                 "level2_category": rec.get("level2_category"),

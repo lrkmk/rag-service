@@ -95,11 +95,15 @@ def ingest_chunks(client):
 
     ids, docs, metas = [], [], []
     for p in paths:
-        rel_dir = os.path.relpath(os.path.dirname(p), API_DOCS_ROOT)
         for rec in load_jsonl(p):
             doc_text = f"{rec.get('section', '')}\n{rec['text']}"
             ids.append(rec["chunk_id"])
             docs.append(doc_text)
+            # source_dir dropped: never read by search_api_docs() and never
+            # exposed as a filter param by mcp_server.py's search_api_docs
+            # tool (which only filters on doc_type) -- source_path already
+            # gives the precise file location, source_dir added nothing on
+            # top of it.
             metas.append(clean_meta({
                 "doc_type": rec.get("doc_type"),
                 "level1_category": rec.get("level1_category"),
@@ -119,7 +123,6 @@ def ingest_chunks(client):
                 # the 帮助中心 parent/child lookup for `text` that's too long to embed.
                 "fields": rec.get("fields"),
                 "source_path": rec.get("source_path"),
-                "source_dir": rel_dir,
             }))
 
     if ids:
