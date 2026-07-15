@@ -1,22 +1,22 @@
 # 预订后 API
 
 {% hint style="info" %}
-💬 **Need help?** If you're stuck, ask Eva in the Help Center for instant diagnostics.
+💬 **需要帮助？** 如果遇到问题，请在帮助中心咨询 Eva，快速获取诊断建议。
 
-<a href="https://resources.atriptech.com/?fallback=true" class="button primary" data-icon="comments">Ask Eva</a>
+<a href="https://www.atriptech.com/" class="button primary" data-icon="comments">咨询 Eva</a>
 {% endhint %}
 
 {% hint style="warning" %}
-All API Reference endpoint examples on this site show **sandbox** base URLs.
+本网站中的 API 参考端点示例均使用 **沙箱** 基础 URL。
 
-For production traffic, use the production API base URLs shown in ATRIP under `My Profile` → `Company Information`.
+生产流量请使用 ATRIP 中 **My Profile** → **Company Information** 显示的生产 API 基础 URL。
 
-Production uses **two** API base URLs:
+生产环境使用 **两个** API 基础 URL：
 
-* one for `search` traffic
-* one for all other transaction APIs
+* 一个用于 `search` 流量
+* 一个用于其他所有交易类 API
 
-Do not send live traffic to sandbox endpoints.
+不要将生产流量发送到沙箱端点。
 {% endhint %}
 
 使用本部分获取端点级别的预订后参考。
@@ -37,3 +37,23 @@ Do not send live traffic to sandbox endpoints.
 * [订单列表](/api-wen-dang/api-reference/post-booking-apis/order-list.md)
 * [PNR 认领](/api-wen-dang/api-reference/post-booking-apis/pnr-claim.md)
 * [提取 PNR](/api-wen-dang/api-reference/post-booking-apis/extract-pnr.md)
+
+### 常见问题
+
+#### 已出票订单应使用哪个 API？
+
+根据任务选择端点。退款使用退款 API。作废使用作废 API。
+
+需要恢复订单数据时，使用重新生成订单或 PNR 相关 API。
+
+#### 作废和退款有什么区别？
+
+作废适用于仍符合航司作废条件的订单。
+
+不符合条件时，应使用退款流程。先检查订单状态和业务规则。
+
+### 后续步骤
+
+先阅读[预订后操作](/api-wen-dang/product-guides/post-booking.md)以选择正确流程。
+
+随后打开与任务匹配的端点页，确认请求字段和响应处理方式。

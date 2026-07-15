@@ -1,9 +1,9 @@
 # API 请求限制
 
 {% hint style="info" %}
-💬 **Need help?** If you're stuck, ask Eva in the Help Center for instant diagnostics.
+💬 **需要帮助？** 如果遇到问题，请在帮助中心咨询 Eva，快速获取诊断建议。
 
-<a href="https://resources.atriptech.com/?fallback=true" class="button primary" data-icon="comments">Ask Eva</a>
+<a href="https://www.atriptech.com/" class="button primary" data-icon="comments">咨询 Eva</a>
 {% endhint %}
 
 当您需要在一个位置查看请求限制规则时，使用此页面。
@@ -152,10 +152,10 @@ Atlas 在滚动 60 秒窗口中计算附加服务次数。
 
 ### 相关页面
 
-* [预订概述](broken://spaces/6LsKtmbJhZxgxraY5mHB/pages/82DaHlpWfsy0ANSplNI3)
-* [错误代码](broken://spaces/6LsKtmbJhZxgxraY5mHB/pages/Jk40OgfAM5G1NDZxwAS1)
-* [搜索](broken://spaces/6LsKtmbJhZxgxraY5mHB/pages/9K7uEnLGfEbpjGjni5gD)
-* [获取报价](broken://spaces/6LsKtmbJhZxgxraY5mHB/pages/FSGess6buGE1P02WnVNu)
-* [验证](broken://spaces/6LsKtmbJhZxgxraY5mHB/pages/Hg2lCO93wE6SPAXEYPOm)
-* [座位](broken://spaces/6LsKtmbJhZxgxraY5mHB/pages/3ujCySdZ8OYYLfGI3iF3)
-* [行李](broken://spaces/6LsKtmbJhZxgxraY5mHB/pages/Ftzqh42LAaE6QYzklv67)
+* [预订概述](/api-wen-dang/product-guides/booking/booking-overview.md)
+* [错误代码](/api-wen-dang/support-and-reference/troubleshooting-and-support/errors-handing.md)
+* [搜索](/api-wen-dang/product-guides/booking/booking-step-guides/search.md)
+* [获取报价](/api-wen-dang/product-guides/booking/booking-step-guides/get-offer.md)
+* [验证](/api-wen-dang/product-guides/booking/booking-step-guides/verify.md)
+* [座位](/api-wen-dang/product-guides/booking/optional-ancillaries/seats-and-baggage.md)
+* [行李](/api-wen-dang/product-guides/booking/optional-ancillaries/baggage.md)

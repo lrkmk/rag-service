@@ -1,58 +1,58 @@
 # Atlas AI 助手技能
 
 {% hint style="info" %}
-💬 **Need help?** If you're stuck, ask Eva in the Help Center for instant diagnostics.
+💬 **需要帮助？** 如果遇到问题，请在帮助中心咨询 Eva，快速获取诊断建议。
 
-<a href="https://resources.atriptech.com/?fallback=true" class="button primary" data-icon="comments">Ask Eva</a>
+<a href="https://www.atriptech.com/" class="button primary" data-icon="comments">咨询 Eva</a>
 {% endhint %}
 
-Use this page to access the Atlas AI assistant skill for Atlas API integration.
+使用本页获取适用于 Atlas API 集成的 Atlas AI 助手技能。
 
-Upload the latest `.zip` package to this page.
+请将最新的 `.zip` 包上传到此页面。
 
-This package is separate from GitBook MCP.
+此包独立于 GitBook MCP。
 
-Use it when you want an importable AI assistant setup.
+当您需要可导入的 AI 助手配置时，使用它。
 
 {% file src="/files/adw21NYWsZls8JOr3OZB" %}
 
-### What it helps with
+### 它能帮助您
 
-* find the right workflow before coding
-* route implementation questions to the right page
-* narrow down errors and next checks faster
+* 在编码前找到正确流程
+* 将实现问题定位到正确页面
+* 更快缩小错误范围和下一步检查项
 
-### Who should use it
+### 适用场景
 
-Use this skill if you are:
+如果您符合以下情况，建议使用此技能：
 
-* starting a new Atlas API integration
-* onboarding a delivery or support engineer
-* handling repeated workflow or troubleshooting questions
+* 正在启动新的 Atlas API 集成
+* 正在为交付或支持工程师做上手培训
+* 需要反复处理流程选择或排障问题
 
-### Upload package
+### 上传包文件
 
-Add the latest skill `.zip` file here.
+请在这里添加最新的技能 `.zip` 文件。
 
-Recommended file name:
+推荐文件名：
 
 * `atlas-ai-assistant-skill.zip`
 
-### Import notes
+### 导入说明
 
-Use this package in the supported AI assistant import flow for your workspace.
+请在您的工作区支持的 AI 助手导入流程中使用此包。
 
-Do not treat it as an MCP endpoint or MCP configuration file.
+不要将其视为 MCP 端点或 MCP 配置文件。
 
-### Suggested usage
+### 建议用法
 
-After import, use the skill to:
+导入后，您可以用此技能：
 
-* outline the minimum sandbox booking flow
-* identify the next API after `Search`, `Verify`, or `Create Order`
-* route payment, ticketing, webhook, or post-booking questions
+* 梳理最小化的沙箱预订流程
+* 判断 `Search`、`Verify` 或 `Create Order` 之后的下一步 API
+* 路由支付、出票、Webhook 或预订后问题
 
-### Related pages
+### 相关页面
 
 * [MCP 辅助开发](/api-wen-dang/readme-1/integration-tools/mcp-assisted-development.md)
 * [快速入门](/api-wen-dang/readme-1/quick-start.md)

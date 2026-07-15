@@ -1,10 +1,34 @@
 # 提取 PNR
 
 {% hint style="info" %}
-💬 **Need help?** If you're stuck, ask Eva in the Help Center for instant diagnostics.
+💬 **需要帮助？** 如果遇到问题，请在帮助中心咨询 Eva，快速获取诊断建议。
 
-<a href="https://resources.atriptech.com/?fallback=true" class="button primary" data-icon="comments">Ask Eva</a>
+<a href="https://www.atriptech.com/" class="button primary" data-icon="comments">咨询 Eva</a>
 {% endhint %}
+
+使用 `extractPnr.do` 从现有 Atlas 订单中获取 PNR 数据。
+
+该端点支持订单恢复、服务处理，以及 Atlas 与航司之间的 PNR 数据同步。
+
+### 常见问题
+
+#### 何时应使用 `extractPnr.do`？
+
+当需要从已有 Atlas 订单检索 PNR 详细信息时使用。
+
+它适用于订单恢复、服务和预订后处理。
+
+#### PNR 提取与认领有什么区别？
+
+PNR 提取用于读取 Atlas 订单关联的 PNR 数据。
+
+PNR 认领用于将外部创建的航司 PNR 关联到 Atlas。
+
+#### 提取 PNR 后应做什么？
+
+根据订单服务或同步流程处理返回的 PNR 数据。
+
+使用[PNR 认领与提取](/api-wen-dang/product-guides/post-booking/pnr-claim-and-extraction.md)了解常见用例。
 
 ## Extract PNR
 

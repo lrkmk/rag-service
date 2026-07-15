@@ -1,9 +1,9 @@
 # Atlas API 常见问题
 
 {% hint style="info" %}
-💬 **Need help?** If you're stuck, ask Eva in the Help Center for instant diagnostics.
+💬 **需要帮助？** 如果遇到问题，请在帮助中心咨询 Eva，快速获取诊断建议。
 
-<a href="https://resources.atriptech.com/?fallback=true" class="button primary" data-icon="comments">Ask Eva</a>
+<a href="https://www.atriptech.com/" class="button primary" data-icon="comments">咨询 Eva</a>
 {% endhint %}
 
 使用本部分获取常见的 Atlas API 集成问题和边缘情况解答。
@@ -48,7 +48,7 @@
 
 使用：
 
-* [预订后服务](/api-wen-dang/support-and-reference/troubleshooting-and-support/faqs/atlas-api-post-ticketing.md)
+* [预订后操作](/api-wen-dang/support-and-reference/troubleshooting-and-support/faqs/atlas-api-post-ticketing.md)
 
 ### 常见问题解答分类
 
@@ -80,4 +80,4 @@
 
 使用[支付](/api-wen-dang/support-and-reference/troubleshooting-and-support/faqs/atlas-api-payments.md)了解存款、VCC、卡处理和支付限制。
 
-使用[预订后服务](/api-wen-dang/support-and-reference/troubleshooting-and-support/faqs/atlas-api-post-ticketing.md)和[财务](/api-wen-dang/support-and-reference/troubleshooting-and-support/faqs/atlas-api-finance.md)了解退款、跟进、充值和对账问题。
+使用[预订后操作](/api-wen-dang/support-and-reference/troubleshooting-and-support/faqs/atlas-api-post-ticketing.md)和[财务](/api-wen-dang/support-and-reference/troubleshooting-and-support/faqs/atlas-api-finance.md)了解退款、跟进、充值和对账问题。

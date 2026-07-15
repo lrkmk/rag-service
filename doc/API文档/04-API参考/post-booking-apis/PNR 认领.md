@@ -1,10 +1,34 @@
 # PNR 认领
 
 {% hint style="info" %}
-💬 **Need help?** If you're stuck, ask Eva in the Help Center for instant diagnostics.
+💬 **需要帮助？** 如果遇到问题，请在帮助中心咨询 Eva，快速获取诊断建议。
 
-<a href="https://resources.atriptech.com/?fallback=true" class="button primary" data-icon="comments">Ask Eva</a>
+<a href="https://www.atriptech.com/" class="button primary" data-icon="comments">咨询 Eva</a>
 {% endhint %}
+
+使用 `pnr/claim.do` 将符合条件的现有航司 PNR 关联到 Atlas。
+
+该操作适用于外部创建的 PNR，不用于从现有 Atlas 订单读取 PNR 数据。
+
+### 常见问题
+
+#### 何时应使用 PNR 认领？
+
+当需要将现有航司 PNR 纳入 Atlas 后续订单处理时使用。
+
+认领前，确认该 PNR 符合当前业务流程的处理条件。
+
+#### PNR 认领与提取有什么区别？
+
+PNR 认领用于关联外部创建的航司 PNR。
+
+PNR 提取用于从现有 Atlas 订单获取 PNR 数据。
+
+#### 认领 PNR 后应做什么？
+
+根据业务流程处理关联后的订单数据。
+
+使用[PNR 认领与提取](/api-wen-dang/product-guides/post-booking/pnr-claim-and-extraction.md)了解完整流程和常见用例。
 
 ## PNR Claim
 
