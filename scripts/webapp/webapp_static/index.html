@@ -15,6 +15,7 @@
   .tree-file { cursor: pointer; padding: 3px 4px 3px 18px; font-size: 13px; color: #333; border-radius: 4px; }
   .tree-file:hover { background: #eef4ff; }
   .tree-file.active { background: #dbe8ff; font-weight: 600; }
+  .tree-file.changed::after { content: "●"; color: #d9822b; font-size: 8px; margin-left: 6px; vertical-align: middle; }
   .tree-children { margin-left: 14px; border-left: 1px dashed #ddd; padding-left: 4px; }
   .tree-children.collapsed { display: none; }
   .caret { display: inline-block; width: 10px; transition: transform 0.1s; }
@@ -51,6 +52,13 @@
   .stat.suspect { background: #fdf3d0; color: #8a6d1a; }
 
   #raw-view { font-family: ui-monospace, "SF Mono", monospace; font-size: 12.5px; background: #1e1e1e; color: #d4d4d4; padding: 16px; border-radius: 8px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; }
+
+  #diff-view { font-family: ui-monospace, "SF Mono", monospace; font-size: 12.5px; background: #1e1e1e; color: #d4d4d4; padding: 16px; border-radius: 8px; overflow-x: auto; }
+  .diff-line { white-space: pre-wrap; word-break: break-word; padding: 1px 6px; }
+  .diff-line .prefix { display: inline-block; width: 14px; opacity: 0.65; user-select: none; }
+  .diff-line.insert { background: rgba(46, 160, 67, 0.25); color: #aff5b4; }
+  .diff-line.delete { background: rgba(248, 81, 73, 0.25); color: #ffb3ab; }
+  .diff-line.equal { color: #999; }
 
   #doc-render { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 24px 32px; font-size: 14.5px; line-height: 1.75; color: #222; max-width: 760px; }
   #doc-render h1 { font-size: 22px; margin: 0 0 16px; }
@@ -93,6 +101,18 @@
 <script>
 let currentPath = null;
 let currentView = "diff";
+let changedPaths = new Set();
+
+async function loadCrawlStatus() {
+  try {
+    const res = await fetch("/api/crawl-status");
+    const data = await res.json();
+    changedPaths = new Set();
+    Object.values(data).forEach(c => (c.changed || []).forEach(p => changedPaths.add(p)));
+  } catch (e) {
+    changedPaths = new Set();
+  }
+}
 
 async function loadTree() {
   const res = await fetch("/api/tree");
@@ -126,9 +146,10 @@ function renderNode(node, isRoot) {
     };
   } else {
     const row = document.createElement("div");
-    row.className = "tree-file";
+    row.className = "tree-file" + (changedPaths.has(node.path) ? " changed" : "");
     row.textContent = node.name.replace(/\.md$/, "");
     row.dataset.path = node.path;
+    row.title = changedPaths.has(node.path) ? "diff-check 检测到线上内容有变化" : "";
     row.onclick = () => selectFile(node.path, row);
     wrap.appendChild(row);
   }
@@ -149,6 +170,8 @@ async function render() {
     await renderDiff();
   } else if (currentView === "raw") {
     await renderRaw();
+  } else if (currentView === "crawlDiff") {
+    await renderCrawlDiff();
   } else {
     await renderSource();
   }
@@ -233,6 +256,38 @@ async function renderSource() {
   bindTabs();
 }
 
+async function renderCrawlDiff() {
+  const res = await fetch(`/api/crawl-diff?path=${encodeURIComponent(currentPath)}`);
+  const data = await res.json();
+  const main = document.getElementById("main");
+  if (data.error) {
+    main.innerHTML = `<div id="error">${escapeHtml(data.error)}</div>`;
+    return;
+  }
+  const sub = data.flagged_changed
+    ? `diff-check 于 ${data.checked_at || "?"}`
+    : (data.checked_at ? `diff-check 于 ${data.checked_at}（未标记变化）` : "尚未运行过 diff-check");
+  let html = topbarHtml(data.doc, sub, null, null, true);
+  if (!data.has_manifest || !data.flagged_changed) {
+    html += `<div id="empty">${escapeHtml(data.message || "此文档未被标记为线上有更新")}</div>`;
+    main.innerHTML = html;
+    bindTabs();
+    return;
+  }
+  html += `<div id="doc-sub" style="margin-bottom:10px;">
+    <a href="${escapeHtml(data.url)}" target="_blank">${escapeHtml(data.url)}</a>
+    ${data.applied ? '<span class="badge" style="margin-left:8px;">已应用到本地</span>' : '<span class="badge" style="margin-left:8px;background:#fdf3d0;color:#8a6d1a;">本地未更新</span>'}
+  </div>`;
+  html += `<div id="diff-view">`;
+  data.diff_lines.forEach(l => {
+    const prefix = l.type === "insert" ? "+" : l.type === "delete" ? "-" : " ";
+    html += `<div class="diff-line ${l.type}"><span class="prefix">${prefix}</span>${escapeHtml(l.text)}</div>`;
+  });
+  html += `</div>`;
+  main.innerHTML = html;
+  bindTabs();
+}
+
 function topbarHtml(doc, subLabel, matched, gaps, noGapStat, suspects) {
   return `<div id="topbar">
     <div>
@@ -250,6 +305,7 @@ function topbarHtml(doc, subLabel, matched, gaps, noGapStat, suspects) {
         <button class="tab-btn" data-view="diff">对照视图</button>
         <button class="tab-btn" data-view="raw">原始 JSONL</button>
         <button class="tab-btn" data-view="source">完整原文</button>
+        <button class="tab-btn" data-view="crawlDiff">线上更新</button>
       </div>
     </div>
   </div>`;
@@ -295,7 +351,10 @@ function markdownHighlight(md) {
   return lines.join("\n");
 }
 
-loadTree();
+(async () => {
+  await loadCrawlStatus();
+  loadTree();
+})();
 </script>
 </body>
 </html>

@@ -11,6 +11,7 @@ Then open http://localhost:5001
 """
 
 import argparse
+import difflib
 import json
 import sys
 from pathlib import Path
@@ -23,6 +24,12 @@ REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 # chunk_diff.py lives in the sibling chunking/ directory, not here.
 sys.path.insert(0, str(REPO_ROOT / "scripts" / "chunking"))
 import chunk_diff  # noqa: E402
+
+# crawl_gitbook.py — reused here for the same fetch_page_md() the diff-check
+# CLI uses, so "看新旧文档差异" fetches live content the identical way
+# instead of re-implementing GitBook's .md-export fetch a second time.
+sys.path.insert(0, str(REPO_ROOT / "scripts" / "crawl"))
+import crawl_gitbook  # noqa: E402
 
 ROOTS = ["doc/帮助中心", "doc/API文档", "doc/产品介绍"]
 
@@ -173,6 +180,106 @@ def api_raw():
         "chunks_file": str(chunks_path.relative_to(REPO_ROOT)).replace("\\", "/"),
         "parent": parent,
         "chunks": chunks,
+    })
+
+
+@app.route("/api/crawl-status")
+def api_crawl_status():
+    """Aggregated .crawl-status.json summaries across all corpora — lets the
+    frontend badge which tree files have a pending line-check diff to review
+    without a round-trip per file."""
+    result = {}
+    for r in ROOTS:
+        manifest_path = REPO_ROOT / r / ".crawl-status.json"
+        if manifest_path.exists():
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            result[r] = {
+                "checked_at": manifest.get("checked_at"),
+                "changed": [c["path"] for c in manifest.get("changed", [])],
+                "new_count": len(manifest.get("new", [])),
+            }
+    return jsonify(result)
+
+
+def _find_corpus_root(doc_path: Path) -> Path | None:
+    """Walk up from doc_path to the corpus dir directly under doc/ (e.g.
+    doc/API文档), which is where diff-check writes .crawl-status.json."""
+    rel = doc_path.relative_to(REPO_ROOT)
+    parts = rel.parts
+    if len(parts) < 2 or parts[0] != "doc":
+        return None
+    return REPO_ROOT / parts[0] / parts[1]
+
+
+@app.route("/api/crawl-diff")
+def api_crawl_diff():
+    """Git-diff-style comparison of a local doc against the live GitBook
+    page, for files diff-check flagged as changed in .crawl-status.json.
+    Reuses crawl_gitbook.fetch_page_md() so this fetches content the exact
+    same way the CLI's diff-check does, rather than a second implementation
+    that could drift out of sync with it."""
+    rel_path = request.args.get("path", "")
+    try:
+        doc_path = _resolve_doc(rel_path)
+    except ValueError:
+        return jsonify({"error": "invalid path"}), 400
+    if not doc_path.exists():
+        return jsonify({"error": "file not found"}), 404
+
+    corpus_root = _find_corpus_root(doc_path)
+    if corpus_root is None:
+        return jsonify({"error": "could not determine corpus for this path"}), 400
+
+    manifest_path = corpus_root / ".crawl-status.json"
+    if not manifest_path.exists():
+        return jsonify({
+            "doc": rel_path,
+            "has_manifest": False,
+            "message": "没有 .crawl-status.json，请先运行 crawl_gitbook.py diff-check",
+        })
+
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    rel_posix = str(doc_path.relative_to(REPO_ROOT)).replace("\\", "/")
+    entry = next((c for c in manifest.get("changed", []) if c.get("path") == rel_posix), None)
+    if entry is None:
+        return jsonify({
+            "doc": rel_path,
+            "has_manifest": True,
+            "checked_at": manifest.get("checked_at"),
+            "flagged_changed": False,
+            "message": "diff-check 未将此文件标记为 changed（未变化，或从未匹配到线上页面）",
+        })
+
+    url = entry["url"]
+    try:
+        fresh = crawl_gitbook.fetch_page_md(url)
+    except Exception as e:
+        return jsonify({"error": f"fetch failed: {e}"}), 502
+
+    local = doc_path.read_text(encoding="utf-8")
+    local_lines = local.splitlines()
+    fresh_lines = fresh.splitlines()
+
+    diff_lines = []
+    sm = difflib.SequenceMatcher(None, local_lines, fresh_lines)
+    for tag, i1, i2, j1, j2 in sm.get_opcodes():
+        if tag == "equal":
+            for line in local_lines[i1:i2]:
+                diff_lines.append({"type": "equal", "text": line})
+        else:
+            for line in local_lines[i1:i2]:
+                diff_lines.append({"type": "delete", "text": line})
+            for line in fresh_lines[j1:j2]:
+                diff_lines.append({"type": "insert", "text": line})
+
+    return jsonify({
+        "doc": rel_path,
+        "has_manifest": True,
+        "flagged_changed": True,
+        "url": url,
+        "checked_at": manifest.get("checked_at"),
+        "applied": entry.get("applied", False),
+        "diff_lines": diff_lines,
     })
 
 
