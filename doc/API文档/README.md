@@ -2,10 +2,13 @@
 
 来源：https://resources.atriptech.com/api-wen-dang
 
-结构与英文版一致，只是路径前缀不同。共 123 篇文档，4 个一级分类。这是开发者/API集成文档，跟 [../帮助中心/](../帮助中心/README.md)（面向客服/运营场景的政策与操作说明）是两套不同性质的文档，分开存放、分开建库——检索时先判断问题是业务政策类还是技术集成类，再决定查哪一套。
+结构与英文版一致，只是路径前缀不同。共 129 篇文档，4 个一级分类。这是开发者/API集成文档，跟 [../帮助中心/](../帮助中心/README.md)（面向客服/运营场景的政策与操作说明）是两套不同性质的文档，分开存放、分开建库——检索时先判断问题是业务政策类还是技术集成类，再决定查哪一套。
+
+- [Atlas API 文档更新](Atlas API 文档更新.md)
 
 ## 集成指南
 
+- [集成指南](01-集成指南/集成指南.md)
 - [UAT 验证](01-集成指南/UAT 验证.md)
 - [快速入门](01-集成指南/快速入门.md)
 - [沙箱开发](01-集成指南/沙箱开发.md)
@@ -29,20 +32,21 @@
 
 - [扩展与集成](03-产品指南/扩展与集成.md)
 - [预订](03-产品指南/预订.md)
-- [预订后服务](03-产品指南/预订后服务.md)
+- [产品指南](03-产品指南/产品指南.md)
+- [预订后操作](03-产品指南/预订后操作.md)
 
 ### booking
 
 - [可选附加服务](03-产品指南/booking/可选附加服务.md)
 - [预订概述](03-产品指南/booking/预订概述.md)
-- [预订步骤指南](03-产品指南/booking/预订步骤指南.md)
-- [预订流程](03-产品指南/booking/预订流程.md)
+- [预订步骤](03-产品指南/booking/预订步骤.md)
+- [预订路径](03-产品指南/booking/预订路径.md)
 
 #### booking-flows
 
-- [履约流程](03-产品指南/booking/booking-flows/履约流程.md)
-- [标准预订流程](03-产品指南/booking/booking-flows/标准预订流程.md)
-- [获取报价流程](03-产品指南/booking/booking-flows/获取报价流程.md)
+- [核价出票接口](03-产品指南/booking/booking-flows/核价出票接口.md)
+- [标准预订](03-产品指南/booking/booking-flows/标准预订.md)
+- [获取报价接口](03-产品指南/booking/booking-flows/获取报价接口.md)
 
 #### booking-overview
 
@@ -65,8 +69,8 @@
 - [查询订单](03-产品指南/booking/booking-step-guides/查询订单.md)
 - [确认订单（仅 FR）](03-产品指南/booking/booking-step-guides/确认订单（仅 FR）.md)
 - [获取报价](03-产品指南/booking/booking-step-guides/获取报价.md)
-- [获取报价价格](03-产品指南/booking/booking-step-guides/获取报价价格.md)
-- [验证](03-产品指南/booking/booking-step-guides/验证.md)
+- [核价出票](03-产品指南/booking/booking-step-guides/核价出票.md)
+- [验价](03-产品指南/booking/booking-step-guides/验价.md)
 
 ##### payment-and-ticketing
 
@@ -118,6 +122,7 @@
 
 ## API参考
 
+- [API 参考](04-API参考/API 参考.md)
 - [Webhook 与事件 API](04-API参考/Webhook 与事件 API.md)
 - [工具 API](04-API参考/工具 API.md)
 - [预订 API](04-API参考/预订 API.md)
@@ -134,9 +139,9 @@
 - [比价搜索](04-API参考/booking-apis/比价搜索.md)
 - [确认订单](04-API参考/booking-apis/确认订单.md)
 - [获取报价](04-API参考/booking-apis/获取报价.md)
-- [获取报价价格](04-API参考/booking-apis/获取报价价格.md)
+- [Get Offer Price](04-API参考/booking-apis/Get Offer Price.md)
 - [行李](04-API参考/booking-apis/行李.md)
-- [验证](04-API参考/booking-apis/验证.md)
+- [验价](04-API参考/booking-apis/验价.md)
 
 ### post-booking-apis
 
@@ -162,6 +167,7 @@
 
 ## 支持与参考
 
+- [支持与参考](05-支持与参考/支持与参考.md)
 - [参考数据与沙箱](05-支持与参考/参考数据与沙箱.md)
 - [故障排除与支持](05-支持与参考/故障排除与支持.md)
 - [运营工具](05-支持与参考/运营工具.md)
@@ -181,7 +187,7 @@
 - [退款、查询与预订后错误](05-支持与参考/errors-handing/退款、查询与预订后错误.md)
 - [通用与访问错误](05-支持与参考/errors-handing/通用与访问错误.md)
 - [错误码](05-支持与参考/errors-handing/错误码.md)
-- [验证、订单与出票错误](05-支持与参考/errors-handing/验证、订单与出票错误.md)
+- [验价、订单与出票错误](05-支持与参考/errors-handing/验价、订单与出票错误.md)
 
 ### integration-reference
 
@@ -208,7 +214,8 @@
 - [订单与出票](05-支持与参考/troubleshooting-faqs/订单与出票.md)
 - [财务](05-支持与参考/troubleshooting-faqs/财务.md)
 - [集成前](05-支持与参考/troubleshooting-faqs/集成前.md)
-- [预订后服务](05-支持与参考/troubleshooting-faqs/预订后服务.md)
+- [预订后操作](05-支持与参考/troubleshooting-faqs/预订后操作.md)
+- [Fulfilment API FAQ](05-支持与参考/troubleshooting-faqs/Fulfilment API FAQ.md)
 
 ### utility-api-overview
 
