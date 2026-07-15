@@ -17,11 +17,23 @@ Three subcommands:
   diff-check  — for every existing local .md file under a corpus, find its
                 likely current URL by matching titles against llms.txt,
                 fetch fresh content, and report which files' content has
-                actually changed since the local copy was made. This is the
+                actually changed since the local copy was made. Also cross-
+                checks llms.txt for pages with no local title match at all
+                (brand new pages, same detection `list` does). This is the
                 incremental-update / content-drift check that was designed
                 but never built earlier — see the "核价出票" case where the
                 live site had been re-edited since the original crawl and
                 nothing caught it.
+
+                Writes doc/<corpus>/.crawl-status.json (new/changed/
+                unchanged/unmatched, with paths) as a durable marker — the
+                point is that a later chunking pass (or the doc-chunking
+                skill) can read that file and only touch what's flagged
+                `changed`/`new`, instead of re-chunking the whole corpus or
+                re-deriving "what changed" from scratch each time. The
+                marker only reflects the results of the diff-check run that
+                wrote it — it goes stale the moment the live site changes
+                again, it's not live state.
 
 Does NOT attempt to auto-assign new pages into the numbered category
 folders (01-ATRIP, 04-售后票务, etc.) — that assignment is a judgment call
@@ -37,13 +49,19 @@ Usage:
     python crawl_gitbook.py fetch <url> <output_path>
     python crawl_gitbook.py diff-check 帮助中心
     python crawl_gitbook.py diff-check API文档 --apply   # overwrite changed files in place
+
+diff-check writes doc/<corpus>/.crawl-status.json (gitignored, point-in-time
+only) — after running it, only re-chunk the paths under "changed" (via the
+doc-chunking skill), not the whole corpus.
 """
 import argparse
 import glob
+import json
 import os
 import re
 import time
 import urllib.request
+from datetime import datetime, timezone
 
 BASE = "https://resources.atriptech.com"
 LLMS_TXT_URL = f"{BASE}/llms.txt"
@@ -127,11 +145,13 @@ def cmd_diff_check(args):
     ]
 
     changed, unmatched, unchanged = [], [], []
+    matched_titles = set()
     for path in local_files:
         title = title_of_local_file(path)
         if not title or title not in by_title:
             unmatched.append(path)
             continue
+        matched_titles.add(title)
         url = by_title[title]
         try:
             fresh = fetch_page_md(url)
@@ -145,9 +165,15 @@ def cmd_diff_check(args):
             unchanged.append(path)
         time.sleep(0.2)
 
+    # Pages in llms.txt with no local file at all — same detection `list`
+    # does, folded in here so diff-check gives one complete picture instead
+    # of needing a separate `list` run to catch brand-new pages.
+    new_pages = [(title, url) for title, url, _ in entries if title not in matched_titles]
+
     print(f"Checked {len(local_files)} local files under {args.corpus}/")
     print(f"  unchanged: {len(unchanged)}")
     print(f"  changed:   {len(changed)}")
+    print(f"  new (no local file, found in llms.txt): {len(new_pages)}")
     print(f"  unmatched (no title match in llms.txt, or fetch failed): {len(unmatched)}")
 
     if changed:
@@ -160,10 +186,32 @@ def cmd_diff_check(args):
                     f.write(fresh)
                 print("    -> overwritten with fresh content (re-chunk + re-ingest this file next)")
 
+    if new_pages:
+        print("\nNew pages (not crawled yet — decide where they belong, then `fetch` + doc-chunking skill):")
+        for title, url in new_pages:
+            print(f"  {title}\n    {url}")
+
     if unmatched:
         print("\nUnmatched (couldn't confirm via title match, check manually):")
         for u in unmatched[:20]:
             print(f"  {u}")
+
+    manifest_path = os.path.join(corpus_dir, ".crawl-status.json")
+    manifest = {
+        "corpus": args.corpus,
+        "checked_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "new": [{"title": title, "url": url} for title, url in new_pages],
+        "changed": [
+            {"path": os.path.relpath(path, REPO_ROOT).replace("\\", "/"), "url": url, "applied": bool(args.apply)}
+            for path, url, _ in changed
+        ],
+        "unchanged": [os.path.relpath(p, REPO_ROOT).replace("\\", "/") for p in unchanged],
+        "unmatched": [str(u) for u in unmatched],
+    }
+    with open(manifest_path, "w", encoding="utf-8") as f:
+        json.dump(manifest, f, ensure_ascii=False, indent=2)
+    print(f"\nMarker written -> {os.path.relpath(manifest_path, REPO_ROOT)}")
+    print("Next: re-chunk only the paths listed under \"changed\" (and any \"new\" ones you've fetched+placed), via the doc-chunking skill — not the whole corpus.")
 
 
 def main():

@@ -7,3 +7,4 @@ __pycache__/
 .claude/
 *.diff.html
 scripts/eval/reports/
+doc/**/.crawl-status.json
