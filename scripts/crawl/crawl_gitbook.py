@@ -61,6 +61,7 @@ import os
 import re
 import time
 import urllib.request
+from collections import Counter
 from datetime import datetime, timezone
 
 BASE = "https://resources.atriptech.com"
@@ -152,26 +153,82 @@ def cmd_fetch(args):
     print(f"Saved -> {args.output} ({len(text)} chars)")
 
 
+def _category_of(path: str, corpus_dir: str) -> str:
+    """Local file's top-level category folder relative to the corpus root
+    (e.g. "04-API参考"), used to disambiguate same-titled pages below."""
+    rel = os.path.relpath(path, corpus_dir)
+    parts = rel.split(os.sep)
+    return parts[0] if len(parts) > 1 else ""
+
+
+def _url_top_segment(url: str, base_path: str) -> str:
+    """First path segment of a page's URL after the corpus prefix (e.g.
+    "product-guides" vs "api-reference"), used as a per-category signature."""
+    path = url.split(f"{BASE}/", 1)[-1]
+    if path.startswith(base_path + "/"):
+        path = path[len(base_path) + 1:]
+    return path.split("/")[0]
+
+
 def cmd_diff_check(args):
     prefix = CORPUS_PREFIX[args.corpus]
     entries = parse_llms_txt(prefix)
-    by_title = {title: url for title, url, _ in entries}
+    # Some titles are shared by two live pages -- most commonly a prose
+    # product-guide page and its matching raw api-reference page for the
+    # same endpoint/topic (e.g. "创建订单" exists once under
+    # product-guides/... and once under api-reference/...). A plain
+    # title->url dict silently drops one of them, which then makes BOTH
+    # local files (living in different category folders) get diffed
+    # against the SAME url -- i.e. exactly the bug this was rewritten to
+    # avoid. Keep every candidate URL per title instead.
+    by_title: dict[str, list[str]] = {}
+    for title, url, _ in entries:
+        by_title.setdefault(title, []).append(url)
 
     corpus_dir = os.path.join(DOC_ROOT, args.corpus)
     local_files = [
         p for p in glob.glob(os.path.join(corpus_dir, "**", "*.md"), recursive=True)
         if "_rag-chunks" not in p
     ]
+    local_titles = {p: title_of_local_file(p) for p in local_files}
+
+    # Learn each local category folder's typical URL top-segment from the
+    # files whose title is NOT ambiguous (only one candidate URL) -- e.g.
+    # most files under 03-产品指南 resolve unambiguously to a
+    # "product-guides/..." URL, so that folder's signature is
+    # "product-guides". Used below to pick the right candidate when a
+    # title has more than one URL match.
+    category_votes: dict[str, "Counter[str]"] = {}
+    for path, title in local_titles.items():
+        candidates = by_title.get(title) or []
+        if len(candidates) != 1:
+            continue
+        cat = _category_of(path, corpus_dir)
+        category_votes.setdefault(cat, Counter())[_url_top_segment(candidates[0], prefix)] += 1
+    category_signature = {cat: votes.most_common(1)[0][0] for cat, votes in category_votes.items() if votes}
 
     changed, unmatched, unchanged = [], [], []
     matched_titles = set()
     for path in local_files:
-        title = title_of_local_file(path)
-        if not title or title not in by_title:
+        title = local_titles[path]
+        candidates = by_title.get(title) if title else None
+        if not title or not candidates:
             unmatched.append(path)
             continue
+        if len(candidates) == 1:
+            url = candidates[0]
+        else:
+            cat = _category_of(path, corpus_dir)
+            expected = category_signature.get(cat)
+            filtered = [u for u in candidates if _url_top_segment(u, prefix) == expected] if expected else []
+            if len(filtered) != 1:
+                unmatched.append(
+                    f"{path} (ambiguous title '{title}' matches {len(candidates)} live pages, "
+                    f"could not disambiguate by folder -- check manually)"
+                )
+                continue
+            url = filtered[0]
         matched_titles.add(title)
-        url = by_title[title]
         try:
             fresh = fetch_page_md(url)
         except Exception as e:
