@@ -28,4 +28,4 @@
 
 - **`updated_at` 全部为 `null`**：源目录下的导航文件 `安全与合规.md` 未像「退票」分类的 `退票.md` 那样标注"最后更新日期"，因此本分类所有 parent/child 的 `updated_at` 均记为 `null`，而非编造日期。
 - **`applicable_carrier` 全部为"通用"**：两篇源文章均为平台级账户/安全功能说明，不涉及具体航司差异。
-- 与 `09-Atlas功能/Atlas Security and Compliance.md` 的重叠评估见该目录 README；`安全与合规说明.md` 是操作导览版本（含具体 UI 路径、按钮名称、参数默认值），两者内容互补而非重复，因此分别在各自分类下保留为独立 parent 记录，未合并。
+- `09-Atlas功能/Atlas Security and Compliance.md` 曾被认为与本文档内容互补而分别保留，后确认该文件不在 `Atlas功能.md` 导航列表中（GitBook 爬取带出的未发布页面），已连同其 chunk 一起删除，不再存在重叠问题。

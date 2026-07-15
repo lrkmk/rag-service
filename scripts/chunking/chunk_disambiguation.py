@@ -54,6 +54,8 @@ def clean_markdown_text(text: str) -> str:
     main(), not inside split_h3_sections()/extract_intro().
     """
     text = html.unescape(text)  # decode &#x624D; etc -- confirmed leaking into 资讯 chunks otherwise
+    text = re.sub(r"\\\n", "\n", text)  # hard line break
+    text = re.sub(r"\\([*_`\[\]()#>\\])", r"\1", text)  # un-escape markdown escapes FIRST -- GitBook exports widely escape ** and ` inside blockquotes (e.g. "\*\*Dependency:\*\*"), which otherwise survive every regex below untouched since they no longer look like real markdown syntax
     text = re.sub(r"\{%[^}]*%\}", "", text)  # stray GitBook component tags ({% stepper %} etc.) that reached here unstripped
     text = re.sub(r"(?m)^```\w*\s*$", "", text)  # fenced-code-block delimiters -- keep the code content, drop the ``` markers
     text = re.sub(r"(?m)^[ \t]*(?:\*[ \t]*){3,}$", "", text)  # *** horizontal rule
@@ -66,10 +68,8 @@ def clean_markdown_text(text: str) -> str:
     text = re.sub(r"(?<!\w)\*((?:[^*\n]|\\\*)+)\*(?!\w)", r"\1", text)
     text = re.sub(r"(?<!\w)_([^_\n]+)_(?!\w)", r"\1", text)
     text = re.sub(r"`([^`\n]+)`", r"\1", text)
-    text = re.sub(r"(?m)^(?:>\s?)?#{1,6}\s+", "", text)  # handles "### h" and blockquoted "> ### h"
-    text = re.sub(r"(?m)^>\s?", "", text)
-    text = re.sub(r"\\\n", "\n", text)
-    text = re.sub(r"\\([*_`\[\]()#>\\])", r"\1", text)
+    text = re.sub(r"(?m)^(?:>\s?)*#{1,6}\s+", "", text)  # handles "### h" and repeated-blockquoted "> > ### h"
+    text = re.sub(r"(?m)^(?:>\s?)+", "", text)  # strip one or more leading blockquote markers (nested quotes leave a second one otherwise)
     return text
 
 
@@ -167,12 +167,24 @@ def main():
     # ASCII-only (as an earlier version did) silently collapsed distinct
     # Chinese titles like "获取报价 vs 获取报价价格" and "验证 vs 下单" to the
     # same slug ("vs"), which then clobbered each other via the merge/dedup
-    # logic below. Use a short content hash of the full path instead — not
-    # pretty, but guaranteed unique.
-    path_hash = hashlib.md5(str(md_path).encode("utf-8")).hexdigest()[:8]
+    # logic below. Use a short content hash instead — not pretty, but
+    # guaranteed unique.
+    #
+    # Hash source_path (the canonical, invocation-independent relative path),
+    # NOT str(md_path) -- md_path is whatever the caller happened to pass on
+    # the command line (absolute vs relative, forward vs back slashes), so
+    # hashing it directly made the slug -- and therefore which existing
+    # chunk_ids get recognized as "already written by this file" below --
+    # depend on invocation style. Two runs of the same file with differently
+    # -formed paths produced two different slugs, so the merge/dedup filter
+    # never matched the old chunks and silently left duplicates instead of
+    # replacing them (confirmed for real: 搜索 vs 报价.md ended up with both
+    # an absolute-path-hashed and a relative-path-hashed copy of every chunk
+    # after two reruns with different path forms).
+    source_path = str(md_path).split("API文档", 1)[1].lstrip("\\/").replace("\\", "/")
+    path_hash = hashlib.md5(source_path.encode("utf-8")).hexdigest()[:8]
     ascii_hint = re.sub(r"[^a-zA-Z0-9]+", "", title.lower())[:8]
     slug = f"{ascii_hint}{path_hash}" if ascii_hint else path_hash
-    source_path = str(md_path).split("API文档", 1)[1].lstrip("\\/").replace("\\", "/")
     chunks = []
 
     intro = extract_intro(text)

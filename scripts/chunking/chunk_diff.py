@@ -1,15 +1,26 @@
 """
 Generate a visual diff between a source .md article and its produced RAG
 chunks — pairs each source paragraph with the chunk that covers it, and
-flags paragraphs that don't match any chunk well (possible coverage gaps).
+flags paragraphs that don't match any chunk (coverage gaps).
 
-Matching is a heuristic (difflib.SequenceMatcher ratio between each source
-paragraph and each candidate chunk's text), not an exact structural parse —
-chunk `section` labels are often hand-written summaries of a heading +
-sub-item combo (e.g. "二、1、自愿退票－航前申请"), not literal heading text,
-so they can't be reliably re-matched against the raw markdown headings
-alone. Flagged gaps are a starting point for human review, not a guaranteed
-exhaustive diff.
+Chunk `text` is required to be verbatim source wording (see
+.claude/skills/doc-chunking/references/manual-chunking.md's "find
+boundaries, don't rewrite" rule — this applies to every content type in this
+pipeline, not just the manually-chunked ones: the scripted chunkers extract
+programmatically too, none of them paraphrase). That makes exact matching
+the right primary check: a paragraph is COVERED only if it's a normalized
+substring of some chunk's text, matching the skill doc's own rationale for
+requiring verbatim text ("a coverage check can confirm a chunk's text is an
+exact substring of the source instead of a fuzzy-similarity guess").
+
+A paragraph that fails exact containment but still scores above threshold on
+the old Jaccard character-shingle measure is reported as a SUSPECT, not
+folded into "covered" — under the verbatim rule this should essentially
+never happen for a genuinely-covered paragraph, so when it does it's a
+signal worth a human look (paraphrasing, drift, or two source occurrences of
+the same fact that were intentionally folded into one chunk per the skill
+doc's dedup allowance) rather than something to silently wave through.
+Everything else is a GAP: no chunk contains it, exactly or approximately.
 
 Usage:
     python chunk_diff.py "<path to source .md>" [-o out.html] [--threshold 0.1]
@@ -25,6 +36,8 @@ import html
 import json
 import re
 from pathlib import Path
+
+from clean_markdown_text import clean_markdown_text
 
 
 def strip_boilerplate(text: str) -> str:
@@ -185,22 +198,15 @@ def load_matching_chunks(chunks_path: Path, doc_path: Path) -> list[dict]:
     return matched
 
 
-_MD_NOISE = re.compile(r"[\[\]\(\)\*_`#>~/\-]|https?://\S+")
-
-
 def _shingles(text: str, n: int = 3) -> set[str]:
-    """Character n-grams, whitespace/markdown-noise stripped. The chunk
-    texts are reworded summaries of the source prose, not verbatim excerpts
-    (e.g. "请提前确认是否符合航司退票规则" -> "需提前确认是否符合航司退票规则") — a
-    character-LCS measure like difflib.SequenceMatcher penalizes that kind
-    of light rewording much more than the overlapping-vocabulary reality
-    warrants. Jaccard similarity over character shingles is tolerant of
-    word-order/particle changes as long as the underlying phrases recur,
-    which matches what "did this chunk absorb this paragraph" actually
-    means here.
+    """Character n-grams, whitespace/markdown-noise stripped. Used only for
+    the SUSPECT tier (see best_match) after exact containment has already
+    failed — Jaccard similarity over character shingles is tolerant of
+    word-order/particle changes, which is what lets it flag "this looks like
+    the same fact, but isn't a literal substring" (drift/paraphrase/an
+    intentionally-folded duplicate) instead of just going quiet.
     """
-    cleaned = _MD_NOISE.sub("", text)
-    cleaned = re.sub(r"\s+", "", cleaned)
+    cleaned = re.sub(r"\s+", "", clean_markdown_text(text))
     if len(cleaned) < n:
         return {cleaned} if cleaned else set()
     return {cleaned[i : i + n] for i in range(len(cleaned) - n + 1)}
@@ -213,33 +219,71 @@ def _jaccard(a: set, b: set) -> float:
 
 
 def _normalized(text: str) -> str:
-    cleaned = _MD_NOISE.sub("", text)
-    return re.sub(r"\s+", "", cleaned)
+    # Use the SAME clean_markdown_text() the chunkers themselves run on field
+    # text before it becomes `text`/`answer` (html.unescape, backslash-escape
+    # un-escaping, GitBook {% %} tags, nested blockquotes, horizontal rules,
+    # and -- unlike this module's old ad hoc noise regex -- markdown links
+    # keep their visible label and drop the URL rather than concatenating
+    # both into the comparison string). Comparing source and chunk text
+    # through the exact same cleaner is what makes "normalized substring"
+    # mean the same thing on both sides; a second, slightly different noise
+    # regex here was a source of spurious SUSPECT/GAP flags on otherwise
+    # verbatim-covered paragraphs (confirmed for real on 如何申请废票？.md's
+    # "废票路径：&#x41;TRIP -> ..." paragraph, which only started matching
+    # once entity-unescaping ran before the noise-strip -- clean_markdown_text
+    # already does that as step 1).
+    return re.sub(r"\s+", "", clean_markdown_text(text))
 
 
-def best_match(paragraph: str, chunks: list[dict], threshold: float):
+def best_match(paragraph: str, chunks: list[dict], threshold: float) -> tuple[str | None, float, str]:
+    """Returns (chunk_id, ratio, status). status is one of:
+      - "exact":  paragraph is a normalized substring of some chunk (or vice
+                  versa) -- the real coverage signal now that chunk text is
+                  required to be verbatim (see module docstring). ratio=1.0.
+      - "fuzzy":  no exact containment, but Jaccard shingle similarity clears
+                  `threshold` -- under the verbatim rule this shouldn't
+                  happen for genuinely-covered content, so it's surfaced as
+                  a SUSPECT needing a human look, not counted as covered.
+      - "none":   no chunk resembles this paragraph at all -- a real gap.
+    """
     # Containment check first: Jaccard alone under-scores a paragraph that
     # appears verbatim inside a much longer chunk (or vice versa), because
     # Jaccard's denominator is the *union* size — if one side is 3-4x the
     # other, even a 100%-precise overlap can land well under a reasonable
     # threshold. A paragraph that's a substring (or near-substring) of a
     # chunk's text — or contains the chunk's text — is unambiguously
-    # covered regardless of the size ratio, so treat that as a match
-    # outright (ratio reported as 1.0) instead of routing it through the
-    # Jaccard fallback where length asymmetry would drag it down.
+    # covered regardless of the size ratio.
     # Minimum length matters here: a short generic phrase (e.g. "不要这样做",
     # 6 chars) is a substring of practically any chunk that happens to
     # contain it, so a low floor turns the containment check into a false-
-    # positive machine on terse, repetitive phrasing. 12 chars is enough to
+    # positive machine on terse, repetitive phrasing. 10 chars is enough to
     # rule out one-clause boilerplate while still catching genuinely short
-    # but distinctive sentences.
-    para_norm = _normalized(paragraph)
-    if len(para_norm) >= 12:
-        for c in chunks:
-            candidate_text = c.get("text") or (c.get("question", "") + " " + c.get("answer", ""))
-            cand_norm = _normalized(candidate_text)
-            if para_norm in cand_norm or cand_norm in para_norm:
-                return c.get("chunk_id"), 1.0
+    # but distinctive sentences. A genuinely-covered paragraph shorter than
+    # that still gets a fair shot via the Jaccard tier below (as "fuzzy",
+    # not "exact" -- a labeling nuisance, not a missed gap).
+    # A source paragraph can start with an inline pseudo-heading line ("1.
+    # **什么是多币种账户？**") glued directly onto the body with no blank line
+    # between them -- split_paragraphs() has no reason to split them into
+    # separate blocks, so they arrive here as one unit. But the chunker
+    # commonly folds that kind of numbered/bold label into the chunk's
+    # `section` metadata rather than repeating it inline in `text` -- so the
+    # label's own wording ("1什么是多币种账户") becomes a prefix the paragraph
+    # has that the chunk doesn't, and containment fails even though the
+    # actual body sentence that follows is 100% verbatim-covered. Retry
+    # containment with that leading label line stripped before giving up.
+    lines = paragraph.split("\n", 1)
+    candidates = [paragraph]
+    if len(lines) == 2 and _is_label_like(lines[0]):
+        candidates.append(lines[1])
+
+    for cand_paragraph in candidates:
+        para_norm = _normalized(cand_paragraph)
+        if len(para_norm) >= 10:
+            for c in chunks:
+                candidate_text = c.get("text") or (c.get("question", "") + " " + c.get("answer", ""))
+                cand_norm = _normalized(candidate_text)
+                if para_norm in cand_norm or cand_norm in para_norm:
+                    return c.get("chunk_id"), 1.0, "exact"
 
     para_shingles = _shingles(paragraph)
     best_id, best_ratio = None, 0.0
@@ -249,11 +293,11 @@ def best_match(paragraph: str, chunks: list[dict], threshold: float):
         if ratio > best_ratio:
             best_ratio, best_id = ratio, c.get("chunk_id")
     if best_ratio >= threshold:
-        return best_id, best_ratio
-    return None, best_ratio
+        return best_id, best_ratio, "fuzzy"
+    return None, best_ratio, "none"
 
 
-def render_html(doc_path: Path, pairs: list[dict], gaps: list[dict], chunk_count: int) -> str:
+def render_html(doc_path: Path, pairs: list[dict], suspects: list[dict], gaps: list[dict], chunk_count: int) -> str:
     def esc(s):
         return html.escape(s or "")
 
@@ -263,7 +307,7 @@ def render_html(doc_path: Path, pairs: list[dict], gaps: list[dict], chunk_count
 <div style="border:1px solid #ddd;border-radius:10px;margin-bottom:10px;overflow:hidden;">
   <div style="display:flex;justify-content:space-between;padding:8px 14px;background:#f5f5f5;font-size:13px;">
     <span style="font-weight:600;">{esc(p['heading'])}</span>
-    <span style="color:#888;font-family:monospace;">{esc(p['chunk_id'])} · match {p['ratio']:.2f}</span>
+    <span style="color:#888;font-family:monospace;">{esc(p['chunk_id'])} · exact match</span>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;">
     <div style="padding:10px 14px;border-right:1px solid #eee;">
@@ -277,12 +321,31 @@ def render_html(doc_path: Path, pairs: list[dict], gaps: list[dict], chunk_count
   </div>
 </div>""")
 
+    for s in suspects:
+        rows.append(f"""
+<div style="border:1px solid #d9b95c;border-radius:10px;margin-bottom:10px;overflow:hidden;background:#fffbea;">
+  <div style="display:flex;justify-content:space-between;padding:8px 14px;background:#fdf3d0;font-size:13px;">
+    <span style="font-weight:600;">{esc(s['heading'])}</span>
+    <span style="color:#8a6d1a;font-weight:600;">◐ 疑似改写/需复核 — {esc(s['chunk_id'])} · 相似度 {s['ratio']:.2f}（非精确匹配）</span>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;">
+    <div style="padding:10px 14px;border-right:1px solid #f0e4b8;">
+      <p style="font-size:11px;color:#999;margin:0 0 4px;text-transform:uppercase;">原文</p>
+      <p style="font-size:13px;line-height:1.6;margin:0;white-space:pre-wrap;">{esc(s['src_text'])}</p>
+    </div>
+    <div style="padding:10px 14px;">
+      <p style="font-size:11px;color:#999;margin:0 0 4px;text-transform:uppercase;">最相似的切片结果</p>
+      <p style="font-size:13px;line-height:1.6;margin:0;white-space:pre-wrap;">{esc(s['chunk_text'])}</p>
+    </div>
+  </div>
+</div>""")
+
     for g in gaps:
         rows.append(f"""
 <div style="border:1px solid #e0a0a0;border-radius:10px;margin-bottom:10px;overflow:hidden;background:#fff5f5;">
   <div style="display:flex;justify-content:space-between;padding:8px 14px;background:#fbe4e4;font-size:13px;">
     <span style="font-weight:600;">{esc(g['heading'])}</span>
-    <span style="color:#a33;font-weight:600;">⚠ 未匹配到chunk（最佳相似度 {g['ratio']:.2f}）</span>
+    <span style="color:#a33;font-weight:600;">⚠ 未覆盖（最佳相似度 {g['ratio']:.2f}）</span>
   </div>
   <div style="padding:10px 14px;">
     <p style="font-size:11px;color:#999;margin:0 0 4px;text-transform:uppercase;">原文</p>
@@ -294,7 +357,7 @@ def render_html(doc_path: Path, pairs: list[dict], gaps: list[dict], chunk_count
 <title>切片覆盖对照 - {esc(doc_path.name)}</title></head>
 <body style="font-family:-apple-system,'PingFang SC',sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;">
 <h2 style="font-size:18px;">{esc(doc_path.name)} — 原文 / 切片 对照</h2>
-<p style="color:#666;font-size:13px;">共 {chunk_count} 个 chunk，{len(pairs)} 段原文成功匹配，<span style="color:#a33;">{len(gaps)} 段疑似未覆盖</span>（阈值以下的匹配已归入疑似未覆盖，需要人工确认，不是精确diff）。</p>
+<p style="color:#666;font-size:13px;">共 {chunk_count} 个 chunk，{len(pairs)} 段原文精确匹配，<span style="color:#8a6d1a;">{len(suspects)} 段疑似改写/需复核</span>，<span style="color:#a33;">{len(gaps)} 段未覆盖</span>（chunk text 要求逐字取自原文，精确匹配即真实覆盖；疑似改写和未覆盖都值得人工确认）。</p>
 {''.join(rows)}
 </body></html>"""
 
@@ -304,7 +367,7 @@ def main():
     parser.add_argument("doc", help="Path to the source .md file")
     parser.add_argument("--chunks", help="Path to children.jsonl (default: auto-detect sibling _rag-chunks/*.jsonl)")
     parser.add_argument("-o", "--out", help="Output HTML path (default: <doc>.diff.html)")
-    parser.add_argument("--threshold", type=float, default=0.1, help="Min match ratio to count as covered (default 0.1 — calibrated against jaccard character-shingle similarity, not a 0-1 'percent similar' scale; a genuine but heavily reworded match scores ~0.25-0.3, unrelated text scores near 0)")
+    parser.add_argument("--threshold", type=float, default=0.1, help="Min Jaccard ratio for the SUSPECT tier (paragraphs that fail exact containment but still resemble a chunk enough to flag for review). Not a 0-1 'percent similar' scale; unrelated text scores near 0. Does not affect what counts as covered -- only exact containment does that now.")
     args = parser.parse_args()
 
     doc_path = Path(args.doc)
@@ -319,11 +382,17 @@ def main():
         raise SystemExit(f"No chunks in {chunks_path} reference source_path ending in {doc_path.name}")
 
     chunk_by_id = {c["chunk_id"]: c for c in chunks}
-    pairs, gaps = [], []
+    pairs, suspects, gaps = [], [], []
     for b in blocks:
-        cid, ratio = best_match(b["text"], chunks, args.threshold)
-        if cid:
+        cid, ratio, status = best_match(b["text"], chunks, args.threshold)
+        if status == "exact":
             pairs.append({
+                "heading": b["heading"], "chunk_id": cid, "ratio": ratio,
+                "src_text": b["text"],
+                "chunk_text": chunk_by_id[cid].get("text") or chunk_by_id[cid].get("answer", ""),
+            })
+        elif status == "fuzzy":
+            suspects.append({
                 "heading": b["heading"], "chunk_id": cid, "ratio": ratio,
                 "src_text": b["text"],
                 "chunk_text": chunk_by_id[cid].get("text") or chunk_by_id[cid].get("answer", ""),
@@ -332,9 +401,12 @@ def main():
             gaps.append({"heading": b["heading"], "src_text": b["text"], "ratio": ratio})
 
     out_path = Path(args.out) if args.out else doc_path.with_suffix(".diff.html")
-    out_path.write_text(render_html(doc_path, pairs, gaps, len(chunks)), encoding="utf-8")
+    out_path.write_text(render_html(doc_path, pairs, suspects, gaps, len(chunks)), encoding="utf-8")
 
-    print(f"{doc_path.name}: {len(chunks)} chunks, {len(pairs)} paragraphs matched, {len(gaps)} possible gaps")
+    print(f"{doc_path.name}: {len(chunks)} chunks, {len(pairs)} paragraphs exactly matched, "
+          f"{len(suspects)} suspect (fuzzy-only), {len(gaps)} gaps")
+    for s in suspects:
+        print(f"  SUSPECT: {s['heading']} — {s['src_text'][:60]}... (~{s['chunk_id']}, ratio {s['ratio']:.2f})")
     for g in gaps:
         print(f"  GAP: {g['heading']} — {g['src_text'][:60]}...")
     print(f"Report written to {out_path}")

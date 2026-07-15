@@ -124,9 +124,7 @@
 
 ## Atlas功能
 
-- [Atlas Security and Compliance](09-Atlas功能/Atlas Security and Compliance.md)
 - [Atlas功能](09-Atlas功能/Atlas功能.md)
-- [Atlas票务承诺](09-Atlas功能/Atlas票务承诺.md)
 - [Atlas邮件服务](09-Atlas功能/Atlas邮件服务.md)
 
 ## 常见问题
@@ -142,5 +140,4 @@
 - [Atlas 废票服务条款](11-支持与服务条款/Atlas 废票服务条款.md)
 - [Atlas 选座服务条款](11-支持与服务条款/Atlas 选座服务条款.md)
 - [信用卡使用规范告知书](11-支持与服务条款/信用卡使用规范告知书.md)
-- [提交工单](11-支持与服务条款/提交工单.md)
 

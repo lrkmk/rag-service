@@ -46,6 +46,8 @@ def clean_markdown_text(text: str) -> str:
     import, matching this codebase's existing convention of standalone,
     independently-runnable chunking scripts)."""
     text = html.unescape(text)  # decode &#x624D; / &#x41; etc -- this corpus uses both
+    text = re.sub(r"\\\n", "\n", text)  # hard line break
+    text = re.sub(r"\\([*_`\[\]()#>\\])", r"\1", text)  # un-escape markdown escapes FIRST -- GitBook exports widely escape ** and ` inside blockquotes (e.g. "\*\*Dependency:\*\*"), which otherwise survive every regex below untouched since they no longer look like real markdown syntax
     text = re.sub(r"\{%[^}]*%\}", "", text)  # stray GitBook component tags ({% stepper %} etc.) that reached here unstripped
     text = re.sub(r"(?m)^```\w*\s*$", "", text)  # fenced-code-block delimiters -- keep the code content, drop the ``` markers
     text = re.sub(r"(?m)^[ \t]*(?:\*[ \t]*){3,}$", "", text)  # *** horizontal rule
@@ -58,10 +60,8 @@ def clean_markdown_text(text: str) -> str:
     text = re.sub(r"(?<!\w)\*((?:[^*\n]|\\\*)+)\*(?!\w)", r"\1", text)
     text = re.sub(r"(?<!\w)_([^_\n]+)_(?!\w)", r"\1", text)
     text = re.sub(r"`([^`\n]+)`", r"\1", text)
-    text = re.sub(r"(?m)^(?:>\s?)?#{1,6}\s+", "", text)  # handles "### h" and blockquoted "> ### h"
-    text = re.sub(r"(?m)^>\s?", "", text)
-    text = re.sub(r"\\\n", "\n", text)
-    text = re.sub(r"\\([*_`\[\]()#>\\])", r"\1", text)
+    text = re.sub(r"(?m)^(?:>\s?)*#{1,6}\s+", "", text)  # handles "### h" and repeated-blockquoted "> > ### h"
+    text = re.sub(r"(?m)^(?:>\s?)+", "", text)  # strip one or more leading blockquote markers (nested quotes leave a second one otherwise)
     return text
 
 

@@ -28,8 +28,8 @@
 | 账单管理 | [06-账单管理/_rag-chunks/](06-账单管理/_rag-chunks/) | 1 | 6 |
 | 通知提醒 | [07-通知提醒/_rag-chunks/](07-通知提醒/_rag-chunks/) | 3 | 27 |
 | 安全与合规 | [08-安全与合规/_rag-chunks/](08-安全与合规/_rag-chunks/) | 2 | 17 |
-| Atlas功能 | [09-Atlas功能/_rag-chunks/](09-Atlas功能/_rag-chunks/) | 3 | 22 |
-| 小计 | | **18** | **113** |
+| Atlas功能 | [09-Atlas功能/_rag-chunks/](09-Atlas功能/_rag-chunks/) | 1 | 5 |
+| 小计 | | **16** | **96** |
 
 ## 常见问题 FAQ（[10-常见问题/_rag-chunks/](10-常见问题/_rag-chunks/)）
 
@@ -60,5 +60,5 @@
 ## 需要注意的跨分类风险点
 
 1. **售后票务内部**：退票/废票/改期三者场景高度相似，检索最容易混淆——已在 [04-售后票务/_rag-chunks-index.md](04-售后票务/_rag-chunks-index.md) 中给出建议（parent 摘要回带 + `level2_category` 前置过滤）。
-2. **安全相关内容重复**：`08-安全与合规/安全与合规说明.md` 与 `09-Atlas功能/Atlas Security and Compliance.md` 覆盖同一批安全能力（AK/SK、SSO、IP白名单、MFA、密码策略、审计日志），但一个是操作向导（含默认参数值），一个是正式服务条款（含轮换周期、并发密钥数等条款）。两者未合并，各自独立成 parent，检索这类问题时建议同时召回两侧，而不是只信任其中一个。
+2. **`09-Atlas功能` 已清理未发布页面**：`Atlas Security and Compliance.md` 和 `Atlas票务承诺.md` 曾被切片，后确认两者都不在该分类导航文件 `Atlas功能.md` 的链接列表中（GitBook 爬取带出的隐藏页面），已连同源文件和对应 chunk 删除，目前该分类只剩 `Atlas邮件服务.md` 一篇。
 3. **`applicable_carrier` 字段口径不完全统一**：多数子类只有"通用"，但 04-售后票务/特殊航司 用了具体航司代码（W4/W6/W9），04-售后票务/改期 在个别 chunk 上用了"通用（仅适用于清单内航司）"这种半结构化写法——用这个字段做精确匹配前，建议先看一眼各子类 README 里的判断说明，不要假设它是严格枚举值。

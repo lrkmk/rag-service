@@ -39,9 +39,16 @@
   .pair-col:first-child { border-right: 1px solid #eee; color: #555; }
   .col-label { font-size: 10.5px; color: #999; text-transform: uppercase; margin: 0 0 4px; letter-spacing: 0.03em; }
 
+  .suspect-card { border: 1px solid #d9b95c; border-radius: 10px; margin-bottom: 10px; overflow: hidden; background: #fffbea; }
+  .suspect-head { display: flex; justify-content: space-between; padding: 7px 14px; background: #fdf3d0; font-size: 12.5px; font-weight: 600; color: #8a6d1a; gap: 8px; flex-wrap: wrap; }
+  .suspect-body { display: grid; grid-template-columns: 1fr 1fr; }
+  .suspect-body .pair-col:first-child { border-right: 1px solid #f0e4b8; }
+
   .gap-card { border: 1px solid #e0a0a0; border-radius: 10px; margin-bottom: 10px; overflow: hidden; background: #fff7f7; }
   .gap-head { display: flex; justify-content: space-between; padding: 7px 14px; background: #fbe4e4; font-size: 12.5px; font-weight: 600; color: #a33; gap: 8px; flex-wrap: wrap; }
   .gap-body { padding: 10px 14px; font-size: 13px; line-height: 1.6; white-space: pre-wrap; }
+
+  .stat.suspect { background: #fdf3d0; color: #8a6d1a; }
 
   #raw-view { font-family: ui-monospace, "SF Mono", monospace; font-size: 12.5px; background: #1e1e1e; color: #d4d4d4; padding: 16px; border-radius: 8px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; }
 
@@ -155,7 +162,7 @@ async function renderDiff() {
     main.innerHTML = `<div id="error">${escapeHtml(data.error)}</div>`;
     return;
   }
-  let html = topbarHtml(data.doc, `${data.chunk_count} 个chunk`, data.matched_count, data.gap_count);
+  let html = topbarHtml(data.doc, `${data.chunk_count} 个chunk`, data.matched_count, data.gap_count, false, data.suspect_count);
   data.pairs.forEach(p => {
     html += `<div class="pair-card">
       <div class="pair-head">
@@ -163,7 +170,7 @@ async function renderDiff() {
         <span style="display:flex;gap:6px;align-items:center;">
           ${p.doc_type ? `<span class="badge">${escapeHtml(p.doc_type)}</span>` : ""}
           ${p.applicable_carrier ? `<span class="badge">${escapeHtml(p.applicable_carrier)}</span>` : ""}
-          <span class="pair-meta">${escapeHtml(p.chunk_id)} · ${p.ratio}</span>
+          <span class="pair-meta">${escapeHtml(p.chunk_id)} · 精确匹配</span>
         </span>
       </div>
       <div class="pair-body">
@@ -172,9 +179,21 @@ async function renderDiff() {
       </div>
     </div>`;
   });
+  data.suspects.forEach(s => {
+    html += `<div class="suspect-card">
+      <div class="suspect-head">
+        <span class="section">${escapeHtml(s.heading)}</span>
+        <span>◐ 疑似改写/需复核 — ${escapeHtml(s.chunk_id)} · 相似度 ${s.ratio}</span>
+      </div>
+      <div class="suspect-body">
+        <div class="pair-col"><p class="col-label">原文</p>${escapeHtml(s.src_text)}</div>
+        <div class="pair-col"><p class="col-label">最相似的切片结果</p>${escapeHtml(s.chunk_text)}</div>
+      </div>
+    </div>`;
+  });
   data.gaps.forEach(g => {
     html += `<div class="gap-card">
-      <div class="gap-head"><span>${escapeHtml(g.heading)}</span><span>⚠ 未匹配（最佳 ${g.ratio}）</span></div>
+      <div class="gap-head"><span>${escapeHtml(g.heading)}</span><span>⚠ 未覆盖（最佳相似度 ${g.ratio}）</span></div>
       <div class="gap-body">${escapeHtml(g.src_text)}</div>
     </div>`;
   });
@@ -214,7 +233,7 @@ async function renderSource() {
   bindTabs();
 }
 
-function topbarHtml(doc, subLabel, matched, gaps, noGapStat) {
+function topbarHtml(doc, subLabel, matched, gaps, noGapStat, suspects) {
   return `<div id="topbar">
     <div>
       <div id="doc-title">${escapeHtml(doc.split("/").pop())}</div>
@@ -223,8 +242,9 @@ function topbarHtml(doc, subLabel, matched, gaps, noGapStat) {
     <div style="display:flex; align-items:center; gap:14px;">
       <div>
         <span class="stat">${escapeHtml(subLabel)}</span>
-        ${matched === null ? "" : `<span class="stat">匹配 ${matched}</span>`}
-        ${noGapStat ? "" : `<span class="stat gap">缺口 ${gaps}</span>`}
+        ${matched === null ? "" : `<span class="stat">精确匹配 ${matched}</span>`}
+        ${!suspects ? "" : `<span class="stat suspect">疑似改写 ${suspects}</span>`}
+        ${noGapStat ? "" : `<span class="stat gap">未覆盖 ${gaps}</span>`}
       </div>
       <div class="tabs">
         <button class="tab-btn" data-view="diff">对照视图</button>

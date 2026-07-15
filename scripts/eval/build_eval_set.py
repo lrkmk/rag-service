@@ -61,7 +61,21 @@ def query_for(rec):
         or rec.get("level2_category")
         or ""
     )
-    section = rec.get("section") or ""
+    # C-type request/response/component chunks (chunk_api_reference.py) have
+    # no `section` field at all, so every sub-chunk under the same endpoint
+    # -- overview, request-headers, request-body, one per response field,
+    # one per component -- fell back to the exact same query (just the bare
+    # endpoint path, e.g. "/order.do"). An endpoint with N>5 sub-chunks then
+    # can't possibly hit Recall@5 for most of them: the query gives zero
+    # signal about WHICH of its own identical-query siblings is "expected".
+    # Confirmed for real: this alone was the dominant cause of API文档's
+    # apparent 9% recall on 04-API参考 before this fix, even though that
+    # content is scripted/deterministic and had just been freshly
+    # regenerated -- not a real retrieval-quality problem, an eval gap.
+    # chunk_api_reference.py already writes a descriptive first line for
+    # exactly these chunks ("请求头参数：", "请求体字段：", "响应字段 sessionId：",
+    # "响应组件 Routing 字段列表：") -- reuse it as a synthetic section.
+    section = rec.get("section") or rec.get("text", "").split("\n", 1)[0][:30]
     if title and section and section not in title:
         return f"{title} {section}"
     return title or section

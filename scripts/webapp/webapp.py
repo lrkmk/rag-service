@@ -95,19 +95,20 @@ def api_diff():
         return jsonify({"error": f"no chunks in {chunks_path.name} reference this file"}), 404
 
     chunk_by_id = {c.get("chunk_id"): c for c in chunks}
-    pairs, gaps = [], []
+    pairs, suspects, gaps = [], [], []
     for b in blocks:
-        cid, ratio = chunk_diff.best_match(b["text"], chunks, threshold)
-        if cid:
+        cid, ratio, status = chunk_diff.best_match(b["text"], chunks, threshold)
+        if status in ("exact", "fuzzy"):
             c = chunk_by_id[cid]
-            pairs.append({
+            entry = {
                 "heading": b["heading"], "chunk_id": cid, "ratio": round(ratio, 3),
                 "src_text": b["text"],
                 "chunk_text": c.get("text") or c.get("answer", ""),
                 "doc_type": c.get("doc_type") or c.get("rule_type"),
                 "applicable_carrier": c.get("applicable_carrier"),
                 "compares": c.get("compares"),
-            })
+            }
+            (pairs if status == "exact" else suspects).append(entry)
         else:
             gaps.append({"heading": b["heading"], "src_text": b["text"], "ratio": round(ratio, 3)})
 
@@ -115,8 +116,10 @@ def api_diff():
         "doc": rel_path,
         "chunk_count": len(chunks),
         "matched_count": len(pairs),
+        "suspect_count": len(suspects),
         "gap_count": len(gaps),
         "pairs": pairs,
+        "suspects": suspects,
         "gaps": gaps,
     })
 
