@@ -77,6 +77,25 @@ DOC_ROOT = os.path.join(REPO_ROOT, "doc")
 
 LEADING_REF_RE = re.compile(r"^>\s*For the complete documentation index.*?\n+", re.DOTALL)
 LLMS_LINE_RE = re.compile(r"^-\s*\[(.+?)\]\((https?://\S+?)\)(?::\s*(.*))?$")
+# {% hint %}...{% endhint %} blocks (the "Ask Eva" CTA at the top of every
+# page, plus assorted inline warning/info notes) went through a site-wide
+# EN->CN translation at some point — confirmed on 2 separate pages, both
+# with byte-identical meaning before/after, just re-worded in Chinese
+# instead of English. Comparing raw text made ~90% of API文档 look
+# "changed" (107/124) purely from this, drowning out real drift like the
+# getOfferPrice.do terminology rename found in the SAME diff-check run.
+# Stripping all hint-block CONTENT (not just the Ask-Eva one) before
+# comparing is a deliberate tradeoff: a hint whose actual informational
+# content changes (not just language) would be missed by diff-check, but
+# every case found so far has been translation-only noise, and the
+# alternative (no stripping) makes the whole "changed" list too noisy to
+# act on. Only used for the diff-check comparison — fetch/list still
+# save/report the raw untouched page.
+HINT_BLOCK_RE = re.compile(r"\{% hint[^%]*%\}.*?\{% endhint %\}", re.DOTALL)
+
+
+def normalize_for_diff(text: str) -> str:
+    return HINT_BLOCK_RE.sub("", text).strip()
 
 
 def _fetch(url: str) -> str:
@@ -159,7 +178,7 @@ def cmd_diff_check(args):
             unmatched.append(f"{path} (fetch error: {e})")
             continue
         local = open(path, encoding="utf-8").read()
-        if fresh.strip() != local.strip():
+        if normalize_for_diff(fresh) != normalize_for_diff(local):
             changed.append((path, url, fresh))
         else:
             unchanged.append(path)
