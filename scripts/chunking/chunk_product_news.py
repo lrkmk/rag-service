@@ -105,6 +105,7 @@ def main():
     # isn't in ORDER falls back to being treated as rank 1 (newest), which is
     # the safe assumption for anything freshly added.
     ORDER = [
+        "舆途科技（Atlas）核价出票接口上线.md",
         "舆途科技（Atlas）正式开放给新一代Travel Seller.md",
         "泰国亚洲航空（FD）超售政策更新.md",
         "舆途科技（Atlas）废票 API 正式上线.md",

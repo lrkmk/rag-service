@@ -4,6 +4,7 @@
 
 ```
 scripts/
+  crawl/      从 resources.atriptech.com (GitBook) 抓取源文档 -> doc/ 下的原始 .md
   chunking/   源文档 .md -> _rag-chunks/*.jsonl 切片脚本
   ingest/     _rag-chunks/*.jsonl -> chroma_db 灌库脚本，含 parents_lookup.json
   search/     运行时查询/检索服务（rag_search.py / mcp_server.py 等），也是 Docker 镜像的实际负载
@@ -11,6 +12,18 @@ scripts/
   deploy/     chroma_db 打包与分发脚本
   webapp/     本地切片对照浏览工具，不进 Docker 镜像
 ```
+
+## 爬取（更新/新增文档）
+
+`crawl/crawl_gitbook.py` 基于站点自带的两个特性：`https://resources.atriptech.com/llms.txt`（全站索引，title+url+简介）和"任意页面 URL 后加 `.md` 直接返回干净原始 markdown"。三个子命令：
+
+```bash
+python crawl/crawl_gitbook.py list 产品介绍           # 列出该语料库在 llms.txt 里的全部页面，找本地没有的新页面
+python crawl/crawl_gitbook.py fetch <url> <output.md>  # 抓一篇存到指定路径
+python crawl/crawl_gitbook.py diff-check 产品介绍 [--apply]  # 按标题把本地文件跟 llms.txt 匹配，抓新内容比对是否有改动（内容漂移检测），--apply 直接覆盖有改动的本地文件
+```
+
+不自动分类到编号目录（`01-ATRIP`、`04-售后票务`这类）——GitBook 的 URL slug 是拼音转写，不是分类路径，新页面放哪个类目是判断题，不是脚本能替你做的决定，`list`/`diff-check` 只负责把内容和改动找出来，人工/agent 读完再决定放哪、按什么类型切片（配合 `doc-chunking` skill）。
 
 ## 依赖
 
