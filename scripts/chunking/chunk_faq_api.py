@@ -20,9 +20,7 @@ from pathlib import Path
 
 
 def strip_boilerplate(text: str) -> str:
-    text = re.sub(r"\{% hint.*?%\}.*?\{% endhint %\}", "", text, flags=re.DOTALL)
-    # Other GitBook component tags wrap real content (unlike {% hint %},
-    # whose content is a throwaway "ask Eva" callout) -- strip just the tags.
+    # Strip GitBook wrapper tags and retain the visible content they enclose.
     text = re.sub(r"\{%[^}]*%\}", "", text)
     text = re.sub(r"<a href.*?</a>", "", text)
     return text

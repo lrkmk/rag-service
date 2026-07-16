@@ -92,11 +92,11 @@ LLMS_LINE_RE = re.compile(r"^-\s*\[(.+?)\]\((https?://\S+?)\)(?::\s*(.*))?$")
 # alternative (no stripping) makes the whole "changed" list too noisy to
 # act on. Only used for the diff-check comparison — fetch/list still
 # save/report the raw untouched page.
-HINT_BLOCK_RE = re.compile(r"\{% hint[^%]*%\}.*?\{% endhint %\}", re.DOTALL)
+GITBOOK_TAG_RE = re.compile(r"\{%[^}]*%\}")
 
 
 def normalize_for_diff(text: str) -> str:
-    return HINT_BLOCK_RE.sub("", text).strip()
+    return GITBOOK_TAG_RE.sub("", text).strip()
 
 
 def _fetch(url: str) -> str:

@@ -1,4 +1,21 @@
 {
+  "atlas-bangzhu-zhongxin-shouye": {
+    "article_id": "atlas-bangzhu-zhongxin-shouye",
+    "title": "欢迎来到Atlas帮助中心",
+    "level1_category": "常见问题",
+    "level2_category": "客户服务相关",
+    "applicable_carrier": "通用",
+    "updated_at": null,
+    "source_path": "欢迎来到Atlas帮助中心.md",
+    "summary": "Atlas帮助中心首页，收录5个高频常见问题：如何查询MMB登录邮箱、如何查询预订凭证、如何查询日本航司确认编号、如何获取航班变更通知、如何确认PNR是否有航班变更，均给出通过API返回字段和Atrip Flight Deck平台两种查询途径。",
+    "child_chunk_ids": [
+      "sy-c01",
+      "sy-c02",
+      "sy-c03",
+      "sy-c04",
+      "sy-c05"
+    ]
+  },
   "atrip-yonghu-guanli": {
     "article_id": "atrip-yonghu-guanli",
     "title": "用户管理",

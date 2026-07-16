@@ -42,8 +42,7 @@ ENTITY_RE = re.compile(r"[（(]([A-Za-z0-9]{1,4})[）)]")
 def strip_boilerplate(text: str) -> str:
     text = re.sub(r"\{% hint.*?%\}", "", text)
     text = re.sub(r"\{% endhint %\}", "", text)
-    # Other GitBook component tags wrap real content (unlike {% hint %},
-    # whose content is a throwaway "ask Eva" callout) -- strip just the tags.
+    # Strip GitBook wrapper tags and retain the visible content they enclose.
     text = re.sub(r"\{%[^}]*%\}", "", text)
     text = re.sub(r"&#x20;", " ", text)
     text = re.sub(r"[ \t]+\n", "\n", text)

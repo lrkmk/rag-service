@@ -71,7 +71,7 @@ def extract_openapi_blocks(md_text: str) -> list[tuple[int, int, dict]]:
 
 def clean_prose(prose: str) -> str:
     # strip gitbook hint/button boilerplate blocks
-    prose = re.sub(r"\{% hint.*?%\}.*?\{% endhint %\}", "", prose, flags=re.DOTALL)
+    # Retain visible hint text; remove only GitBook component tags below.
     # Other GitBook component tags wrap real content (unlike {% hint %},
     # whose content is a throwaway "ask Eva" callout) -- strip just the tags.
     prose = re.sub(r"\{%[^}]*%\}", "", prose)

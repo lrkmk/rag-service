@@ -22,7 +22,7 @@ import sys
 
 
 def strip_boilerplate(text: str) -> str:
-    text = re.sub(r"\{% hint.*?%\}.*?\{% endhint %\}", "", text, flags=re.DOTALL)
+    # Retain visible hint text; remove only GitBook component tags below.
     text = re.sub(r"\{%[^}]*%\}", "", text)
     text = re.sub(r"<a href.*?</a>", "", text)
     return text

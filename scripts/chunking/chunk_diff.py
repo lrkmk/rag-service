@@ -41,7 +41,8 @@ from clean_markdown_text import clean_markdown_text
 
 
 def strip_boilerplate(text: str) -> str:
-    text = re.sub(r"\{% hint.*?%\}.*?\{% endhint %\}", "", text, flags=re.DOTALL)
+    # Retain visible hint text while removing GitBook's wrapper tags.
+    text = re.sub(r"\{%[^}]*%\}", "", text)
     text = re.sub(r"<a href.*?</a>", "", text)
     text = re.sub(r"> For the complete documentation index.*?\n", "", text)
     return text

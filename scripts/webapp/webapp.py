@@ -142,10 +142,8 @@ def api_source():
         return jsonify({"error": "file not found"}), 404
 
     raw_text = doc_path.read_text(encoding="utf-8")
-    # Strip GitBook-specific {% hint %}...{% endhint %} blocks before
-    # rendering — Python-Markdown doesn't know this syntax and would render
-    # it as a literal paragraph of Liquid-template noise instead of the
-    # "ask Eva" callout box it represents on the source site.
+    # Strip GitBook wrapper tags before rendering while retaining visible hint
+    # text; Python-Markdown does not understand Liquid-template syntax.
     cleaned = chunk_diff.strip_boilerplate(raw_text)
     html = md.markdown(cleaned, extensions=["extra", "sane_lists", "toc"])
 

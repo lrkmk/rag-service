@@ -27,7 +27,7 @@ from pathlib import Path
 
 
 def strip_boilerplate(text: str) -> str:
-    text = re.sub(r"\{% hint.*?%\}.*?\{% endhint %\}", "", text, flags=re.DOTALL)
+    # Retain visible hint text; remove only GitBook component tags below.
     # Other GitBook component tags ({% stepper %}/{% step %}/{% endstep %}/
     # {% endstepper %}/{% file ... %}) wrap real content (unlike {% hint %},
     # whose content is a throwaway "ask Eva" callout) -- strip just the tags,

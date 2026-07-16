@@ -182,7 +182,12 @@ async function renderDiff() {
   const data = await res.json();
   const main = document.getElementById("main");
   if (data.error) {
-    main.innerHTML = `<div id="error">${escapeHtml(data.error)}</div>`;
+    // No _rag-chunks folder, or no chunks reference this file yet -- don't
+    // dead-end on a bare error with no tab bar (that used to trap the user:
+    // no tabs means no way to switch to 完整原文 for THIS doc, and it read as
+    // if the whole browser had frozen). Fall back to showing the raw source
+    // instead, with a banner explaining why there's no diff to show.
+    await renderSource(data.error);
     return;
   }
   let html = topbarHtml(data.doc, `${data.chunk_count} 个chunk`, data.matched_count, data.gap_count, false, data.suspect_count);
@@ -229,7 +234,10 @@ async function renderRaw() {
   const data = await res.json();
   const main = document.getElementById("main");
   if (data.error) {
-    main.innerHTML = `<div id="error">${escapeHtml(data.error)}</div>`;
+    // Keep the tab bar even on error (e.g. no _rag-chunks for this doc) --
+    // otherwise switching to 完整原文/线上更新 for this same file is impossible.
+    main.innerHTML = topbarHtml(currentPath, "无 chunks 数据", null, null, true) + `<div id="error">${escapeHtml(data.error)}</div>`;
+    bindTabs();
     return;
   }
   let html = topbarHtml(data.doc, `chunks 文件: ${escapeHtml(data.chunks_file)}`, data.chunks.length, 0, true);
@@ -242,15 +250,21 @@ async function renderRaw() {
   bindTabs();
 }
 
-async function renderSource() {
+async function renderSource(notice) {
   const res = await fetch(`/api/source?path=${encodeURIComponent(currentPath)}`);
   const data = await res.json();
   const main = document.getElementById("main");
   if (data.error) {
-    main.innerHTML = `<div id="error">${escapeHtml(data.error)}</div>`;
+    main.innerHTML = topbarHtml(currentPath, "无法加载", null, null, true) + `<div id="error">${escapeHtml(data.error)}</div>`;
+    bindTabs();
     return;
   }
   let html = topbarHtml(data.doc, `${data.line_count} 行`, null, null, true);
+  if (notice) {
+    // Shown when renderDiff() fell back here because this doc has no
+    // chunks yet -- still browsable, just nothing to compare against.
+    html += `<div style="margin:0 0 14px;padding:8px 14px;border-radius:8px;background:#fbe4e4;color:#a33;font-size:13px;">⚠ ${escapeHtml(notice)}</div>`;
+  }
   html += `<div id="doc-render">${data.html}</div>`;
   main.innerHTML = html;
   bindTabs();
@@ -261,7 +275,8 @@ async function renderCrawlDiff() {
   const data = await res.json();
   const main = document.getElementById("main");
   if (data.error) {
-    main.innerHTML = `<div id="error">${escapeHtml(data.error)}</div>`;
+    main.innerHTML = topbarHtml(currentPath, "无法加载", null, null, true) + `<div id="error">${escapeHtml(data.error)}</div>`;
+    bindTabs();
     return;
   }
   const sub = data.flagged_changed
