@@ -48,9 +48,15 @@ RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTr
 # imports chunk_diff for strip_boilerplate in get_full_article) even though
 # chunk_diff.py also gets swept up in the broader "chunking scripts are
 # offline tooling" .dockerignore rule — without an explicit COPY here the
-# container crash-loops on startup with ModuleNotFoundError.
+# container crash-loops on startup with ModuleNotFoundError. chunk_diff.py
+# itself imports clean_markdown_text.py, so that has to be COPY'd too — this
+# bit for real in production once already (chunk_diff.py grew this import
+# after the Dockerfile's COPY list was written, and nothing caught the drift
+# until the container crash-looped on `ModuleNotFoundError: No module named
+# 'clean_markdown_text'`). If chunk_diff.py or clean_markdown_text.py grows
+# another same-directory import, it needs to be added here too.
 COPY scripts/search/rag_search.py scripts/search/mcp_server.py scripts/search/lookup_tables.py ./scripts/search/
-COPY scripts/chunking/chunk_diff.py ./scripts/chunking/
+COPY scripts/chunking/chunk_diff.py scripts/chunking/clean_markdown_text.py ./scripts/chunking/
 COPY doc/ ./doc/
 # parents_lookup.json is intentionally NOT copied here -- see the volume-mount
 # note above and docker-compose.yml. Create an empty placeholder so the bind
