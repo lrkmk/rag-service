@@ -1,0 +1,55 @@
+{
+  "source_path": "05-支持与参考/troubleshooting-faqs/Fulfilment API FAQ.md",
+  "rows": [
+    {
+      "维度": "前置条件",
+      "现有接口（`search.do` / `verify.do` / `order.do`）": "必须先通过 Atlas 购物流程获取运价",
+      "Fulfilment API": "您已持有运价或订单上下文，直接传入"
+    },
+    {
+      "维度": "运价来源",
+      "现有接口（`search.do` / `verify.do` / `order.do`）": "必须来自 Atlas 运价上下文",
+      "Fulfilment API": "可来自 Atlas 或您自己的运价来源"
+    },
+    {
+      "维度": "临近起飞出票",
+      "现有接口（`search.do` / `verify.do` / `order.do`）": "受缓存过期压力限制",
+      "Fulfilment API": "提交请求后无提前购买限制"
+    },
+    {
+      "维度": "多人定价准确性",
+      "现有接口（`search.do` / `verify.do` / `order.do`）": "依赖缓存，价格变动风险较高",
+      "Fulfilment API": "实时验价，出票前准确性更高"
+    },
+    {
+      "维度": "VCC 返利/航司佣金",
+      "现有接口（`search.do` / `verify.do` / `order.do`）": "通常在商业计算中单独处理",
+      "Fulfilment API": "可直接在报价净价中体现"
+    },
+    {
+      "维度": "支付方式",
+      "现有接口（`search.do` / `verify.do` / `order.do`）": "预存款（Deposit）",
+      "Fulfilment API": "预存款（Deposit）和 VCC 直通"
+    },
+    {
+      "维度": "提交后系统故障",
+      "现有接口（`search.do` / `verify.do` / `order.do`）": "您的预订编排可能中断",
+      "Fulfilment API": "请求被接受后 Atlas 继续履约"
+    },
+    {
+      "维度": "集成工作量",
+      "现有接口（`search.do` / `verify.do` / `order.do`）": "需要完整的 `search.do` → `verify.do` → `order.do` 链路",
+      "Fulfilment API": "独立接口，集成范围约 1 小时"
+    },
+    {
+      "维度": "定价模式",
+      "现有接口（`search.do` / `verify.do` / `order.do`）": "遵循标准商业模型",
+      "Fulfilment API": "按使用量计费的交易费模式"
+    },
+    {
+      "维度": "可并行使用",
+      "现有接口（`search.do` / `verify.do` / `order.do`）": "是",
+      "Fulfilment API": "是"
+    }
+  ]
+}
