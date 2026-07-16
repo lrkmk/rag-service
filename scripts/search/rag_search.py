@@ -90,9 +90,15 @@ def embed_query(text: str) -> list[float]:
     return _model.encode(QUERY_INSTRUCTION + text, normalize_embeddings=True).tolist()
 
 
-def search_rules(query: str, n_results: int = 3, where: dict | None = None):
+def search_rules(
+    query: str,
+    n_results: int = 3,
+    where: dict | None = None,
+    query_embedding: list[float] | None = None,
+):
     _lazy_init()
-    res = _rule_coll.query(query_embeddings=[embed_query(query)], n_results=n_results, where=where)
+    embedding = query_embedding if query_embedding is not None else embed_query(query)
+    res = _rule_coll.query(query_embeddings=[embedding], n_results=n_results, where=where)
     hits = []
     for i in range(len(res["ids"][0])):
         meta = res["metadatas"][0][i]
@@ -112,9 +118,10 @@ def search_rules(query: str, n_results: int = 3, where: dict | None = None):
     return hits
 
 
-def search_faq(query: str, n_results: int = 3):
+def search_faq(query: str, n_results: int = 3, query_embedding: list[float] | None = None):
     _lazy_init()
-    res = _faq_coll.query(query_embeddings=[embed_query(query)], n_results=n_results)
+    embedding = query_embedding if query_embedding is not None else embed_query(query)
+    res = _faq_coll.query(query_embeddings=[embedding], n_results=n_results)
     hits = []
     for i in range(len(res["ids"][0])):
         meta = res["metadatas"][0][i]
@@ -122,6 +129,8 @@ def search_faq(query: str, n_results: int = 3):
             "chunk_id": res["ids"][0][i],
             "distance": res["distances"][0][i],
             "topic": meta.get("topic"),
+            "level1_category": meta.get("level1_category"),
+            "level2_category": meta.get("level2_category"),
             "question": meta.get("question"),
             "answer": meta.get("answer"),
             "source_path": meta.get("source_path"),
@@ -129,14 +138,20 @@ def search_faq(query: str, n_results: int = 3):
     return hits
 
 
-def search_api_docs(query: str, n_results: int = 3, where: dict | None = None):
+def search_api_docs(
+    query: str,
+    n_results: int = 3,
+    where: dict | None = None,
+    query_embedding: list[float] | None = None,
+):
     """Search API文档 (developer/API reference corpus) — separate collection
     from 帮助中心 on purpose, see RAG-切片设计总览.md. No parent-summary
     bolt-on here: API文档 chunks have no parent tier (the C-type "端点概览"
     chunk_type serves that role for OpenAPI endpoints, A/B-type chunks stand
     alone)."""
     _lazy_init()
-    res = _api_coll.query(query_embeddings=[embed_query(query)], n_results=n_results, where=where)
+    embedding = query_embedding if query_embedding is not None else embed_query(query)
+    res = _api_coll.query(query_embeddings=[embedding], n_results=n_results, where=where)
     hits = []
     for i in range(len(res["ids"][0])):
         meta = res["metadatas"][0][i]
@@ -269,9 +284,10 @@ def search_product_news(query: str, n_results: int = 3):
     return kept[:n_results]
 
 
-def search_api_faq(query: str, n_results: int = 3):
+def search_api_faq(query: str, n_results: int = 3, query_embedding: list[float] | None = None):
     _lazy_init()
-    res = _api_faq_coll.query(query_embeddings=[embed_query(query)], n_results=n_results)
+    embedding = query_embedding if query_embedding is not None else embed_query(query)
+    res = _api_faq_coll.query(query_embeddings=[embedding], n_results=n_results)
     hits = []
     for i in range(len(res["ids"][0])):
         meta = res["metadatas"][0][i]
@@ -279,8 +295,64 @@ def search_api_faq(query: str, n_results: int = 3):
             "chunk_id": res["ids"][0][i],
             "distance": res["distances"][0][i],
             "topic": meta.get("topic"),
+            "doc_type": meta.get("doc_type"),
+            "level1_category": meta.get("level1_category"),
+            "level2_category": meta.get("level2_category"),
             "question": meta.get("question"),
             "answer": meta.get("answer"),
             "source_path": meta.get("source_path"),
         })
     return hits
+
+
+def search_help_center_context(
+    query: str,
+    n_results: int = 3,
+    faq_n_results: int = 2,
+    where: dict | None = None,
+) -> dict:
+    """Return Help Center rules and related FAQ in separately labelled lists.
+
+    The two result types are not mixed into one rank: rule chunks embed a
+    section plus its content, whereas FAQ chunks embed only the question, so
+    their distance values are not calibrated against each other.
+    """
+    embedding = embed_query(query)
+    standard_results = search_rules(
+        query, n_results=n_results, where=where, query_embedding=embedding
+    )
+    faq_results = search_faq(query, n_results=faq_n_results, query_embedding=embedding)
+    return {
+        "query": query,
+        "standard_results": standard_results,
+        "faq_results": faq_results,
+        "retrieval_summary": {
+            "standard_count": len(standard_results),
+            "faq_count": len(faq_results),
+            "faq_note": "FAQ is supplementary evidence; use the standard policy/rule result as authoritative context when both apply.",
+        },
+    }
+
+
+def search_api_docs_context(
+    query: str,
+    n_results: int = 3,
+    faq_n_results: int = 2,
+    where: dict | None = None,
+) -> dict:
+    """Return API documentation and troubleshooting FAQ as labelled evidence."""
+    embedding = embed_query(query)
+    standard_results = search_api_docs(
+        query, n_results=n_results, where=where, query_embedding=embedding
+    )
+    faq_results = search_api_faq(query, n_results=faq_n_results, query_embedding=embedding)
+    return {
+        "query": query,
+        "standard_results": standard_results,
+        "faq_results": faq_results,
+        "retrieval_summary": {
+            "standard_count": len(standard_results),
+            "faq_count": len(faq_results),
+            "faq_note": "FAQ is supplementary troubleshooting guidance; use API documentation for endpoint and field definitions.",
+        },
+    }

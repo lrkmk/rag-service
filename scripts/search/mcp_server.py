@@ -82,6 +82,36 @@ def search_help_center(
 
 
 @mcp.tool()
+def search_help_center_context(
+    query: str,
+    top_k: int = 3,
+    faq_top_k: int = 2,
+    carrier: Optional[str] = None,
+) -> dict:
+    """Search Help Center policy/rule documents and related FAQ together.
+
+    Preferred Help Center search tool. It always retrieves both types, so an
+    agent does not need a second FAQ decision. Results are returned as
+    ``standard_results`` and ``faq_results`` rather than a mixed ranking:
+    their distance scores are not comparable because the two collections use
+    different indexed text shapes.
+
+    Standard results are authoritative for policy, conditions, and
+    airline-specific rules; FAQ results are concise supplementary guidance.
+
+    Args:
+        query: Natural-language policy or operational question.
+        top_k: Number of standard rule chunks (default 3).
+        faq_top_k: Number of FAQ pairs (default 2).
+        carrier: Optional airline IATA code, e.g. "FR" or "W6".
+    """
+    where = {"applicable_carrier": carrier} if carrier else None
+    return rag_search.search_help_center_context(
+        query, n_results=top_k, faq_n_results=faq_top_k, where=where
+    )
+
+
+@mcp.tool()
 def search_help_center_faq(query: str, top_k: int = 3) -> list[dict]:
     """Search the Help Center's FAQ section (customer service / API
     integration / payment / feature questions phrased as short Q&A pairs,
@@ -154,6 +184,45 @@ def search_api_docs(
     elif len(conditions) > 1:
         where = {"$and": conditions}
     return rag_search.search_api_docs(query, n_results=top_k, where=where)
+
+
+@mcp.tool()
+def search_api_docs_context(
+    query: str,
+    top_k: int = 3,
+    faq_top_k: int = 2,
+    doc_type: Optional[str] = None,
+    endpoint: Optional[str] = None,
+) -> dict:
+    """Search API documentation and troubleshooting FAQ together.
+
+    Preferred API-documents search tool. It returns labelled
+    ``standard_results`` for integration guides/reference chunks and
+    ``faq_results`` for concise troubleshooting guidance. Do not compare or
+    mix their distance values: the indexed text differs between the two
+    collections.
+
+    Args:
+        query: Natural-language integration or API question.
+        top_k: Number of API-documentation chunks (default 3).
+        faq_top_k: Number of troubleshooting FAQ pairs (default 2).
+        doc_type: Optional API chunk-type filter, as in search_api_docs.
+        endpoint: Optional OpenAPI path filter, e.g. "/search.do".
+    """
+    conditions = []
+    if doc_type:
+        conditions.append({"doc_type": doc_type})
+    if endpoint:
+        conditions.append({"endpoint": endpoint})
+    if len(conditions) == 1:
+        where = conditions[0]
+    elif len(conditions) > 1:
+        where = {"$and": conditions}
+    else:
+        where = None
+    return rag_search.search_api_docs_context(
+        query, n_results=top_k, faq_n_results=faq_top_k, where=where
+    )
 
 
 @mcp.tool()
