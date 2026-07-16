@@ -206,12 +206,13 @@ def get_full_article(source_path: str) -> dict:
     return {"error": f"no source file found for source_path='{source_path}'"}
 
 
-def search_product_intro(query: str, n_results: int = 3):
+def search_product_intro(query: str, n_results: int = 3, query_embedding: list[float] | None = None):
     """Search 产品总览 (Atlas product overview + 10 role-based guide pages)
     — evergreen concept prose, no recency handling needed (contrast with
     search_product_news below)."""
     _lazy_init()
-    res = _intro_coll.query(query_embeddings=[embed_query(query)], n_results=n_results)
+    embedding = query_embedding if query_embedding is not None else embed_query(query)
+    res = _intro_coll.query(query_embeddings=[embedding], n_results=n_results)
     hits = []
     for i in range(len(res["ids"][0])):
         meta = res["metadatas"][0][i]
@@ -226,7 +227,7 @@ def search_product_intro(query: str, n_results: int = 3):
     return hits
 
 
-def search_product_news(query: str, n_results: int = 3):
+def search_product_news(query: str, n_results: int = 3, query_embedding: list[float] | None = None):
     """Search Atlas资讯 (product news/announcements) — unlike every other
     search_* here, this corpus can have MULTIPLE posts about the same
     subject where a later one supersedes an earlier one's conclusion (e.g.
@@ -242,8 +243,9 @@ def search_product_news(query: str, n_results: int = 3):
     never collapsed against each other.
     """
     _lazy_init()
+    embedding = query_embedding if query_embedding is not None else embed_query(query)
     fetch_n = max(n_results * 4, 12)
-    res = _news_coll.query(query_embeddings=[embed_query(query)], n_results=fetch_n)
+    res = _news_coll.query(query_embeddings=[embedding], n_results=fetch_n)
     candidates = []
     for i in range(len(res["ids"][0])):
         meta = res["metadatas"][0][i]
@@ -330,6 +332,46 @@ def search_help_center_context(
             "standard_count": len(standard_results),
             "faq_count": len(faq_results),
             "faq_note": "FAQ is supplementary evidence; use the standard policy/rule result as authoritative context when both apply.",
+        },
+    }
+
+
+def search_all(query: str, n_results: int = 2, faq_n_results: int = 1) -> dict:
+    """Fan a single query out across all three corpora (帮助中心/API文档/
+    产品介绍) in one embedding pass, returning a small top-k from each
+    labeled separately -- for when it isn't clear up front which corpus
+    actually has the answer.
+
+    This exists because corpus routing was being done by guessing: an
+    agent would judge a question as "policy" vs "technical" vs "product"
+    and search only that one corpus, and sometimes guess wrong when a
+    question's real answer lived in a different corpus than the one that
+    looked most likely on its face. Re-embedding the query per corpus would
+    make a fan-out expensive, so this computes the embedding once and reuses
+    it across all 6 underlying collection queries -- the added cost over a
+    single-corpus search is a handful of cheap local vector lookups, not
+    another model inference pass.
+
+    Deliberately keeps n_results small per corpus (default 2 standard + 1
+    FAQ each) since the point is breadth across corpora, not depth within
+    one -- call the corpus-specific search_*_context tool with a higher
+    top_k once you know which corpus actually has the answer.
+    """
+    _lazy_init()
+    embedding = embed_query(query)
+    return {
+        "query": query,
+        "帮助中心": {
+            "standard_results": search_rules(query, n_results=n_results, query_embedding=embedding),
+            "faq_results": search_faq(query, n_results=faq_n_results, query_embedding=embedding),
+        },
+        "API文档": {
+            "standard_results": search_api_docs(query, n_results=n_results, query_embedding=embedding),
+            "faq_results": search_api_faq(query, n_results=faq_n_results, query_embedding=embedding),
+        },
+        "产品介绍": {
+            "product_intro_results": search_product_intro(query, n_results=n_results, query_embedding=embedding),
+            "product_news_results": search_product_news(query, n_results=n_results, query_embedding=embedding),
         },
     }
 

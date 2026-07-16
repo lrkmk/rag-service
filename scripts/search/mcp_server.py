@@ -49,6 +49,41 @@ mcp = FastMCP("atlas-docs", host=HOST, port=PORT)
 
 
 @mcp.tool()
+def search_all(query: str, top_k: int = 2, faq_top_k: int = 1) -> dict:
+    """Search ALL THREE corpora at once (帮助中心 policy/FAQ, API文档
+    integration docs/FAQ, 产品介绍 product overview/news) and return a small
+    top-k from each, labeled by corpus.
+
+    Use this FIRST when a question could plausibly be answered from more
+    than one corpus, or when you're not confident which corpus applies —
+    do not guess a single corpus and only fall back to search_all if that
+    guess turns out wrong. Also use this if a corpus-specific search
+    (search_help_center/search_api_docs/search_product_intro/
+    search_product_news) came back with nothing that actually answers the
+    question — that usually means the answer is in a different corpus, not
+    that it doesn't exist.
+
+    Once search_all shows you which corpus actually has the relevant
+    content, switch to that corpus's *_context tool (search_help_center_context
+    or search_api_docs_context) with a higher top_k for deeper results — this
+    tool intentionally returns few results per corpus since its job is
+    figuring out WHERE the answer lives, not exhausting it.
+
+    Args:
+        query: Natural-language question, Chinese or English.
+        top_k: Standard/product results per corpus (default 2).
+        faq_top_k: FAQ results per corpus that has one, i.e. 帮助中心 and
+            API文档 (default 1).
+
+    Returns:
+        {query, 帮助中心: {standard_results, faq_results}, API文档:
+        {standard_results, faq_results}, 产品介绍: {product_intro_results,
+        product_news_results}}.
+    """
+    return rag_search.search_all(query, n_results=top_k, faq_n_results=faq_top_k)
+
+
+@mcp.tool()
 def search_help_center(
     query: str,
     top_k: int = 3,
@@ -61,7 +96,8 @@ def search_help_center(
     Use this for questions about WHAT the policy/rule is and WHEN it applies
     (e.g. "退票超过多久不再处理", "航班提前多久可以非自愿退票"). Do NOT use
     this for API integration questions (endpoint parameters, error codes,
-    request/response fields) — use search_api_docs for those instead.
+    request/response fields) — use search_api_docs for those instead. If
+    it's not clearly one or the other, use search_all instead of guessing.
 
     Args:
         query: Natural-language question, Chinese or English.
@@ -90,8 +126,10 @@ def search_help_center_context(
 ) -> dict:
     """Search Help Center policy/rule documents and related FAQ together.
 
-    Preferred Help Center search tool. It always retrieves both types, so an
-    agent does not need a second FAQ decision. Results are returned as
+    Preferred Help Center search tool once you know the question is a
+    Help Center question — if you're not sure yet, use search_all first
+    instead of guessing. It always retrieves both types, so an agent does
+    not need a second FAQ decision. Results are returned as
     ``standard_results`` and ``faq_results`` rather than a mixed ranking:
     their distance scores are not comparable because the two collections use
     different indexed text shapes.
@@ -146,7 +184,8 @@ def search_api_docs(
     similar endpoints/codes differ (e.g. "429和110的区别", "search.do和
     getOffers.do怎么选", "创建订单的请求体有哪些字段"). Do NOT use this for
     customer-service policy questions (refund windows, billing) — use
-    search_help_center for those instead.
+    search_help_center for those instead. If it's not clearly one or the
+    other, use search_all instead of guessing.
 
     Note: large lookup tables (the 43-code master error reference, sandbox
     test card/route lists, locale reference data) are NOT in this search
@@ -196,7 +235,9 @@ def search_api_docs_context(
 ) -> dict:
     """Search API documentation and troubleshooting FAQ together.
 
-    Preferred API-documents search tool. It returns labelled
+    Preferred API-documents search tool once you know the question is an
+    API文档 question — if you're not sure yet, use search_all first instead
+    of guessing. It returns labelled
     ``standard_results`` for integration guides/reference chunks and
     ``faq_results`` for concise troubleshooting guidance. Do not compare or
     mix their distance values: the indexed text differs between the two
@@ -364,7 +405,7 @@ def get_full_article(source_path: str) -> dict:
 
     Returns:
         {source_path, title, text} with the article's full cleaned
-        markdown (GitBook-specific {% hint %} boilerplate stripped), or
+        markdown (GitBook wrapper tags stripped while hint text is retained), or
         {error} if source_path doesn't resolve to a file in either corpus.
     """
     return rag_search.get_full_article(source_path)
