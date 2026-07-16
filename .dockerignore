@@ -4,6 +4,7 @@ chroma_db/
 .claude/
 scripts/chunking/*.py
 !scripts/chunking/chunk_diff.py
+!scripts/chunking/clean_markdown_text.py
 scripts/ingest/*.py
 scripts/search/ask.py
 scripts/search/query_example.py
