@@ -34,6 +34,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Pre-download and cache the embedding model at build time, not first request:
 # avoids a slow/network-dependent cold start and keeps the container usable
 # with no outbound internet access at runtime.
+ENV HF_ENDPOINT=https://hf-mirror.com
 RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('BAAI/bge-large-zh-v1.5')"
 
 # Only the files mcp_server.py actually needs at runtime. Copied preserving
