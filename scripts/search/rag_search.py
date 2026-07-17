@@ -241,6 +241,23 @@ def search_product_news(query: str, n_results: int = 3, query_embedding: list[fl
     ordinal rank is used instead of a real timestamp). Candidates with no
     entity_tags (one-off posts, not part of a recurring status thread) are
     never collapsed against each other.
+
+    The eviction step only drops a kept candidate when the new one is
+    STRICTLY more recent (smaller recency_rank) — equal rank is deliberately
+    not enough to evict. This matters since 2026-07-17: a single article can
+    now be split into several section chunks (chunk_product_news.py) that
+    all carry the SAME entity_tags and the SAME recency_rank (they're
+    sections of one article, not competing posts about one subject at
+    different times). Evicting on any shared tag regardless of recency
+    direction — the original behavior — meant sibling sections of one
+    still-current article started cannibalizing each other here post-split.
+    Confirmed for real: "日韩廉航退票那些坑" splits into 3 sections
+    (概述/日本/韩国) that all carry the same entity_tags (IJ, 7G, JH, MZ, LJ,
+    7C, RS, BX, BC) and the same recency_rank — under the old eviction rule,
+    whichever section chroma returned first for a given query evicted its
+    own siblings from the result. Recall@5 for 产品介绍 dropped from 97.0%
+    to 95.0% in eval_retrieval.py purely from this interaction, with no
+    change to any embedding, which is what surfaced it.
     """
     _lazy_init()
     embedding = query_embedding if query_embedding is not None else embed_query(query)
@@ -276,8 +293,13 @@ def search_product_news(query: str, n_results: int = 3, query_embedding: list[fl
         if superseded:
             continue
         # This is the most recent post seen so far for all its entities —
-        # drop any already-kept OLDER posts about the same entity, then keep this one.
-        kept = [k for k in kept if not (set(k.get("entity_tags", [])) & set(tags))]
+        # drop any already-kept STRICTLY OLDER posts about the same entity
+        # (equal recency_rank means a sibling section of this same article,
+        # not a stale competing post — must not evict those).
+        kept = [
+            k for k in kept
+            if not (set(k.get("entity_tags", [])) & set(tags) and k["recency_rank"] > c["recency_rank"])
+        ]
         for tag in tags:
             best_rank_by_entity[tag] = c["recency_rank"]
         kept.append(c)
