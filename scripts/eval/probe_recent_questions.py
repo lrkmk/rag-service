@@ -76,6 +76,7 @@ def main():
     parser.add_argument("--out", default="probe_results.jsonl", help="output JSONL path")
     parser.add_argument("--endpoint", default=DEFAULT_ENDPOINT, help="chat completions URL")
     parser.add_argument("--agent-id", default=DEFAULT_AGENT_ID, help="x-openclaw-agent-id header value")
+    parser.add_argument("--questions-file", default=None, help="plain text file, one question per line, overrides --n/default source")
     args = parser.parse_args()
 
     headers = {
@@ -84,8 +85,12 @@ def main():
         "x-openclaw-agent-id": args.agent_id,
     }
 
-    questions = load_zh_questions(QUESTIONS_FILE)[: args.n]
-    print(f"Loaded {len(questions)} questions from {QUESTIONS_FILE.name}")
+    if args.questions_file:
+        questions = [l.strip() for l in Path(args.questions_file).read_text(encoding="utf-8").splitlines() if l.strip()]
+        print(f"Loaded {len(questions)} questions from {args.questions_file}")
+    else:
+        questions = load_zh_questions(QUESTIONS_FILE)[: args.n]
+        print(f"Loaded {len(questions)} questions from {QUESTIONS_FILE.name}")
     print(f"Endpoint: {args.endpoint}  agent-id: {args.agent_id}  sleep: {args.sleep}s")
 
     out_path = Path(args.out)

@@ -1,0 +1,81 @@
+# 邮件查询
+
+{% hint style="info" %}
+💬 **需要帮助？** 如果遇到问题，请在帮助中心咨询 Eva，快速获取诊断建议。
+
+<a href="https://www.atriptech.com/" class="button primary" data-icon="comments">咨询 Eva</a>
+{% endhint %}
+
+Use this page to search Atlas email records linked to orders.
+
+This page uses `Email Query` as the primary name.
+
+You may also see this API called `Email List`.
+
+### Main API
+
+* `queryMail.do`
+
+### Use this when you need
+
+* Investigate airline emails for an order
+* Check whether Atlas received a notification email
+* Review email categories before support follow-up
+* Retrieve a short-lived email view link
+
+### Before you call
+
+Send at least one query condition:
+
+* `orderNo`
+* `emailReceivingDateStart` and `emailReceivingDateEnd`
+* `createTimeStart` and `createTimeEnd`
+
+Keep each time range within `1 month`.
+
+### Main filters
+
+* `orderNo` for exact order lookup
+* receiving time range for airline email arrival time
+* creation time range for Atlas record creation time
+* `emailCategories` for category filtering
+* `pageIndex` and `pageSize` for pagination
+
+### Supported email categories
+
+Common values include:
+
+* `Travel Itinerary`
+* `Schedule Change`
+* `Payment Due`
+* `Payment Success`
+* `Receipt`
+* `Trip Reminder`
+* `PNR Cancellation Success`
+* `Advertisement`
+* `Duplicated Schedule Change`
+* `Verification`
+* `Unaccounted Cancellation`
+* `Promo code`
+
+### What to watch
+
+* Time fields use `UTC+08:00`
+* `emailReceivingDate` is when Atlas received the airline email
+* `createTime` is when Atlas created the record
+* `emailLink` is valid for only `10 minutes`
+* Atlas classifies emails, but category accuracy is not guaranteed
+
+### Best practice
+
+* use `orderNo` first when you already know the booking
+* use receiving time for airline-notification investigations
+* use creation time when reconciling Atlas records
+* store email metadata if you need a longer audit trail
+* do not rely on `emailLink` for long-term access
+
+### Full API reference
+
+See the complete endpoint schemas and samples here:
+
+[Email Query](/api-wen-dang/api-reference/utility-apis/email-query.md)

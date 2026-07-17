@@ -1,0 +1,146 @@
+# 支付
+
+{% hint style="info" %}
+💬 **需要帮助？** 如果遇到问题，请在帮助中心咨询 Eva，快速获取诊断建议。
+
+<a href="https://www.atriptech.com/" class="button primary" data-icon="comments">咨询 Eva</a>
+{% endhint %}
+
+使用本页面了解支付模式、VCC 和卡数据问题。
+
+当你需要以下内容时，从这里开始：
+
+* 在存款和 VCC 直通之间选择
+* 了解每种支付模式的退款去向
+* 在 `pay.do` 之前确认卡数据要求
+
+### 常见问题
+
+#### Atlas 支持哪些支付方式？
+
+主要选项是**存款**和**VCC 直通**。
+
+受支持的选项仍取决于航空公司和出票渠道。
+
+### Atlas 支持哪些支付方式？
+
+主要选项是：
+
+* **存款**
+* **VCC 直通**
+
+受支持的选项仍取决于航空公司和出票渠道。
+
+#### VCC 直通如何工作？
+
+在 `pay.do` 请求中发送卡详细信息。
+
+Atlas 将卡数据传递给航空公司，航空公司直接向您收费，Atlas 从您的 Atlas 账户中扣除技术服务费。
+
+### VCC 直通如何工作？
+
+在 `pay.do` 请求中发送卡详细信息。\
+Atlas 将卡数据传递给航空公司。\
+航空公司直接向您收费。\
+然后 Atlas 从您的 Atlas 账户中扣除技术服务费。
+
+在构建支付流程前，检查搜索或验证响应中的支付支持。
+
+#### Atlas 是否发行 VCC 卡？
+
+不。
+
+Atlas 仅支持 VCC 直通。
+
+您在 `pay.do` 中提供卡详细信息。
+
+### Atlas 是否发行 VCC 卡？
+
+不。\
+Atlas 仅支持 VCC 直通。
+
+您在 `pay.do` 中提供卡详细信息。
+
+#### 每种支付模式的退款去向？
+
+对于 **VCC**，退款资金通常返回到原始卡。
+
+对于 **存款**，Atlas 在收到航空公司资金后记入您的余额。
+
+### 每种支付模式的退款去向？
+
+对于 **VCC**，退款资金通常返回到原始卡。\
+对于 **存款**，Atlas 在收到航空公司资金后记入您的余额。
+
+#### 何时应使用存款而不是 VCC？
+
+当您想要更简单的支付路径时，或当 VCC 不支持该航空公司、订单或混合渠道行程时，使用存款。
+
+存款也是某些支付风险或拆分支付场景中的回退路径。
+
+### 为什么 VCC 直通在某些混合航空预订中不可用？
+
+Atlas 不支持在一个 `pay.do` 请求中使用多个 VCC。
+
+当去程和回程航段需要不同的出票渠道时，可能需要两次独立的支付。\
+如果 Atlas 无法在一次支付流程中支持该拆分，则支付模式回退为**存款**。
+
+### 何时需要持卡人地址数据？
+
+一些航空公司需要完整的账单地址详情。\
+当您发送 VCC 或基于卡的支付时，使用下面的矩阵。
+
+仅少数航空公司需要持卡人国家、省份、城市、邮政编码和地址，如下表所示：
+
+{% hint style="info" %}
+在发送 `pay.do` 之前，检查当前搜索或验证响应中的支付支持和必填字段。
+{% endhint %}
+
+| 航空公司代码 | 航空公司名称                    | cardHolderCountry | cardHoldProvince | cardHolderCity | cardHolderPostCode | cardHolderAddress |
+| ------ | ------------------------- | ----------------- | ---------------- | -------------- | ------------------ | ----------------- |
+| 4N     | Air North                 | 必填                | 必填               | 必填             | 必填                 | 必填                |
+| 5J     | Cebu Pacific Air          | 必填                | 必填               | 必填             | 必填                 | 必填                |
+| 8P     | Pacific Coastal           | 必填                | 必填               | 非必填            | 必填                 | 必填                |
+| 9M     | Central Mountain Air      | 必填                | 必填               | 非必填            | 必填                 | 必填                |
+| A3     | Aegean Airlines           | 必填                | 必填               | 必填             | 必填                 | 必填                |
+| AN     | Advanced Airlines         | 必填                | 必填               | 必填             | 必填                 | 必填                |
+| AS     | Alaska Airlines           | 非必填               | 必填               | 必填             | 必填                 | 必填                |
+| BT     | Air Baltic                | 必填                | 非必填              | 必填             | 必填                 | 必填                |
+| BV     | TOKI AIR                  | 必填                | 必填               | 必填             | 必填                 | 必填                |
+| D8     | Norwegian Air Sweden      | 必填                | 非必填              | 必填             | 必填                 | 必填                |
+| DE     | Condor                    | 非必填               | 非必填              | 必填             | 非必填                | 非必填               |
+| DG     | Cebgo                     | 必填                | 必填               | 必填             | 必填                 | 必填                |
+| DI     | Cebu Pacific Air          | 非必填               | 非必填              | 必填             | 非必填                | 非必填               |
+| DM     | Arajet                    | 必填                | 必填               | 必填             | 必填                 | 必填                |
+| DY     | Norwegian Air Shuttle ASA | 非必填               | 必填               | 必填             | 必填                 | 必填                |
+| E6     | Eurowings Europe          | 必填                | 必填               | 必填             | 必填                 | 必填                |
+| EI     | Aer Lingus                | 必填                | 必填               | 必填             | 必填                 | 必填                |
+| EW     | Eurowings                 | 必填                | 必填               | 必填             | 必填                 | 必填                |
+| F9     | Frontier Airlines (美国地址)  | 必填                | 非必填              | 必填             | 必填                 | 必填                |
+| F9     | Frontier Airlines (非美国地址) | 非必填               | 非必填              | 非必填            | 非必填                | 非必填               |
+| FA     | Fly Safair                | 必填                | 必填               | 必填             | 必填                 | 必填                |
+| G4     | Allegiant Air             | 必填                | 必填               | 必填             | 必填                 | 必填                |
+| GE     | Lift Airline              | 必填                | 必填               | 必填             | 必填                 | 必填                |
+| GQ     | Skyexpress                | 必填                | 必填               | 必填             | 必填                 | 必填                |
+| H4     | HiSky                     | 必填                | 非必填              | 非必填            | 非必填                | 非必填               |
+| H7     | HiSky                     | 必填                | 非必填              | 非必填            | 非必填                | 非必填               |
+| JV     | Perimeter                 | 必填                | 必填               | 必填             | 非必填                | 非必填               |
+| KM     | AirMalta                  | 必填                | 非必填              | 必填             | 非必填                | 必填                |
+| LJ     | Jin Air                   | 必填                | 必填               | 非必填            | 必填                 | 必填                |
+| MM     | Peach Aviation            | 非必填               | 非必填              | 必填             | 必填                 | 必填                |
+| MO     | Calm Air                  | 非必填               | 非必填              | 非必填            | 非必填                | 必填                |
+| NK     | Spirit Airlines           | 必填                | 必填               | 必填             | 必填                 | 必填                |
+| OA     | Olympic Air               | 必填                | 必填               | 必填             | 必填                 | 必填                |
+| OG     | PLAY                      | 必填                | 必填               | 必填             | 必填                 | 必填                |
+| P6     | Pascan                    | 必填                | 必填               | 必填             | 必填                 | 必填                |
+| PB     | PAL Airlines              | 必填                | 必填               | 必填             | 必填                 | 必填                |
+| RW     | Royal Air Philippines     | 非必填               | 非必填              | 非必填            | 非必填                | 必填                |
+| SY     | Sun Country Airlines      | 必填                | 必填               | 必填             | 必填                 | 必填                |
+| TR     | Scoot Tiger Air           | 必填                | 非必填              | 必填             | 必填                 | 必填                |
+| VY     | Vueling Airlines          | 必填                | 非必填              | 必填             | 必填                 | 必填                |
+
+### 相关页面
+
+* [支付与出票](/api-wen-dang/product-guides/booking/booking-step-guides/payment-and-ticketing.md)
+* [错误代码](/api-wen-dang/support-and-reference/troubleshooting-and-support/errors-handing.md)
+* [财务](/api-wen-dang/support-and-reference/troubleshooting-and-support/faqs/atlas-api-finance.md)

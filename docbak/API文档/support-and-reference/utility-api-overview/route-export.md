@@ -1,0 +1,78 @@
+# 航线导出
+
+{% hint style="info" %}
+💬 **需要帮助？** 如果遇到问题，请在帮助中心咨询 Eva，快速获取诊断建议。
+
+<a href="https://www.atriptech.com/" class="button primary" data-icon="comments">咨询 Eva</a>
+{% endhint %}
+
+Use this page to export supported route data.
+
+This page uses `Route Export` as the primary name.
+
+You may also see this API called `City Pairs API`.
+
+### Main API
+
+* `route/export.do`
+
+### Use this when you need
+
+* Route data exports
+* Internal analytics support
+* Operational review of route coverage
+
+### Before you call
+
+This API is intended for production route datasets.
+
+Send:
+
+* `routeType`
+
+Use optional filters only when needed:
+
+* `fromCity`
+* `fromCountry`
+* `toCity`
+* `toCountry`
+* `airlines`
+* `pageNumber`
+* `pageSize`
+
+### Route types
+
+* `1`: airline routes
+* `2`: Atlas routes
+
+### What the response can include
+
+Returned route records can include:
+
+* airline list
+* origin and destination city or country
+* direct or connecting indicator
+* schedule window
+* last update date
+
+`isDirect` is relevant for Atlas route exports.
+
+### Best practice
+
+* use filters to reduce payload size
+* paginate large exports instead of requesting everything at once
+* refresh local route data based on `updateDate`
+* separate airline-route exports from Atlas-route exports in your pipeline
+
+### What to watch
+
+* environment availability should be confirmed before integration
+* route data is operational support data, not a booking guarantee
+* returned schedules can change over time
+* direct and connecting coverage depends on route type and source data
+
+### Full API reference
+
+See the complete endpoint schemas and samples here:
+
+[Route Export](/api-wen-dang/api-reference/utility-apis/route-export.md)

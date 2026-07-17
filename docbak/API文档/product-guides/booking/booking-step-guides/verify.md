@@ -1,0 +1,124 @@
+# 验价
+
+{% hint style="info" %}
+💬 **需要帮助？** 如果遇到问题，请在帮助中心咨询 Eva，快速获取诊断建议。
+
+<a href="https://www.atriptech.com/" class="button primary" data-icon="comments">咨询 Eva</a>
+{% endhint %}
+
+在报价选择后使用此页面。
+
+{% hint style="info" %}
+使用验证响应中的 `bookingRequirement` 作为预订输入的真实来源。
+
+它告诉您 `order.do` 需要哪些旅客和证件字段。
+{% endhint %}
+
+当您需要以下内容时从这里开始：
+
+* 在预订前重新检查运价和航线
+* 获取所需的旅客和证件字段
+* 为 `order.do` 创建新的 `sessionId`
+* 为 `seatAvailability.do` 保留有效的 `sessionId`
+
+### 常见问题
+
+#### 何时应调用 `verify.do`？
+
+在 `search.do` 之后、`order.do` 之前调用 `verify.do`。
+
+使用它在接近预订时间时刷新运价、航线和预订要求。
+
+使用不超过 6 小时的 `routingIdentifier`。
+
+#### 应从验证响应中读取什么？
+
+读取 `sessionId`、最新运价详情、附加服务选项和 `bookingRequirement`。
+
+将 `bookingRequirement` 视为订单请求的真实来源。
+
+#### `verify.do` 适用什么请求限制？
+
+`verify.do` 与 `getOffers.do` 共享一个 `60 QPM` 的履约池。
+
+超限请求返回 `HTTP 429 Too Many Requests`。
+
+在重试前遵守返回的 `retryAfter` 值。
+
+### 履约请求限制
+
+Atlas 在滚动 60 秒窗口中一起计算 `verify.do` 和 `getOffers.do`。
+
+默认共享限制为 `60 QPM`。
+
+一个繁忙的 API 会消耗另一个的共享池。
+
+#### 什么计入
+
+以下请求会计入：
+
+* 成功的响应
+* 无结果的响应
+* 业务失败、航司失败和缓存命中的响应
+
+#### 如何减少限制压力
+
+不要在紧密循环中重复验证未更改的行程。
+
+在当前 `sessionId` 仍然有效时重用它。
+
+当返回 `429` 时，遵守 `retryAfter`。
+
+### 主要 API
+
+* `verify.do`
+
+### 输入
+
+* 来自搜索的 `routingIdentifier`，最长有效 6 小时
+
+### 关键输出
+
+* 用于订单创建和座位查询的 `sessionId`，最长有效 2 小时
+* 最新运价和航线详情
+* 所需旅客和证件字段的 `bookingRequirement`
+* 附加服务选项
+
+### 应从验证中保留什么？
+
+保留：
+
+* 用于 `order.do` 的 `sessionId`
+* 当预订前需要座位选择时，用于 `seatAvailability.do` 的 `sessionId`
+* 用于所需输入字段的 `bookingRequirement`
+* 当行李或座位在预订前很重要时的当前附加服务选项
+
+在 2 小时内使用 `sessionId`。
+
+不要重用过期的 `sessionId`。
+
+如果您的座位请求稍后从上���系统到达，保留足够的行程关联以将该请求匹配回当前的 `sessionId`。
+
+### 在以下情况下使用此部分
+
+* 预订前的运价重新检查
+* 航线详情的最终验证
+* `order.do` 所需的旅客和证件规则
+
+### 接下来是什么？
+
+使用返回的 `sessionId` 调用[创建订单](/api-wen-dang/product-guides/booking/booking-step-guides/create-order.md)。
+
+如果价格、库存或附加服务发生变化，将验证结果作为当前真实来源。
+
+### 相关页面
+
+* [搜索](/api-wen-dang/product-guides/booking/booking-step-guides/search.md)
+* [创建订单](/api-wen-dang/product-guides/booking/booking-step-guides/create-order.md)
+* [预订 API](/api-wen-dang/api-reference/booking-apis.md)
+
+### 完整 API 参考
+
+在此查看端点级详情：
+
+* [验证](/api-wen-dang/api-reference/booking-apis/verify.md)

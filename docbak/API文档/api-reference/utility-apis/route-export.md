@@ -1,0 +1,30 @@
+# 航线导出
+
+{% hint style="info" %}
+💬 **需要帮助？** 如果遇到问题，请在帮助中心咨询 Eva，快速获取诊断建议。
+
+<a href="https://www.atriptech.com/" class="button primary" data-icon="comments">咨询 Eva</a>
+{% endhint %}
+
+在指南和链接中使用 `航线导出` 作为主要名称。
+
+此 API 映射到 `route/export.do`。
+
+旧版资料可能称之为 `城市对 API`。
+
+## City Pairs API
+
+> The "City pairs API" can be used to download the city pairs supported by Atlas as well as by the airlines. \
+> The customer can use this structured data and transfer the city pair information into their mid-back office systems.\
+> \
+> \*\*This API is only available in the production environment.\*\*\
+> \
+> \*\*Dependency\*\*\
+> There is no dependency for this call.\
+> \
+> \*\*Endpoint:\*\*\
+> <https://sandbox.atriptech.com/route/export.do>
+
+```json
+{"openapi":"3.0.1","info":{"title":"Default module","version":"1.0.0"},"security":[],"paths":{"/route/export.do":{"post":{"summary":"City Pairs API","deprecated":false,"description":"The \"City pairs API\" can be used to download the city pairs supported by Atlas as well as by the airlines. \nThe customer can use this structured data and transfer the city pair information into their mid-back office systems.\n\n**This API is only available in the production environment.**\n\n**Dependency**\nThere is no dependency for this call.\n\n**Endpoint:**\nhttps://sandbox.atriptech.com/route/export.do","tags":[],"parameters":[{"name":"Accept","in":"header","description":"","required":true,"schema":{"type":"string"}},{"name":"Content-Type","in":"header","description":"","required":true,"schema":{"type":"string"}},{"name":"Accept-Encoding","in":"header","description":"","required":true,"schema":{"type":"string"}},{"name":"x-atlas-client-id","in":"header","description":"","required":false,"schema":{"type":"string"}},{"name":"x-atlas-client-secret","in":"header","description":"","required":false,"schema":{"type":"string"}}],"requestBody":{"content":{"application/json":{"schema":{"type":"object","properties":{"routeType":{"type":"integer","description":"-`1`: Airline routes\n-`2`: Atlas routes"},"fromCity":{"type":"string","description":"IATA Code of departure city.","nullable":true},"fromCountry":{"type":"string","description":"IATA Code of departure country.","nullable":true},"toCity":{"type":"string","description":"IATA Code of arrival city or airport","nullable":true},"toCountry":{"type":"string","description":"IATA Code of arrival country.","nullable":true},"airlines":{"type":"array","items":{"type":"string"},"description":"An array of IATA Codes of airlines. The routes within the airlines will be returned.","nullable":true},"pageSize":{"type":"integer","default":10000,"nullable":true},"pageNumber":{"type":"integer","default":1,"nullable":true}},"required":["routeType"]}}}},"responses":{"200":{"description":"","content":{"application/json":{"schema":{"type":"object","properties":{"status":{"type":"integer"},"msg":{"type":"string","nullable":true},"data":{"type":"array","items":{"type":"object","properties":{"airlines":{"type":"string","description":"An array of IATA Codes of airlines."},"fromCity":{"type":"string","description":"IATA Code of departure city or airport"},"fromCountry":{"type":"string","description":"IATA Code of departure country."},"toCity":{"type":"string","description":"IATA Code of arrival city or airport"},"toCountry":{"type":"string","description":"IATA Code of arrival country."},"isDirect":{"type":"string","description":"-`true`: Direct Flight\n-`false`: Connecting Flight\nThis data will only be available when the \"routeType\" = 2 (Atlas Routes)"},"scheduleStart":{"type":"string","description":"The start date of the booking window. The format is YYYYMMDD."},"scheduleEnd":{"type":"string","description":"The end date of the booking window. The format is YYYYMMDD."},"updateDate":{"type":"string","description":"The date when the routing data was updated. The format is YYYYMMDD."}},"required":["airlines","fromCity","fromCountry","toCity","toCountry","isDirect","scheduleStart","scheduleEnd","updateDate"]}}},"required":["data","status"]}}},"headers":{}}}}}}}
+```

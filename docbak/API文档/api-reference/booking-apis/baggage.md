@@ -1,0 +1,63 @@
+# 行李
+
+{% hint style="info" %}
+💬 **需要帮助？** 如果遇到问题，请在帮助中心咨询 Eva，快速获取诊断建议。
+
+<a href="https://www.atriptech.com/" class="button primary" data-icon="comments">咨询 Eva</a>
+{% endhint %}
+
+使用此端点进行流入行李查询。
+
+{% hint style="warning" %}
+`getLuggage.do` 与 `seatAvailability.do` 共享一个 `60 QPM` 的辅助服务池。
+
+超出限制的请求返回 `HTTP 429 Too Many Requests`。
+
+请等待返回的 `retryAfter` 值后再重试。
+{% endhint %}
+
+### GetLuggage 调用规则
+
+在有效的预订链中使用 `getLuggage.do`。
+
+支持的请求上下文：
+
+* `verify.do` 返回的 `sessionId`，作为 `offerId` 发送
+* `getOffers.do` 返回的 `OfferId`
+
+### 如何处理响应
+
+`getLuggage.do` 返回当前行程的行李产品。
+
+每个产品都有一个 `productCode`。
+
+在选择行李时，将该 `productCode` 用于 `order.do`。
+
+### 注意事项
+
+* 在目标行程确认后查询行李
+* 保持当前预订上下文的行李映射一致
+* 对于联程航班，保持同一方向连接航段的行李选择一致
+
+有关共享规则和计数详情，请使用 [API 请求限制](broken://spaces/6LsKtmbJhZxgxraY5mHB/pages/EsovwRrOMFnJMFfWhnMV)。
+
+## Get Luggage
+
+> \> In a booking process, please call the 'getLuggage' API to get precise baggage quotes after price verification via 'verify' or 'getOffer'.\
+> \> Steps:\
+> \> 1. API sequence\
+> \>    \* Search - Verify- getLuggage - Order - Pay\
+> \>    \* getOffer - getLuggage - Order - Pay\
+> \> 2. For exact baggage prices, request 'getLuggage'.\
+> \> 3. Pass 'offerId' in 'getLuggage' requests:\
+> \>    \* From 'verify': Use sessionId as offerId\
+> \>    \* From 'getOffer': Use its offerId directly.\
+> \> 4. 'getLuggage' returns all flight segments' baggage data, each identified by a unique productCode.\
+> \> 5. In the Order step, use the productCode to add specific baggage products to the ticket order.\
+> \
+> \*\*Endpoint:\*\*\
+> <https://sandbox.atriptech.com/getLuggage.do>
+
+```json
+{"openapi":"3.0.1","info":{"title":"Default module","version":"1.0.0"},"security":[],"paths":{"/getLuggage.do":{"post":{"summary":"Get Luggage","deprecated":false,"description":"> In a booking process, please call the 'getLuggage' API to get precise baggage quotes after price verification via 'verify' or 'getOffer'.\n> Steps:\n> 1. API sequence\n>    * Search - Verify- getLuggage - Order - Pay\n>    * getOffer - getLuggage - Order - Pay\n> 2. For exact baggage prices, request 'getLuggage'.\n> 3. Pass 'offerId' in 'getLuggage' requests:\n>    * From 'verify': Use sessionId as offerId\n>    * From 'getOffer': Use its offerId directly.\n> 4. 'getLuggage' returns all flight segments' baggage data, each identified by a unique productCode.\n> 5. In the Order step, use the productCode to add specific baggage products to the ticket order.\n\n**Endpoint:**\nhttps://sandbox.atriptech.com/getLuggage.do","tags":[],"parameters":[{"name":"x-atlas-client-id","in":"header","description":"api access id","required":true,"schema":{"type":"string"}},{"name":"x-atlas-client-secret","in":"header","description":"api access secret","required":true,"schema":{"type":"string"}},{"name":"Accept-Encoding","in":"header","description":"建议设置该请求头，能很大程度地减小网络传输报文的大小","required":false,"schema":{"type":"string"}},{"name":"Accept","in":"header","description":"","required":true,"schema":{"type":"string"}},{"name":"Content-Type","in":"header","description":"","required":true,"schema":{"type":"string"}}],"requestBody":{"content":{"application/json":{"schema":{"type":"object","properties":{"offerId":{"type":"string","description":"The`sessionId`returned by verify api(`verify.do`)"},"maxResponseTime":{"type":"integer","description":"Query timeout, unit: milliseconds, default 5000ms.\n<br>\n**Note:** Due to network transmission and computational performance impacts, the client may still receive a normal result (rather than a timeout) even if this duration is exceeded. This time is used to control the overall response time of the interface within a certain range, with an error generally not exceeding a few hundred milliseconds.<br>\nIf you have strict requirements for the timeout, it is recommended to set the timeout of your HTTP toolkit. If the HTTP toolkit you are using does not support this capability, you may need to leverage other tools—related capabilities are generally provided in most programming languages.","default":5000,"nullable":true}},"required":["offerId"]}}}},"responses":{"200":{"description":"","content":{"application/json":{"schema":{"type":"object","properties":{"status":{"type":"integer","description":"- 212: illegal parameter.\n- 214: offer not exists.\n- 205: timed out.\n- 299: airline error.\n- 9999: system error.","enum":[212,214,205,299,9999]},"msg":{"type":"string","description":"As an additional description of the response result. Especially when the interface reports an error (status ≠ 0), it is usually a human-readable error message.\n<br>\n**Note:** Do not use this field in any programming scenarios, such as judging whether the interface response is successful based on this field. You should always judge solely based on whether the status is equal to 0.","nullable":true},"data":{"type":"object","properties":{"offerId":{"type":"string"},"outboundSegments":{"type":"array","items":{"$ref":"#/components/schemas/RoutingSegment"}},"inboundSegments":{"type":"array","items":{"$ref":"#/components/schemas/RoutingSegment"},"nullable":true},"ancillaryProductElements":{"type":"array","items":{"$ref":"#/components/schemas/AncillaryProduct"}}},"required":["offerId","outboundSegments","ancillaryProductElements"]}},"required":["data","status"]}}},"headers":{}}}}}},"components":{"schemas":{"RoutingSegment":{"type":"object","properties":{"aircraftCode":{"type":"string","description":"IATA Code of aircraft type","nullable":true},"arrAirport":{"type":"string","description":"3-letter iata code for the arrival airport at which the segment is scheduled to arrive."},"arrTerminal":{"type":"string","description":"The terminal at the destination airport where the segment is scheduled to arrive.","nullable":true},"arrTime":{"type":"string","description":"The datetime at which the segment is scheduled to arrive, in the arrival airport timezone. The format is `YYYYMMDD`."},"cabin":{"type":"string","description":"RBD(known as Reservation Booking Designator) displayed by the airline.","nullable":true},"cabinClass":{"$ref":"#/components/schemas/CabinClass","description":"Cabin class of the segment.\n- 1: economy\n- 2: business\n- 3: first\n- 4: premium economy"},"carrier":{"type":"string","description":"IATA code of marketing carrier."},"codeShare":{"type":"boolean","description":"A flag used to identify whether it is a code share flight."},"depAirport":{"type":"string","description":"3-letter iata code for the airport at which the segment is scheduled to depart."},"depTerminal":{"type":"string","description":"The terminal at the departure airport from which the segment is scheduled to depart.","nullable":true},"depTime":{"type":"string","description":"The datetime at which the segment is scheduled to depart, in the departure airport timezone. The format is`YYYYMMSS`."},"duration":{"type":"integer","description":"The duration of the segment in munites."},"fareFamily":{"type":"string","description":"Fare Family as per the information received from the airline"},"flightNumber":{"type":"string","description":"Marketing flight number. The format is: CA123 or TR021 or FR1290, with the first two letters representing the carrier and the following number representing the flight number."},"operatingCarrier":{"type":"string","description":"2-letter iata code for the operating carrier. The airline actually operating this segment. This may differ from the marketing carrier in the case of a \"codeshare\", where one airline sells flights operated by another airline.","nullable":true},"operatingFlightnumber":{"type":"string","description":"Operating flight number.","nullable":true},"seatCount":{"type":"integer","description":"Max booking seats for the fare."},"segmentIndex":{"type":"integer","description":"Segment sequence. Starts from 1. If it is return trip, sequence for outbound trip and inbound trip would be together. The segment index also represents the flight sequence of the segment."},"stopCities":{"type":"string","description":"IATA code/Name of cities from where the passengers will take stopover flights. Include IATA code of cities and use a comma in case of multiple cities to separate transfer airports count is higher than 1. For example: `CGK, SUB`. \n`null` or blank means non-stop flight.","nullable":true}},"required":["arrAirport","arrTime","cabinClass","carrier","codeShare","depAirport","depTime","duration","fareFamily","flightNumber","seatCount","segmentIndex"]},"CabinClass":{"type":"integer","enum":[1,2,3,4],"title":""},"AncillaryProduct":{"type":"object","properties":{"ancillaryCode":{"type":"string","description":"A code that is relatively readable by humans and contains information about auxiliary business specifications (such as weight and quantity limitations of luggage). \n**Note:** \nThis content is only for display purposes and should not be used for programming purposes. That is to say, do not attempt to parse the information about auxiliary business specifications from this code. If you want to access the auxiliary business specifications, please use structured fields. For example, for luggage, please use`auxBaggageElement`."},"auxBaggageElement":{"type":"object","properties":{"isAllWeight":{"type":"boolean","description":"Mark whether the`weight`field restricts the total weight or the weight of a single piece.\n- `true`: The weight is for all the pieces\n- `false`: The weight is for each piece"},"piece":{"type":"integer","description":"The maximum number of pieces that can be purchased per person.\n- `0`: No Limitation about piece\n- `>0`: Maximum pieces"},"size":{"type":"string","description":"Maximum size for the baggage","nullable":true},"weight":{"type":"integer","description":"The maximum weight that can be purchased per person.\n- `0`: No limitation for weight\n- `>0`: Weight limit (KG)"}},"description":"Baggage specification limitations. This node is valid only when the ancillary type (`categoryCode`) is baggage.","required":["isAllWeight","piece","weight"],"nullable":true},"canPurchasePostTicket":{"type":"integer","description":"A flag used to mark if this ancillary product can be purchased in the post-ticketing flow.\n- `0`: No\n- `1`: Yes"},"canPurchaseWithTicket":{"type":"integer","description":"A flag used to mark if this ancillary product can be purchased during the booking flow.\n- `0`: No\n- `1`: Yes"},"categoryCode":{"description":"Type of the ancillary.\n\n- StandardCheckInBaggage: Standard Check-in Baggage.\n- CabinBaggage: Usually refers to the Cabin Baggage Overhead Locker. Transition value. It will gradually transition to `CabinBaggageOverheadLocker`.\n- CabinBaggageOverheadLocker: Cabin Baggage Overhead Locker.\n- CabinBaggageUnderSeat: Cabin Baggage Under Seat. Usually refers to the personal item.","$ref":"#/components/schemas/AncillaryCategory"},"clientTechnicalServiceFee":{"type":"number","description":"The service fee charged by Atlas for the purchase of the ancillary.","nullable":true},"currency":{"type":"string","description":"The currency in which Atlas settles transactions with you"},"maxQty":{"type":"integer","description":"The maximum number of purchases allowed per person per flight segment"},"minQty":{"type":"integer","description":"The minimum quantity allowed to be purchased per person per flight segment."},"price":{"type":"number","description":"Price for this ancillary."},"productCode":{"type":"string","description":"Unique identifier for the ancillary product. It would be used in the order request."},"segmentIndex":{"type":"integer","description":"The index of segment the ancillary applies to."},"vendorCurrency":{"type":"string","description":"The currency in which the vendor charges for the ancillary. If the fare does not allow for the VCC pass-through or BYOA payment, this information will be`null`."},"vendorPrice":{"type":"integer","description":"The price charged by the vendor for the ancillary. If the fare does not allow for the VCC pass-through or BYOA payment, this information will be`null`."}},"required":["ancillaryCode","canPurchasePostTicket","canPurchaseWithTicket","categoryCode","currency","maxQty","minQty","price","productCode","segmentIndex","vendorCurrency","vendorPrice"]},"AncillaryCategory":{"type":"string","enum":["StandardCheckInBaggage","CabinBaggage","CabinBaggageUnderSeat","CabinBaggageOverheadLocker"]}}}}
+```

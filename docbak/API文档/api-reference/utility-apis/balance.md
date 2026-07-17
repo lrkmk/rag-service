@@ -1,0 +1,19 @@
+# 余额
+
+{% hint style="info" %}
+💬 **需要帮助？** 如果遇到问题，请在帮助中心咨询 Eva，快速获取诊断建议。
+
+<a href="https://www.atriptech.com/" class="button primary" data-icon="comments">咨询 Eva</a>
+{% endhint %}
+
+## Get Balance
+
+> \*\*Dependency\*\*\
+> No preceding function needs to be carried out.\
+> \
+> \*\*Endpoint:\*\*\
+> <https://sandbox.atriptech.com/balance.do>
+
+```json
+{"openapi":"3.0.1","info":{"title":"Default module","version":"1.0.0"},"security":[],"paths":{"/balance.do":{"post":{"summary":"Get Balance","deprecated":false,"description":"**Dependency**\nNo preceding function needs to be carried out.\n\n**Endpoint:**\nhttps://sandbox.atriptech.com/balance.do","tags":[],"parameters":[{"name":"Accept","in":"header","description":"","required":true,"schema":{"type":"string"}},{"name":"Content-Type","in":"header","description":"","required":true,"schema":{"type":"string"}},{"name":"Accept-Encoding","in":"header","description":"","required":true,"schema":{"type":"string"}},{"name":"x-atlas-client-id","in":"header","description":"","required":true,"schema":{"type":"string"}},{"name":"x-atlas-client-secret","in":"header","description":"","required":true,"schema":{"type":"string"}}],"requestBody":{"content":{"application/json":{"schema":{"type":"object","properties":{"currency":{"type":"string","description":"The currency of your balance account"}},"required":["currency"]}}}},"responses":{"200":{"description":"","content":{"application/json":{"schema":{"type":"object","properties":{"status":{"type":"integer"},"msg":{"type":"string","nullable":true},"accountBalance":{"type":"object","properties":{"amount":{"type":"string","description":"The amount of balance in your deposit account."},"currency":{"type":"string","description":"The currency in which Atlas settles transactions with you."}},"required":["amount","currency"],"description":"This element contavins the information regarding the amount and the currency of transaction of the customer.","nullable":true}},"required":["status"]}}},"headers":{}}}}}}}
+```

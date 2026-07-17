@@ -1,0 +1,47 @@
+# 如何停止出票？
+
+停止出票，既可以通过ATRIP 触发，也可以通过API触发。具体说明如下：
+
+### **1.ATRIP**
+
+操作路径：ATRIP ->订单中心 ->我的订单 ->订单详情 ->停止出票
+
+<figure><img src="/files/sJl5pnZjgQv8yN7KtycA" alt=""><figcaption></figcaption></figure>
+
+操作说明：&#x20;
+
+在订单详情页，点击“停止出票”按钮，系统需要约10分钟进行处理，请耐心等待。&#x20;
+
+处理完成后，页面将提示“操作成功”或具体的失败原因，请留意提示信息，并关注订单状态更新。&#x20;
+
+### **2.API**
+
+端点: <https://sandbox.atriptech.com/stopTicket.do>
+
+**请求**
+
+```
+{
+"cid": "XXXXXXXX",
+"orderNo": "ZNMKU20220119160129691"
+}
+```
+
+**响应**
+
+```
+{
+"status": 0,
+"msg": "We are trying to intercept the ticket issuance. Please check the order status for result after 8 minutes"
+}
+```
+
+**成功**并不代表已成功拦截出票，而是表示系统已开始尝试执行出票拦截操作。
+
+需要在8分钟后通过查询订单状态的Retrieve Booking（queryOrderDetails.do）来获得拦截出票的结果。
+
+**orderStatus**: -3, 表示拦截成功。
+
+**orderStatus**: 2, 表示拦截失败，订单已出票。
+
+当发送“停止出票”请求后，queryOrderDetails.do订单状态的定义将有所不同。

@@ -49,7 +49,7 @@ mcp = FastMCP("atlas-docs", host=HOST, port=PORT)
 
 
 @mcp.tool()
-def search_all(query: str, top_k: int = 5, faq_top_k: int = 2) -> dict:
+def search_all(query: str) -> dict:
     """Search ALL THREE corpora at once (帮助中心 policy/FAQ, API文档
     integration docs/FAQ, 产品介绍 product overview/news) and return a small
     top-k from each, labeled by corpus.
@@ -70,27 +70,35 @@ def search_all(query: str, top_k: int = 5, faq_top_k: int = 2) -> dict:
     deep dive since its job is figuring out WHERE the answer lives, not
     exhausting it.
 
+    top_k/faq_top_k are deliberately NOT caller-settable here (fixed at 5
+    standard + 2 FAQ per corpus). They used to be, but trace analysis on
+    2026-07-17 (question: "Atlas 的价格怎么计算？月费、交易费、附加服务费
+    分别是多少？") caught the calling agent passing top_k=3&faq_top_k=1 —
+    below even the pre-2026-07-16 default — which pushed the one chunk that
+    actually answered the question (Fulfilment API 交易费说明) out of the
+    returned results despite it existing in the corpus. A docstring telling
+    the agent what to pass isn't enforcement; it can always choose a smaller
+    number. Pinning the value here is. If a corpus-specific follow-up with
+    the *_context tools (which do still take top_k) comes back empty even
+    at a high top_k, that's a real documentation/chunking gap — not a
+    reason to want a lower top_k on search_all.
+
     Args:
-        query: Natural-language question, Chinese or English.
-        top_k: Standard/product results per corpus (default 5 — raised
-            from 2 on 2026-07-16 after trace analysis showed top_2 silently
-            dropping correct hits ranked #3-4, e.g. the VOID-supported-
-            airlines changelog chunk for "废票支持哪些航司" ranks #4 in
-            API文档). Raising top_k does not catch everything — some
-            answers rank outside top_20-30 for any natural-language
-            phrasing regardless of top_k (a chunking issue, not a top_k
-            one) — if a corpus-specific follow-up with a higher top_k
-            still comes back empty, that's a real documentation/chunking
-            gap, not a signal to keep raising top_k further.
-        faq_top_k: FAQ results per corpus that has one, i.e. 帮助中心 and
-            API文档 (default 2).
+        query: Natural-language question, Chinese or English. If the
+            question bundles multiple distinct asks (e.g. "月费、交易费、
+            附加服务费分别是多少" = 3 separate asks), do not merge them
+            into one query string — call search_all once per sub-question
+            instead. A merged query dilutes the embedding toward none of
+            the sub-topics specifically, which is a different failure mode
+            from a too-small top_k but produces the same symptom (the
+            right chunk doesn't come back).
 
     Returns:
         {query, 帮助中心: {standard_results, faq_results}, API文档:
         {standard_results, faq_results}, 产品介绍: {product_intro_results,
         product_news_results}}.
     """
-    return rag_search.search_all(query, n_results=top_k, faq_n_results=faq_top_k)
+    return rag_search.search_all(query, n_results=5, faq_n_results=2)
 
 
 @mcp.tool()

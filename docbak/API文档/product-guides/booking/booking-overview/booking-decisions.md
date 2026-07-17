@@ -1,0 +1,149 @@
+# 预订决策
+
+{% hint style="info" %}
+💬 **需要帮助？** 如果遇到问题，请在帮助中心咨询 Eva，快速获取诊断建议。
+
+<a href="https://www.atriptech.com/" class="button primary" data-icon="comments">咨询 Eva</a>
+{% endhint %}
+
+当您需要选择正确的预订路径或决定重复哪个步骤时，使用此部分。
+
+此部分帮助您：
+
+* 在搜索、报价和履约路径之间做选择
+* 决定哪个 API 拥有预订操作
+* 在延迟或失败后从最安全的重启点重新开始
+* 避免在流程间混淆标识符
+
+### 简要回答
+
+当问题不是如何调用 API，而是使用哪条路径时，使用这些页面。
+
+如果问题是流程选择、重启范围或 API 边界，从这里开始。
+
+### 何时使用此部分
+
+在以下情况下使用此部分：
+
+* 您在 `search.do` 和 `getOffers.do` 之间做决定
+* 您在 `getOffers.do` 和 `getOfferPrice.do` 之间做决定
+* 您不确定是从搜索、验证还是报价检索重新开始
+* 您不确定问题是属于 `verify.do` 还是 `order.do`
+
+### 阅读顺序
+
+#### 选择预订入口路径
+
+从[搜索 vs 报价](/api-wen-dang/product-guides/booking/booking-overview/booking-decisions/search-vs-offer.md)开始。
+
+当您需要决定 Atlas 是您的搜索层还是您的定价和预订层时使用。
+
+#### 选择报价路径
+
+然后使用[获取报价 vs 获取报价价格](/api-wen-dang/product-guides/booking/booking-overview/booking-decisions/get-offer-vs-get-offer-price.md)。
+
+当您已经需要基于报价的路径并且必须在标准报价检索和快速履约之间做选择时使用。
+
+#### 决定从哪里重启
+
+使用[重启点](/api-wen-dang/product-guides/booking/booking-overview/booking-decisions/restart-point.md)。
+
+当标识符过期、定价漂移或预订延迟时使用。
+
+#### 决定哪个 API 拥有问题
+
+使用[验证 vs 下单](/api-wen-dang/product-guides/booking/booking-overview/booking-decisions/verify-vs-order.md)。
+
+当您需要区分验证和预订创建时使用。
+
+### 此部分的页面
+
+* [搜索 vs 报价](/api-wen-dang/product-guides/booking/booking-overview/booking-decisions/search-vs-offer.md)
+* [重启点](/api-wen-dang/product-guides/booking/booking-overview/booking-decisions/restart-point.md)
+* [获取报价 vs 获取报价价格](/api-wen-dang/product-guides/booking/booking-overview/booking-decisions/get-offer-vs-get-offer-price.md)
+* [验证 vs 下单](/api-wen-dang/product-guides/booking/booking-overview/booking-decisions/verify-vs-order.md)
+
+### 快速决策规则
+
+#### 何时应使用 `search.do`？
+
+当 Atlas 是主要购物入口点时使用。
+
+标准下一步是 `verify.do`。
+
+#### 何时应使用 `getOffers.do`？
+
+当目标行程已知或需要独立价格检查时使用。
+
+标准下一步是使用 `OfferId` 的 `order.do`。
+
+可选附加服务可以在 `order.do` 之前添加。
+
+#### 何时应使用 `getOfferPrice.do`？
+
+当您需要履约路径（具有更广泛的展示规则和即时支付准备）时使用。
+
+当普通预订时序足够时，不要使用它。
+
+可选附加服务也可以在 `order.do` 之前添加，但它们必须适应更严格的履约窗口。
+
+#### 何时应从较早的步骤重启？
+
+当标识符过期、行程改变、运价漂移或预订延迟足够长以至于旧上下文不可靠时，重新开始。
+
+### 常见风险
+
+#### 跨流程混淆标识符
+
+不要互换使用 `routingIdentifier`、`sessionId` 和 `OfferId`。
+
+每个都属于特定的预订路径和步骤。
+
+#### 从错误的步骤重启
+
+在流程中过晚重试可能导致过时价格、过时附加服务或过期会话失败。
+
+从恢复安全预订上下文的最早步骤重新开始。
+
+#### 在标准报价流程中使用履约规则
+
+不要假设 `getOffers.do` 和 `getOfferPrice.do` 具有相同的时序和恢复模型。
+
+它们是独立的产品路径。
+
+不要假设附加服务支持是区别。
+
+真正的区别在于时序、展示范围和操作恢复。
+
+### 按任务推荐的下一个页面
+
+#### 选择正确的预订路径
+
+使用：
+
+* [搜索 vs 报价](/api-wen-dang/product-guides/booking/booking-overview/booking-decisions/search-vs-offer.md)
+* [获取报价 vs 获取报价价格](/api-wen-dang/product-guides/booking/booking-overview/booking-decisions/get-offer-vs-get-offer-price.md)
+* [预订概述](/api-wen-dang/product-guides/booking/booking-overview.md)
+
+#### 决定重试什么
+
+使用：
+
+* [重启点](/api-wen-dang/product-guides/booking/booking-overview/booking-decisions/restart-point.md)
+* [标识符](/api-wen-dang/product-guides/booking/booking-overview/identifiers.md)
+* [错误代码](/api-wen-dang/support-and-reference/troubleshooting-and-support/errors-handing.md)
+
+#### 决定问题属于验证还是订单
+
+使用：
+
+* [验证 vs 下单](/api-wen-dang/product-guides/booking/booking-overview/booking-decisions/verify-vs-order.md)
+* [验证](/api-wen-dang/product-guides/booking/booking-step-guides/verify.md)
+* [创建订单](/api-wen-dang/product-guides/booking/booking-step-guides/create-order.md)
+
+### 相关页面
+
+* [预订概述](/api-wen-dang/product-guides/booking/booking-overview.md)
+* [标识符](/api-wen-dang/product-guides/booking/booking-overview/identifiers.md)
+* [API 请求限制](/api-wen-dang/product-guides/booking/booking-overview/api-request-limits.md)
+* [错误代码](/api-wen-dang/support-and-reference/troubleshooting-and-support/errors-handing.md)

@@ -1,0 +1,168 @@
+# 订单与出票
+
+{% hint style="info" %}
+💬 **需要帮助？** 如果遇到问题，请在帮助中心咨询 Eva，快速获取诊断建议。
+
+<a href="https://www.atriptech.com/" class="button primary" data-icon="comments">咨询 Eva</a>
+{% endhint %}
+
+使用本页面了解订单保留、联系邮箱、拆分订单和附加服务映射问题。
+
+当你需要以下内容时，从这里开始：
+
+* 了解 `order.do` 之后会发生什么
+* 确认如何处理 `pay.do` 和出票轮询
+* 决定如何处理航空公司 PNR、拆分订单或附加服务
+
+### 常见问题
+
+#### `order.do` 是否保留库存和价格？
+
+是的。
+
+Atlas 在订单创建后保留库存和价格 30 分钟。
+
+如果在该窗口内未完成支付，保留将过期。
+
+此 30 分钟规则适用于标准预订。
+
+从 `getOfferPrice.do` 创建的订单使用 5 分钟的执行窗口。
+
+### `order.do` 是否保留库存？
+
+是的。\
+Atlas 在订单创建后保留库存和价格 30 分钟。
+
+如果在该窗口内未完成支付，保留将过期。
+
+对于从 `getOfferPrice.do` 创建的执行流程订单，操作窗口为 5 分钟。
+
+### 可以手动释放保留的库存吗？
+
+不。\
+Atlas 在保留期后自动释放。
+
+### 应在预订联系详情中发送哪个邮箱？
+
+您可以使用以下任一：
+
+* 旅客邮箱
+* 您的代理邮箱
+* Atlas 生成的邮箱
+
+一些航空公司会阻止来自同一邮箱地址的重复预订。\
+为降低该风险，使用 `useAtlasMailForContact`。
+
+### `useAtlasMailForContact` 有什么作用？
+
+* `true`：Atlas 生成唯一的预订邮箱并将其发送给航空公司
+* `false`：Atlas 使用您在 `order.do` 中发送的邮箱
+
+当使用 Atlas 生成的邮箱时，航空公司的回复可能出现在 ATRIP 邮箱记录中。\
+交付是尽力而为的，不保证。
+
+如果您自己的邮箱被航空公司阻止，Atlas 可能取消预订并返回错误 `321`。
+
+#### 在 `pay.do` 之后是否需要轮询？
+
+是的。
+
+支付和出票并不总是在同一时刻。
+
+使用 `queryOrderDetails.do` 直到订单达到最终的出票状态。
+
+### 在 `pay.do` 之后是否需要轮询？
+
+是的。\
+支付和出票并不总是在同一时刻。
+
+使用 `queryOrderDetails.do` 直到订单达到最终的出票状态。\
+Webhook 可能有帮助，但不应该是您唯一的确认路径。
+
+### `pnrCode` 是航空公司 PNR 吗？
+
+不。\
+`pnrCode` 是 Atlas 预订参考号。
+
+航空公司 PNR 在航空公司生成后稍后通过订单查询返回。
+
+#### 如何处理往返行程的拆分订单？
+
+当行程可能拆分为单独的单程订单时，使用 `allowGenerateMultipleOrders: true`。
+
+分别读取每个返回的 `orderNo`，并分别为每个受支持的订单支付。
+
+### 航空公司 PNR 和票号何时出现？
+
+它们在出票完成后出现。\
+从订单查询中的 `paxTicketInfos.airlinePNRs` 和 `ticketNos` 读取。
+
+### 如果出票仍在处理中，应该怎么做？
+
+不要盲目重试支付。\
+首先查询订单状态。
+
+等待最终的 `orderStatus` 和 `ticketStatus`，或如果配置了 webhook 事件则进行对账。
+
+### 支持哪些座位选择场景？
+
+Atlas 支持支持 Atlas API 座位功能的航空公司的座位选择。
+
+Atlas 支持 Atlas 发行的订单以及在预订流程中随机票购买的座位选择。
+
+Atlas 不支持非 Atlas 发行的订单或出票后的座位选择。
+
+请参阅[座位](/api-wen-dang/product-guides/booking/optional-ancillaries/seats-and-baggage.md)了解当前支持范围。
+
+### VCC 可以用于由两个单程票价组成的往返行程吗？
+
+可以，但预订可能拆分为两个单独的订单。
+
+使用：
+
+* `allowGenerateMultipleOrders: true`
+
+如果 Atlas 无法将行程作为一次往返出票，它可能返回两个逗号分隔的 `orderNo` 值。
+
+### 拆分订单支付应如何工作？
+
+1. 使用 `allowGenerateMultipleOrders: true` 创建订单
+2. 分别读取每个返回的订单
+3. 为每个订单分别调用支付
+
+在支付前检查每个返回订单的支付支持。
+
+### 联程航班的附加服务应如何发送？
+
+每个实际飞行的航段必须有自己的 `segmentIndex` 条目。
+
+如果验证返回两个航段，当产品适用于两个航段时，订单请求也必须包含两个附加服务条目。
+
+#### 联程航班的附加服务应如何映射？
+
+在实际飞行航段级别映射附加服务。
+
+如果一个产品适用于两个航段，为每个 `segmentIndex` 发送一个条目。
+
+### 示例
+
+如果一个行李产品适用于两段旅程，发送：
+
+```json
+"ancillaries": [
+  {
+    "productCode": "SCI_BAG_1PC_20KG",
+    "segmentIndex": "1"
+  },
+  {
+    "productCode": "SCI_BAG_1PC_20KG",
+    "segmentIndex": "2"
+  }
+]
+```
+
+### 相关页面
+
+* [创建订单](/api-wen-dang/product-guides/booking/booking-step-guides/create-order.md)
+* [支付与出票](/api-wen-dang/product-guides/booking/booking-step-guides/payment-and-ticketing.md)
+* [查询订单](/api-wen-dang/product-guides/booking/booking-step-guides/query-order.md)

@@ -1,0 +1,56 @@
+# 参考数据与沙箱
+
+{% hint style="info" %}
+💬 **需要帮助？** 如果遇到问题，请在帮助中心咨询 Eva，快速获取诊断建议。
+
+<a href="https://www.atriptech.com/" class="button primary" data-icon="comments">咨询 Eva</a>
+{% endhint %}
+
+使用本部分获取跨 Atlas API 流程使用的共享参考数据和沙箱测试输入。
+
+当你需要以下内容时，从这里开始：
+
+* 查找跨工作流使用的共享值或枚举值
+* 查看已发布的沙箱测试输入
+* 在构建或排查请求前确认辅助数据
+
+### 常见问题
+
+#### 本部分包含哪些内容？
+
+本部分包含共享参考值、航空公司特定的辅助数据，以及跨 Atlas API 工作流重复使用的已发布沙箱测试输入。
+
+#### 何时应使用本部分而不是 API 参考？
+
+使用本部分获取共享值和测试输入。
+
+使用[API 参考](/api-wen-dang/api-reference.md)获取确切的端点字段、架构和示例。
+
+### 本部分的页面
+
+* [参考数据](/api-wen-dang/support-and-reference/integration-reference/reference-data.md)
+* [沙箱测试数据](/api-wen-dang/support-and-reference/integration-reference/sandbox-test-data.md)
+
+### 本部分涵盖的内容
+
+* 共享参考值
+* 航空公司特定的枚举值
+* 沙箱测试输入
+* 辅助集成数据
+
+### 在需要以下内容时使用
+
+* 受支持的请求值
+* 跨流程重复使用的参考列表
+* 已发布的沙箱测试输入
+* 航空公司特定的辅助数据
+
+### 后续步骤
+
+找到所需的值或测试输入后，返回到您正在实施的工作流或端点页面。
+
+### 相关章节
+
+* [集成指南](/api-wen-dang/readme-1.md)
+* [API 参考](/api-wen-dang/api-reference.md)
+* [故障排除与支持](/api-wen-dang/support-and-reference/troubleshooting-and-support.md)
