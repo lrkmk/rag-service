@@ -336,7 +336,7 @@ def search_help_center_context(
     }
 
 
-def search_all(query: str, n_results: int = 2, faq_n_results: int = 1) -> dict:
+def search_all(query: str, n_results: int = 5, faq_n_results: int = 2) -> dict:
     """Fan a single query out across all three corpora (帮助中心/API文档/
     产品介绍) in one embedding pass, returning a small top-k from each
     labeled separately -- for when it isn't clear up front which corpus
@@ -352,10 +352,19 @@ def search_all(query: str, n_results: int = 2, faq_n_results: int = 1) -> dict:
     single-corpus search is a handful of cheap local vector lookups, not
     another model inference pass.
 
-    Deliberately keeps n_results small per corpus (default 2 standard + 1
-    FAQ each) since the point is breadth across corpora, not depth within
-    one -- call the corpus-specific search_*_context tool with a higher
-    top_k once you know which corpus actually has the answer.
+    n_results defaults to 5 (was 2) -- confirmed via trace analysis
+    2026-07-16 that top_2 silently drops correct hits ranked #3-4 (e.g. the
+    VOID-supported-airlines changelog chunk for "废票支持哪些航司" ranks #4
+    in API文档 at distance 0.464 -- present in the corpus, invisible at
+    top_2). Still deliberately smaller than a corpus-specific deep dive
+    (top_k 10-20 via search_*_context) since the point here is breadth
+    across corpora, not exhausting one -- call the corpus-specific
+    search_*_context tool with a higher top_k once you know which corpus
+    actually has the answer. Note this does NOT fully close the gap: some
+    chunks (e.g. whschedulenotify-c06, the 航变通知 confirmed/unconfirmed
+    status field) don't rank in the top 20-30 for natural-language queries
+    at all, regardless of n_results -- that's a chunking/embedding issue,
+    not something top_k can fix.
     """
     _lazy_init()
     embedding = embed_query(query)

@@ -79,6 +79,46 @@ def reconcile(coll, current_ids: list[str]):
         print(f"[{coll.name}] deleted {len(stale_ids)} stale ids no longer produced by source files")
 
 
+def incremental_upsert(coll, ids: list[str], docs: list[str], metas: list[dict]):
+    """Only (re-)embed ids whose document text actually changed since the
+    last ingest — see ingest_help_center.py's incremental_upsert() for the
+    full rationale. coll.upsert() re-embeds everything it's given regardless
+    of whether the text changed, which used to force re-embedding the whole
+    corpus for a one-line edit to a single source file.
+    """
+    if not ids:
+        return
+    existing = coll.get(ids=ids, include=["documents", "metadatas"])
+    existing_docs = dict(zip(existing["ids"], existing["documents"]))
+    existing_metas = dict(zip(existing["ids"], existing["metadatas"]))
+
+    embed_ids, embed_docs, embed_metas = [], [], []
+    meta_only_ids, meta_only_metas = [], []
+    unchanged = 0
+    for cid, doc, meta in zip(ids, docs, metas):
+        if cid not in existing_docs or existing_docs[cid] != doc:
+            embed_ids.append(cid)
+            embed_docs.append(doc)
+            embed_metas.append(meta)
+        elif existing_metas.get(cid) != meta:
+            meta_only_ids.append(cid)
+            meta_only_metas.append(meta)
+        else:
+            unchanged += 1
+
+    if embed_ids:
+        print(f"[{coll.name}] embedding {len(embed_ids)} new/changed chunks "
+              f"({unchanged} unchanged skipped, {len(meta_only_ids)} metadata-only)...", flush=True)
+        t0 = time.time()
+        coll.upsert(ids=embed_ids, documents=embed_docs, metadatas=embed_metas)
+        print(f"[{coll.name}] embedding done in {time.time() - t0:.0f}s")
+    if meta_only_ids:
+        coll.update(ids=meta_only_ids, metadatas=meta_only_metas)
+        print(f"[{coll.name}] updated metadata only for {len(meta_only_ids)} chunks (no re-embed)")
+    if not embed_ids and not meta_only_ids:
+        print(f"[{coll.name}] nothing changed, all {unchanged} chunks already up to date")
+
+
 def ingest_intro(client):
     path = os.path.join(PRODUCT_INTRO_ROOT, "产品总览", "_rag-chunks", "children.jsonl")
     coll = client.get_or_create_collection(name="atlas_intro_chunks", embedding_function=EMBEDDER)
@@ -101,11 +141,7 @@ def ingest_intro(client):
             "source_path": rec.get("source_path"),
         }))
 
-    if ids:
-        print(f"[atlas_intro_chunks] embedding {len(ids)} chunks...", flush=True)
-        t0 = time.time()
-        coll.upsert(ids=ids, documents=docs, metadatas=metas)
-        print(f"[atlas_intro_chunks] embedding done in {time.time() - t0:.0f}s")
+    incremental_upsert(coll, ids, docs, metas)
     reconcile(coll, ids)
     print(f"[atlas_intro_chunks] ingested {len(ids)} chunks")
     return coll
@@ -134,11 +170,7 @@ def ingest_news(client):
             "source_path": rec.get("source_path"),
         }))
 
-    if ids:
-        print(f"[atlas_news_chunks] embedding {len(ids)} chunks...", flush=True)
-        t0 = time.time()
-        coll.upsert(ids=ids, documents=docs, metadatas=metas)
-        print(f"[atlas_news_chunks] embedding done in {time.time() - t0:.0f}s")
+    incremental_upsert(coll, ids, docs, metas)
     reconcile(coll, ids)
     print(f"[atlas_news_chunks] ingested {len(ids)} chunks")
     return coll

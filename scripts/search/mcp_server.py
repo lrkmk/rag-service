@@ -49,7 +49,7 @@ mcp = FastMCP("atlas-docs", host=HOST, port=PORT)
 
 
 @mcp.tool()
-def search_all(query: str, top_k: int = 2, faq_top_k: int = 1) -> dict:
+def search_all(query: str, top_k: int = 5, faq_top_k: int = 2) -> dict:
     """Search ALL THREE corpora at once (帮助中心 policy/FAQ, API文档
     integration docs/FAQ, 产品介绍 product overview/news) and return a small
     top-k from each, labeled by corpus.
@@ -66,14 +66,24 @@ def search_all(query: str, top_k: int = 2, faq_top_k: int = 1) -> dict:
     Once search_all shows you which corpus actually has the relevant
     content, switch to that corpus's *_context tool (search_help_center_context
     or search_api_docs_context) with a higher top_k for deeper results — this
-    tool intentionally returns few results per corpus since its job is
-    figuring out WHERE the answer lives, not exhausting it.
+    tool intentionally returns fewer results per corpus than a dedicated
+    deep dive since its job is figuring out WHERE the answer lives, not
+    exhausting it.
 
     Args:
         query: Natural-language question, Chinese or English.
-        top_k: Standard/product results per corpus (default 2).
+        top_k: Standard/product results per corpus (default 5 — raised
+            from 2 on 2026-07-16 after trace analysis showed top_2 silently
+            dropping correct hits ranked #3-4, e.g. the VOID-supported-
+            airlines changelog chunk for "废票支持哪些航司" ranks #4 in
+            API文档). Raising top_k does not catch everything — some
+            answers rank outside top_20-30 for any natural-language
+            phrasing regardless of top_k (a chunking issue, not a top_k
+            one) — if a corpus-specific follow-up with a higher top_k
+            still comes back empty, that's a real documentation/chunking
+            gap, not a signal to keep raising top_k further.
         faq_top_k: FAQ results per corpus that has one, i.e. 帮助中心 and
-            API文档 (default 1).
+            API文档 (default 2).
 
     Returns:
         {query, 帮助中心: {standard_results, faq_results}, API文档:

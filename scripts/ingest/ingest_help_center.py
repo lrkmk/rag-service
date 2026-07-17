@@ -20,9 +20,12 @@ Usage:
 
 Re-running is safe: everything is upserted by chunk_id, so this is
 idempotent — you can just re-run after re-generating the source jsonl files.
-Deletions/renames are handled too: after each collection's upsert, any id
-still in Chroma but no longer produced by the source files (doc deleted, or
-re-chunked with new chunk_ids) is removed via reconcile() below.
+It's also incremental (see incremental_upsert() below): only chunks whose
+text actually changed get re-embedded, so editing one or two source files
+doesn't force re-embedding the whole corpus. Deletions/renames are handled
+too: after each collection's upsert, any id still in Chroma but no longer
+produced by the source files (doc deleted, or re-chunked with new
+chunk_ids) is removed via reconcile() below.
 """
 
 import glob
@@ -112,6 +115,60 @@ def reconcile(coll, current_ids: list[str]):
         print(f"[{coll.name}] deleted {len(stale_ids)} stale ids no longer produced by source files")
 
 
+def incremental_upsert(coll, ids: list[str], docs: list[str], metas: list[dict]):
+    """Only (re-)embed ids whose document text actually changed since the
+    last ingest. coll.upsert() re-embeds everything it's given regardless of
+    whether the text changed — that's why editing one or two source files
+    used to force re-embedding the whole corpus every time, even for a
+    one-line edit.
+
+    Splits the incoming batch into three groups:
+      - new or text-changed ids -> coll.upsert() (the only ones that pay the
+        embedding cost)
+      - metadata-only-changed ids (text identical, e.g. a level2_category
+        rename) -> coll.update() with no documents=, which Chroma applies as
+        a metadata-only write, keeping the existing embedding untouched
+      - unchanged ids -> skipped entirely, not sent to Chroma at all
+
+    reconcile() (deletion of ids no longer produced by any source file)
+    still needs the *full* current id list, not just the changed subset —
+    call it separately with `ids`, same as before.
+    """
+    if not ids:
+        return
+    existing = coll.get(ids=ids, include=["documents", "metadatas"])
+    existing_docs = dict(zip(existing["ids"], existing["documents"]))
+    existing_metas = dict(zip(existing["ids"], existing["metadatas"]))
+
+    embed_ids, embed_docs, embed_metas = [], [], []
+    meta_only_ids, meta_only_metas = [], []
+    unchanged = 0
+    for cid, doc, meta in zip(ids, docs, metas):
+        if cid not in existing_docs or existing_docs[cid] != doc:
+            embed_ids.append(cid)
+            embed_docs.append(doc)
+            embed_metas.append(meta)
+        elif existing_metas.get(cid) != meta:
+            meta_only_ids.append(cid)
+            meta_only_metas.append(meta)
+        else:
+            unchanged += 1
+
+    if embed_ids:
+        print(f"[{coll.name}] embedding {len(embed_ids)} new/changed chunks "
+              f"({unchanged} unchanged skipped, {len(meta_only_ids)} metadata-only) "
+              f"(CPU inference on a large Chinese model can take a while with no "
+              f"output in between — this is expected, not a hang)...", flush=True)
+        t0 = time.time()
+        coll.upsert(ids=embed_ids, documents=embed_docs, metadatas=embed_metas)
+        print(f"[{coll.name}] embedding done in {time.time() - t0:.0f}s")
+    if meta_only_ids:
+        coll.update(ids=meta_only_ids, metadatas=meta_only_metas)
+        print(f"[{coll.name}] updated metadata only for {len(meta_only_ids)} chunks (no re-embed)")
+    if not embed_ids and not meta_only_ids:
+        print(f"[{coll.name}] nothing changed, all {unchanged} chunks already up to date")
+
+
 def build_parents_index():
     """article_id -> full parent record, plus a slim (level1, level2) map for enrichment."""
     paths = glob.glob(os.path.join(HELP_CENTER, "**", "_rag-chunks", "parents.jsonl"), recursive=True)
@@ -158,13 +215,7 @@ def ingest_rule_chunks(client, parents_slim):
                 "text": rec["text"],
             }))
 
-    if ids:
-        print(f"[atlas_rule_chunks] embedding {len(ids)} chunks (CPU inference on a "
-              f"large Chinese model can take several minutes with no output in between "
-              f"— this is expected, not a hang)...", flush=True)
-        t0 = time.time()
-        coll.upsert(ids=ids, documents=docs, metadatas=metas)
-        print(f"[atlas_rule_chunks] embedding done in {time.time() - t0:.0f}s")
+    incremental_upsert(coll, ids, docs, metas)
     reconcile(coll, ids)
     print(f"[atlas_rule_chunks] ingested {len(ids)} chunks from {len(paths)} files"
           + (f" ({skipped} had no matching parent record)" if skipped else ""))
@@ -197,11 +248,7 @@ def ingest_faq_chunks(client):
                 "source_path": rec.get("source_path"),
             }))
 
-    if ids:
-        print(f"[atlas_faq_chunks] embedding {len(ids)} QA pairs...", flush=True)
-        t0 = time.time()
-        coll.upsert(ids=ids, documents=docs, metadatas=metas)
-        print(f"[atlas_faq_chunks] embedding done in {time.time() - t0:.0f}s")
+    incremental_upsert(coll, ids, docs, metas)
     reconcile(coll, ids)
     print(f"[atlas_faq_chunks] ingested {len(ids)} QA pairs from {len(paths)} files")
     return coll
