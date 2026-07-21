@@ -2,7 +2,7 @@
 MCP server exposing the Atlas documentation RAG store as tools an agent can
 call directly, instead of shelling out to ask.py.
 
-Wraps rag_search.py's four search functions (帮助中心 rules/FAQ, API文档
+Wraps rag_search.py's search functions (帮助中心 rules/FAQ, API文档
 chunks/FAQ) as MCP tools. Same BGE model, same asymmetric query-prefix
 handling, same Chroma store — this is a thin protocol adapter, not a
 reimplementation.
@@ -58,7 +58,7 @@ def search_all(query: str) -> dict:
     than one corpus, or when you're not confident which corpus applies —
     do not guess a single corpus and only fall back to search_all if that
     guess turns out wrong. Also use this if a corpus-specific search
-    (search_help_center/search_api_docs/search_product_intro/
+    (search_help_center_context/search_api_docs_context/search_product_intro/
     search_product_news) came back with nothing that actually answers the
     question — that usually means the answer is in a different corpus, not
     that it doesn't exist.
@@ -102,40 +102,6 @@ def search_all(query: str) -> dict:
 
 
 @mcp.tool()
-def search_help_center(
-    query: str,
-    top_k: int = 3,
-    carrier: Optional[str] = None,
-) -> list[dict]:
-    """Search Atlas's Chinese Help Center (帮助中心) — customer-service /
-    operations policy content: refund and void rules, flight-change policy,
-    payment methods, billing, notifications, security & compliance, SLAs.
-
-    Use this for questions about WHAT the policy/rule is and WHEN it applies
-    (e.g. "退票超过多久不再处理", "航班提前多久可以非自愿退票"). Do NOT use
-    this for API integration questions (endpoint parameters, error codes,
-    request/response fields) — use search_api_docs for those instead. If
-    it's not clearly one or the other, use search_all instead of guessing.
-
-    Args:
-        query: Natural-language question, Chinese or English.
-        top_k: Number of results to return (default 3).
-        carrier: Optional airline IATA code (e.g. "FR", "IJ", "W6") to
-            restrict results to that airline's specific rules instead of
-            generic ones. Only set this if the question names a specific
-            airline — otherwise leave it unset to search generic + all
-            airline-specific content together.
-
-    Returns:
-        List of hits, each with: chunk_id, distance (lower = more relevant),
-        level1_category, level2_category, section, text (the actual rule),
-        applicable_carrier, parent_title, parent_summary, source_path.
-    """
-    where = {"applicable_carrier": carrier} if carrier else None
-    return rag_search.search_rules(query, n_results=top_k, where=where)
-
-
-@mcp.tool()
 def search_help_center_context(
     query: str,
     top_k: int = 3,
@@ -168,82 +134,6 @@ def search_help_center_context(
 
 
 @mcp.tool()
-def search_help_center_faq(query: str, top_k: int = 3) -> list[dict]:
-    """Search the Help Center's FAQ section (customer service / API
-    integration / payment / feature questions phrased as short Q&A pairs,
-    e.g. "出票需要多长时间？"). Try this alongside search_help_center when a
-    question sounds like a quick factual lookup rather than a policy rule
-    with conditions.
-
-    Args:
-        query: Natural-language question, Chinese or English.
-        top_k: Number of results to return (default 3).
-
-    Returns:
-        List of hits, each with: chunk_id, distance, topic, question, answer.
-    """
-    return rag_search.search_faq(query, n_results=top_k)
-
-
-@mcp.tool()
-def search_api_docs(
-    query: str,
-    top_k: int = 3,
-    doc_type: Optional[str] = None,
-    endpoint: Optional[str] = None,
-) -> list[dict]:
-    """Search Atlas's developer/API documentation (API文档) — integration
-    guides, booking-flow product guides, OpenAPI endpoint reference (request/
-    response fields, components), error-code disambiguation guides, sandbox
-    setup, rate limits.
-
-    Use this for HOW-TO-INTEGRATE questions: endpoint parameters, field
-    types, what an error code means, which endpoint to call next, how two
-    similar endpoints/codes differ (e.g. "429和110的区别", "search.do和
-    getOffers.do怎么选", "创建订单的请求体有哪些字段"). Do NOT use this for
-    customer-service policy questions (refund windows, billing) — use
-    search_help_center for those instead. If it's not clearly one or the
-    other, use search_all instead of guessing.
-
-    Note: large lookup tables (the 43-code master error reference, sandbox
-    test card/route lists, locale reference data) are NOT in this search
-    index by design — they're exact-lookup data, not semantic search
-    content. If a query is clearly "look up code/value X", prefer reading
-    the structured JSON files directly (see RAG-切片设计总览.md for paths)
-    rather than relying on this search.
-
-    Args:
-        query: Natural-language question, Chinese or English.
-        top_k: Number of results to return (default 3).
-        doc_type: Optional filter to one chunk type, e.g. "对比消歧" (code/
-            endpoint disambiguation), "响应组件" (reusable schema component
-            fields), "请求参数", "端点概览", "概念说明", "操作步骤",
-            "错误处理". Leave unset to search all types together.
-        endpoint: Optional filter to a specific OpenAPI path, e.g.
-            "/search.do". Only set this if the question clearly names one
-            endpoint and you want to restrict results to just it.
-
-    Returns:
-        List of hits, each with: chunk_id, distance, doc_type,
-        level1_category, level2_category, section, text, applicable_carrier,
-        compares (present on 对比消歧 chunks — the codes/endpoints being
-        contrasted), endpoint (present on API-reference chunks),
-        source_path.
-    """
-    where = None
-    conditions = []
-    if doc_type:
-        conditions.append({"doc_type": doc_type})
-    if endpoint:
-        conditions.append({"endpoint": endpoint})
-    if len(conditions) == 1:
-        where = conditions[0]
-    elif len(conditions) > 1:
-        where = {"$and": conditions}
-    return rag_search.search_api_docs(query, n_results=top_k, where=where)
-
-
-@mcp.tool()
 def search_api_docs_context(
     query: str,
     top_k: int = 3,
@@ -265,7 +155,10 @@ def search_api_docs_context(
         query: Natural-language integration or API question.
         top_k: Number of API-documentation chunks (default 3).
         faq_top_k: Number of troubleshooting FAQ pairs (default 2).
-        doc_type: Optional API chunk-type filter, as in search_api_docs.
+        doc_type: Optional filter to one chunk type, e.g. "对比消歧" (code/
+            endpoint disambiguation), "响应组件" (reusable schema component
+            fields), "请求参数", "端点概览", "概念说明", "操作步骤",
+            "错误处理". Leave unset to search all types together.
         endpoint: Optional OpenAPI path filter, e.g. "/search.do".
     """
     conditions = []
@@ -285,31 +178,15 @@ def search_api_docs_context(
 
 
 @mcp.tool()
-def search_api_docs_faq(query: str, top_k: int = 3) -> list[dict]:
-    """Search the API文档's troubleshooting FAQ section (integration
-    onboarding, payment methods, order/ticketing, finance, kickoff
-    checklist — phrased as short Q&A pairs).
-
-    Args:
-        query: Natural-language question, Chinese or English.
-        top_k: Number of results to return (default 3).
-
-    Returns:
-        List of hits, each with: chunk_id, distance, topic, question, answer.
-    """
-    return rag_search.search_api_faq(query, n_results=top_k)
-
-
-@mcp.tool()
 def search_product_intro(query: str, top_k: int = 3) -> list[dict]:
     """Search Atlas 产品介绍 (product overview + 10 role-based guide pages:
     what Atlas is, how search/booking/payment/webhook/customer-service
     capabilities fit together). Evergreen positioning/capability content —
-    NOT policy rules (use search_help_center) and NOT API field reference
-    (use search_api_docs). Use this for "what is Atlas" / "what can Atlas
-    do" / "how do the pieces fit together" questions, e.g. "Atlas支持哪些
-    支付方式" at a product level (vs. search_help_center for the detailed
-    policy) or "MCP辅助开发是什么".
+    NOT policy rules (use search_help_center_context) and NOT API field
+    reference (use search_api_docs_context). Use this for "what is Atlas" /
+    "what can Atlas do" / "how do the pieces fit together" questions, e.g.
+    "Atlas支持哪些支付方式" at a product level (vs. search_help_center_context
+    for the detailed policy) or "MCP辅助开发是什么".
 
     Args:
         query: Natural-language question, Chinese or English.
@@ -328,7 +205,7 @@ def search_product_news(query: str, top_k: int = 3) -> list[dict]:
     integrations, policy changes, feature launches, service disruptions and
     their resolutions). Use this for "什么时候上线的" / "现在还能订吗" /
     "最近有什么变化" style questions about a specific airline or feature,
-    NOT for stable policy rules (use search_help_center) or product
+    NOT for stable policy rules (use search_help_center_context) or product
     positioning (use search_product_intro).
 
     Important: some subjects (mainly airlines) get MULTIPLE posts over time
@@ -360,7 +237,7 @@ def list_lookup_tables() -> list[dict]:
     refund deadline for airline FR"), deliberately kept out of semantic
     search because chunking a lookup table destroys its queryability — use
     query_lookup_table against the table_name this returns instead of
-    trying to find this data via search_help_center/search_api_docs.
+    trying to find this data via search_help_center_context/search_api_docs_context.
 
     Returns:
         List of tables, each with: table_name, path, row_count, columns
@@ -407,9 +284,9 @@ def get_full_article(source_path: str) -> dict:
     """Fetch the complete source article a search hit came from, when a
     chunk's snippet isn't enough context. Equivalent to the old GitBook
     MCP's getPage(url) tool, but takes the source_path field already
-    present on every search_help_center/search_api_docs hit instead of a
-    URL — call a search tool first, then pass its source_path here if you
-    need more surrounding context than that one chunk gives you.
+    present on every search_help_center_context/search_api_docs_context hit
+    instead of a URL — call a search tool first, then pass its source_path
+    here if you need more surrounding context than that one chunk gives you.
 
     Most questions are answerable from a single chunk (each one is a
     complete rule/concept on its own) — reach for this when a procedure
@@ -418,8 +295,9 @@ def get_full_article(source_path: str) -> dict:
     cut at the chunk boundary.
 
     Args:
-        source_path: The source_path value from a search_help_center or
-            search_api_docs hit, e.g. "04-售后票务/退票/Atlas退票服务说明.md".
+        source_path: The source_path value from a search_help_center_context
+            or search_api_docs_context hit, e.g.
+            "04-售后票务/退票/Atlas退票服务说明.md".
 
     Returns:
         {source_path, title, text} with the article's full cleaned
