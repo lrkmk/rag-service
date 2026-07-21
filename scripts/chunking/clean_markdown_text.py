@@ -41,6 +41,22 @@ def clean_markdown_text(text: str) -> str:
     text = re.sub(r"<(https?://[^>\s]+)>", r"\1", text)
     text = re.sub(r"\*\*((?:[^*\n]|\\\*)+)\*\*", r"\1", text)
     text = re.sub(r"__([^_\n]+)__", r"\1", text)
+    # Strip bullet-list markers ("* item") BEFORE the *italic* regex below --
+    # a lone "*" surrounded by whitespace is always a list marker, never
+    # emphasis syntax (emphasis is *word*, glued directly to its text on
+    # both sides -- never "* word" with a space right after the opening
+    # "*"). Without this, text that flattens multiple bullets onto one line
+    # with spaces instead of newlines ("* a * b * c", as some chunk_*.py
+    # scripts do when folding a short bullet list into one chunk's `text`)
+    # gets its "*"s misread as PAIRED emphasis markers by the next regex --
+    # "* a * b" parses exactly like "*a *" with "a " captured as the
+    # emphasized span, silently eating every other bullet's "*". Confirmed
+    # for real: a chunk's flattened bullets lost every "*" this way while
+    # the same bullets in the raw multi-line source kept theirs (newlines
+    # already blocked the false pairing there), so a genuinely-covered
+    # paragraph normalized to two different strings and registered as only
+    # 17% similar instead of an exact match in chunk_diff.py.
+    text = re.sub(r"(?:^|(?<=\s))\*(?=\s)", "", text)
     text = re.sub(r"(?<!\w)\*((?:[^*\n]|\\\*)+)\*(?!\w)", r"\1", text)
     text = re.sub(r"(?<!\w)_([^_\n]+)_(?!\w)", r"\1", text)
     text = re.sub(r"`([^`\n]+)`", r"\1", text)
