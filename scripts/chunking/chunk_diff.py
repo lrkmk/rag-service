@@ -386,20 +386,30 @@ def main():
     pairs, suspects, gaps = [], [], []
     for b in blocks:
         cid, ratio, status = best_match(b["text"], chunks, args.threshold)
+        # best_match()/_normalized() already clean_markdown_text() both sides
+        # internally to DECIDE coverage, but that cleaned form never made it
+        # into what gets DISPLAYED here -- src_text was the raw
+        # strip_boilerplate()-only paragraph, so an "exact" match could still
+        # show two visually different-looking texts (leftover **bold**,
+        # &#x624D; entities, etc. on the source side that the chunk's stored
+        # text never had, since the chunker cleaned it before writing).
+        # Clean it the same way for display so the diff reflects genuine
+        # content differences, not leftover markdown noise on one side only.
+        display_text = clean_markdown_text(b["text"])
         if status == "exact":
             pairs.append({
                 "heading": b["heading"], "chunk_id": cid, "ratio": ratio,
-                "src_text": b["text"],
+                "src_text": display_text,
                 "chunk_text": chunk_by_id[cid].get("text") or chunk_by_id[cid].get("answer", ""),
             })
         elif status == "fuzzy":
             suspects.append({
                 "heading": b["heading"], "chunk_id": cid, "ratio": ratio,
-                "src_text": b["text"],
+                "src_text": display_text,
                 "chunk_text": chunk_by_id[cid].get("text") or chunk_by_id[cid].get("answer", ""),
             })
         else:
-            gaps.append({"heading": b["heading"], "src_text": b["text"], "ratio": ratio})
+            gaps.append({"heading": b["heading"], "src_text": display_text, "ratio": ratio})
 
     out_path = Path(args.out) if args.out else doc_path.with_suffix(".diff.html")
     out_path.write_text(render_html(doc_path, pairs, suspects, gaps, len(chunks)), encoding="utf-8")

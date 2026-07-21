@@ -105,11 +105,19 @@ def api_diff():
     pairs, suspects, gaps = [], [], []
     for b in blocks:
         cid, ratio, status = chunk_diff.best_match(b["text"], chunks, threshold)
+        # best_match() already clean_markdown_text()s both sides internally
+        # to DECIDE coverage, but that never made it into what's displayed —
+        # src_text was the raw strip_boilerplate()-only paragraph, so even an
+        # "exact" match could show two visually different texts (leftover
+        # **bold**/&#x624D; entities on the source side that the chunk's
+        # stored text never had, since the chunker cleaned it before
+        # writing). Clean it the same way for display.
+        display_text = chunk_diff.clean_markdown_text(b["text"])
         if status in ("exact", "fuzzy"):
             c = chunk_by_id[cid]
             entry = {
                 "heading": b["heading"], "chunk_id": cid, "ratio": round(ratio, 3),
-                "src_text": b["text"],
+                "src_text": display_text,
                 "chunk_text": c.get("text") or c.get("answer", ""),
                 "doc_type": c.get("doc_type") or c.get("rule_type"),
                 "applicable_carrier": c.get("applicable_carrier"),
@@ -117,7 +125,7 @@ def api_diff():
             }
             (pairs if status == "exact" else suspects).append(entry)
         else:
-            gaps.append({"heading": b["heading"], "src_text": b["text"], "ratio": round(ratio, 3)})
+            gaps.append({"heading": b["heading"], "src_text": display_text, "ratio": round(ratio, 3)})
 
     return jsonify({
         "doc": rel_path,
