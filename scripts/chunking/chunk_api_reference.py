@@ -147,6 +147,18 @@ def describe_field(name: str, schema: dict, required: bool, components: dict) ->
         field["deprecated"] = True
     if schema.get("nullable"):
         field["nullable"] = True
+    # OpenAPI's own `default` keyword -- distinct from prose in `description`
+    # that merely discusses default *behavior* (e.g. "determined by policy
+    # agreed with the customer"). Confirmed for real: 创建订单.md's
+    # useAtlasMailForContact has both -- a hedging description AND a real
+    # schema-level `"default": false` -- and only the description made it
+    # into the chunk before this fix, so yihan told a user "the docs don't
+    # give a fixed default" about a field whose spec explicitly has one.
+    # `is not None` (not truthy-check) since a real default can be `False`,
+    # `0`, or `""` -- all of which a bare `if schema.get("default")` would
+    # silently treat as "no default set".
+    if schema.get("default") is not None:
+        field["default"] = schema["default"]
     return field
 
 
@@ -190,6 +202,14 @@ def flatten_fields(name: str, schema: dict, required: bool, components: dict,
     return out
 
 
+def _format_default(value) -> str:
+    # json.dumps renders True/False/None as lowercase true/false/null,
+    # matching the OpenAPI/JSON convention this value came from -- str(True)
+    # would print Python's "True", which reads like a typo in a field
+    # otherwise documented entirely in JSON vocabulary.
+    return json.dumps(value, ensure_ascii=False) if isinstance(value, (bool, type(None))) else str(value)
+
+
 def format_fields(fields: list[dict]) -> list[str]:
     lines = []
     for f in fields:
@@ -199,6 +219,8 @@ def format_fields(fields: list[dict]) -> list[str]:
         bits.append(f": {f.get('description', '')}")
         if f.get("enum"):
             bits.append(f"（枚举值：{f['enum']}）")
+        if "default" in f:
+            bits.append(f"（默认值：{_format_default(f['default'])}）")
         lines.append("".join(bits))
     return lines
 
@@ -246,13 +268,105 @@ def format_fields_for_text(fields: list[dict], collapse_threshold: int = 6) -> l
             head = group[0]
             req = "必填" if head["required"] else "可选"
             desc = f": {head.get('description', '')}" if head.get("description") else ""
+            default_bit = f"（默认值：{_format_default(head['default'])}）" if "default" in head else ""
             lines.append(
-                f"- {head['name']} ({head['type']}，{req}){desc}"
+                f"- {head['name']} ({head['type']}，{req}){desc}{default_bit}"
                 f"（还有 {len(group) - 1} 个嵌套子字段，完整字段名/类型/含义见该 chunk 的 fields 元数据，不在此列出）"
             )
         else:
             lines.extend(format_fields(group))
     return lines
+
+
+def _safe_field_id(name: str) -> str:
+    return re.sub(r"[^a-zA-Z0-9]+", "-", name).strip("-").lower()
+
+
+def emit_field_group_chunks(fields: list[dict], base_chunk_id: str, doc_type: str, path: str,
+                             level2_category: str, source_path: str, endpoint_id: str,
+                             topic_anchor: str, group_label: str, extra: dict | None = None) -> list[dict]:
+    """Emit either one bundled chunk (trivial case: <=1 top-level field) or
+    one chunk PER TOP-LEVEL FIELD, each carrying just that field's own
+    (already-collapsed-if-deep) subtree.
+
+    Added 2026-07-17 after the same dilution problem confirmed for the
+    webhook docs turned up again here: request-body and component chunks
+    used to bundle EVERY top-level field's description into one `text`
+    string (e.g. pay.do's request body mixing orderNo + paymentMethod +
+    creditCard + clientOrderNo + requestSource together). paymentMethod's
+    enum meanings (1=balance/3=VCC passthrough/4=BYOA/5=MoR) -- the actual
+    answer to "what payment methods does Atlas support" -- ended up as one
+    line among several unrelated fields, and confirmed via direct embedding
+    distance to score 0.70-0.77 against natural payment-method queries (vs.
+    ~0.4-0.6 for chunks that rank in top-5) -- never surfaced despite the
+    corpus having the answer. Splitting one-field-per-chunk and prefixing
+    each with a topic anchor (same fix as chunk_field_pattern_block.py's
+    webhook fields) gives paymentMethod its own focused embedding instead of
+    sharing one with 4 unrelated fields.
+
+    Response-field chunks (see chunk_endpoint below) don't need this: they
+    already emit one chunk per top-level response field.
+
+    Every emitted chunk gets an explicit `section` field, short and
+    field-specific (just "{field} 字段"). Without it, build_eval_set.py's
+    query_for() falls back to the chunk's own `text[:30]` as a synthetic
+    section -- and this function's `topic_anchor` prefix (e.g. "Smart
+    Search(Only For TMC)（/smartSearch.do）请求体的") routinely runs past 30
+    characters on its own, before the field name it's supposed to be
+    anchoring ever appears. Confirmed for real: every sibling field-chunk
+    under smart-search's request body collapsed to the same truncated
+    30-char query ("/smartSearch.do Smart Search(Only For TMC)（/sm..."),
+    which can't discriminate between them -- one eval query, 15 candidate
+    "correct" chunks, most necessarily miss. That's an eval-methodology
+    artifact of the truncation, not a real drop in retrieval quality, but it
+    made the field-split fix look like a regression in eval_retrieval.py
+    (API文档 Recall@5 62%->72%->69.7% chunk-level looked concerning until
+    this was traced to specifically the newly-split chunks). An explicit
+    `section` is checked before the text[:30] fallback, so it isn't subject
+    to the same truncation.
+    """
+    groups = group_by_top_level(fields)
+    if len(groups) <= 1:
+        return [{
+            "chunk_id": base_chunk_id,
+            "endpoint_id": endpoint_id,
+            "doc_type": doc_type,
+            "endpoint": path,
+            "section": group_label,
+            "level1_category": "API参考",
+            "level2_category": level2_category,
+            "source_path": source_path,
+            "fields": fields,
+            "text": f"{group_label}：\n" + "\n".join(format_fields_for_text(fields)),
+            **(extra or {}),
+        }]
+    out = []
+    for group in groups:
+        top_name = group[0]["name"]
+        out.append({
+            "chunk_id": f"{base_chunk_id}-{_safe_field_id(top_name)}",
+            "endpoint_id": endpoint_id,
+            "doc_type": doc_type,
+            "endpoint": path,
+            # Must match topic_anchor, not just the bare field name -- a bare
+            # "{field} 字段" section collides across sibling COMPONENTS that
+            # share a field name (confirmed for real: smartSearch.do's
+            # Routing/AirlineRuleRes/AncillaryProduct/CardCharge components
+            # all have a "currency" field; with only "currency 字段" as the
+            # section, all 4 of their eval queries were identical --
+            # "/smartSearch.do currency 字段" -- so at most one could ever
+            # rank as its own top hit. topic_anchor already disambiguates by
+            # component (e.g. "Routing 组件" vs "AirlineRuleRes 组件"), same
+            # as it does in `text` below.
+            "section": f"{topic_anchor}的 {top_name} 字段",
+            "level1_category": "API参考",
+            "level2_category": level2_category,
+            "source_path": source_path,
+            "fields": group,
+            "text": f"{topic_anchor}的 {top_name} 字段：\n" + "\n".join(format_fields_for_text(group)),
+            **(extra or {}),
+        })
+    return out
 
 
 def chunk_endpoint(spec: dict, prose: str, endpoint_id: str, level2_category: str, source_path: str):
@@ -275,6 +389,7 @@ def chunk_endpoint(spec: dict, prose: str, endpoint_id: str, level2_category: st
         "doc_type": "端点概览",
         "endpoint": path,
         "http_method": method.upper(),
+        "section": "端点概览",
         "level1_category": "API参考",
         "level2_category": level2_category,
         "source_path": source_path,
@@ -290,6 +405,7 @@ def chunk_endpoint(spec: dict, prose: str, endpoint_id: str, level2_category: st
             "endpoint_id": endpoint_id,
             "doc_type": "请求参数",
             "endpoint": path,
+            "section": "请求头参数",
             "level1_category": "API参考",
             "level2_category": level2_category,
             "source_path": source_path,
@@ -308,17 +424,11 @@ def chunk_endpoint(spec: dict, prose: str, endpoint_id: str, level2_category: st
         fields = []
         for name, sub in req_schema["properties"].items():
             fields.extend(flatten_fields(name, sub, name in required_set, components))
-        chunks.append({
-            "chunk_id": f"{endpoint_id}-request-body",
-            "endpoint_id": endpoint_id,
-            "doc_type": "请求参数",
-            "endpoint": path,
-            "level1_category": "API参考",
-            "level2_category": level2_category,
-            "source_path": source_path,
-            "fields": fields,
-            "text": "请求体字段：\n" + "\n".join(format_fields_for_text(fields)),
-        })
+        topic_anchor = f"{summary}（{path}）请求体" if summary else f"{path} 请求体"
+        chunks.extend(emit_field_group_chunks(
+            fields, f"{endpoint_id}-request-body", "请求参数", path, level2_category, source_path,
+            endpoint_id, topic_anchor, "请求体字段",
+        ))
 
     # 4. Response top-level status/shape (non-component fields), and detect lookup tables
     resp_schema = (
@@ -362,6 +472,7 @@ def chunk_endpoint(spec: dict, prose: str, endpoint_id: str, level2_category: st
                     "endpoint_id": endpoint_id,
                     "doc_type": "响应字段",
                     "endpoint": path,
+                    "section": f"响应字段 {name}",
                     "level1_category": "API参考",
                     "level2_category": level2_category,
                     "source_path": source_path,
@@ -377,18 +488,11 @@ def chunk_endpoint(spec: dict, prose: str, endpoint_id: str, level2_category: st
         fields = []
         for name, sub in comp_schema["properties"].items():
             fields.extend(flatten_fields(name, sub, name in required_set, components))
-        chunks.append({
-            "chunk_id": f"{endpoint_id}-component-{comp_name}",
-            "endpoint_id": endpoint_id,
-            "doc_type": "响应组件",
-            "endpoint": path,
-            "component": comp_name,
-            "level1_category": "API参考",
-            "level2_category": level2_category,
-            "source_path": source_path,
-            "fields": fields,
-            "text": f"响应组件 {comp_name} 字段列表：\n" + "\n".join(format_fields_for_text(fields)),
-        })
+        chunks.extend(emit_field_group_chunks(
+            fields, f"{endpoint_id}-component-{comp_name}", "响应组件", path, level2_category, source_path,
+            endpoint_id, f"{comp_name} 组件", f"响应组件 {comp_name} 字段列表",
+            extra={"component": comp_name},
+        ))
 
     return chunks, lookup_tables
 
