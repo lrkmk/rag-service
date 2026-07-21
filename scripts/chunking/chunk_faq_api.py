@@ -1,13 +1,19 @@
 """
 Parse a troubleshooting-faqs/*.md file into Q&A chunks.
 
-These files are messier than the 帮助中心 FAQ format: many questions appear
-TWICE — once as #### (short teaser answer) and again as ### with the exact
-same question text (longer/more complete answer) — a GitBook artifact, not
-intentional duplication. We dedupe by question text and keep the longer
-answer. Some files also embed a large reference table (e.g. payment card
-requirements by airline) mid-document; that gets extracted as structured
-JSON, not folded into a QA chunk.
+These files are messier than the 帮助中心 FAQ format: headings sometimes
+repeat verbatim -- either the same question restated as a short ####
+teaser and a longer ### answer (a GitBook export artifact), or a generic
+label like "需要解决的问题"/"重要规则" reused once per numbered section
+with different content each time. Rather than guessing which case applies
+(a prior version tried, and silently dropped 8 real answers on
+启动检查清单.md by merging reused-label repeats it shouldn't have), every
+occurrence is kept as its own chunk; repeats past the first are
+disambiguated with their enclosing ### section in the question text so
+they stay meaningful and searchable on their own. Some files also embed a
+large reference table (e.g. payment card requirements by airline)
+mid-document; that gets extracted as structured JSON, not folded into a
+QA chunk.
 
 Usage:
     python chunk_faq_api.py "<path>" --level2-category "支付"
@@ -110,8 +116,9 @@ def main():
     non_qa_headings = {"常见问题", "相关页面"}  # structural group wrappers, always pure nav
     parts = re.split(r"\n(#{3,4}) (.+?)\n", text)
     # parts[0] = intro text before first heading; then triples of (marker, heading, body)
-    qa = {}  # question/heading -> (answer, is_question), keep longer answer on duplicate
+    qa = {}  # heading (possibly disambiguated) -> (answer, is_question)
     order = []
+    current_section = None    # nearest preceding ### heading, for disambiguation labels only
 
     # parts[0]: text between the H1 title and the first ###/#### heading was
     # previously dropped entirely (nothing here ever read it) -- confirmed
@@ -137,6 +144,7 @@ def main():
 
     i = 1
     while i < len(parts) - 2:
+        marker = parts[i]
         heading = parts[i + 1].strip()
         body_start = i + 2
         body = parts[body_start] if body_start < len(parts) else ""
@@ -149,10 +157,42 @@ def main():
         if not is_question and len(_visible_after_stripping_links(body)) < 6:
             continue  # not a question AND not much more than a link list (e.g. "使用：" + links) -- same rationale as 相关页面
         heading_clean, body_clean = clean_markdown_text(heading), clean_markdown_text(body)
-        if heading_clean not in qa or len(body_clean) > len(qa[heading_clean][0]):
-            if heading_clean not in qa:
-                order.append(heading_clean)
-            qa[heading_clean] = (body_clean, is_question)
+
+        if marker == "###":
+            current_section = heading_clean
+
+        if heading_clean not in qa:
+            key = heading_clean
+        else:
+            # Repeated heading text. This used to merge-by-longest-body on
+            # the assumption every repeat is the same GitBook artifact
+            # (a short #### teaser immediately followed by the full ###
+            # answer for one question) -- but a heading can also be a
+            # reused generic label (e.g. "需要解决的问题"/"重要规则"
+            # repeating once per numbered part in a checklist doc) with
+            # genuinely different content each time. Telling the two
+            # apart reliably (adjacency alone missed a real teaser/full
+            # pair separated by unrelated Q&A in between; content
+            # similarity adds its own threshold-tuning risk) isn't worth
+            # it: keeping one harmless near-duplicate chunk costs nothing,
+            # silently dropping a real answer does (confirmed: 8 real Q&A
+            # entries lost this way on 启动检查清单.md). Always keep every
+            # occurrence, disambiguated with the enclosing ### section so
+            # each is still a meaningful, searchable question on its own.
+            # Guard against self-reference: if THIS repeat is itself the
+            # ### heading that just became current_section (a flat file
+            # with no distinct subsection grouping around the repeat,
+            # e.g. 入门指南.md), labelling it with itself is meaningless --
+            # fall through to the plain numeric suffix instead.
+            section_label = current_section if current_section != heading_clean else None
+            key = f"{heading_clean}（{section_label}）" if section_label else heading_clean
+            base_key, n = key, 2
+            while key in qa:
+                key = f"{base_key}·{n}"
+                n += 1
+
+        order.append(key)
+        qa[key] = (body_clean, is_question)
 
     chunks = [intro_chunk] if intro_chunk else []
     for idx, q in enumerate(order, 1):
