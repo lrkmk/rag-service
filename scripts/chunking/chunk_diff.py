@@ -138,7 +138,31 @@ def split_paragraphs(text: str) -> list[dict]:
         r"|^```.*```$",                      # fenced code block, single block after join
         re.DOTALL,
     )
-    blocks = [b for b in blocks if len(b["text"]) > 1 and not _non_prose.match(b["text"].strip())]
+
+    def _all_label_lines(block_text: str) -> bool:
+        # A block that's ENTIRELY stacked pseudo-headers ("**分类**\n**子问
+        # 题？**", common in this corpus's bold-label style) with no real
+        # body line carries no standalone checkable content -- both labels
+        # get folded into a chunk's `section`/heading metadata, never
+        # repeated in `text`. best_match()'s single-label-strip fallback
+        # only peels off one leading label line, so a 2-label stack like
+        # this reduces to a lone ~7-char remainder that's too short to
+        # clear the containment length floor and still too generic for a
+        # meaningful Jaccard score -- it was registering as a false GAP
+        # even though the article's actual chunks correctly cover it
+        # (confirmed on 帮助中心/07-通知提醒/机票延迟通知.md's "**电子邮件通知
+        # 配置**\n**谁将进行配置？**"). Filtered out here the same way
+        # image/code blocks already are, rather than trying to patch the
+        # matching fallback to guess at an even shorter, noisier candidate.
+        lines = block_text.split("\n")
+        return all(_is_label_like(line) for line in lines)
+
+    blocks = [
+        b for b in blocks
+        if len(b["text"]) > 1
+        and not _non_prose.match(b["text"].strip())
+        and not _all_label_lines(b["text"])
+    ]
 
     merged: list[dict] = []
     i = 0
