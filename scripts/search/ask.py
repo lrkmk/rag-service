@@ -1,11 +1,15 @@
 """
 CLI tool: run natural-language questions against the Chroma RAG store.
 
-Default source is the Help Center:
+Default is search_all — the same fan-out-across-all-three-corpora tool the
+deployed agent calls first when it isn't sure which corpus has the answer
+(帮助中心 standard+FAQ, API文档 standard+FAQ, 产品介绍 intro+news, one
+embedding pass, fixed top_k 5 standard / 2 FAQ per corpus — see
+rag_search.search_all's docstring for why those aren't configurable):
     python ask.py "退票超过多久 Atlas 就不再处理了"
-    python ask.py "航班提前多久可以非自愿退票" --carrier FR
 
-Search API docs instead:
+Search a single corpus instead, with the usual filters/top_k available:
+    python ask.py --source help "航班提前多久可以非自愿退票" --carrier FR
     python ask.py --source api "创建订单需要哪些字段"
     python ask.py --api "429 和 110 的区别"
     python ask.py --api "search.do 和 getOffers.do 怎么选" --doc-type 对比消歧
@@ -15,7 +19,7 @@ Interactive mode:
     python ask.py
     > 退票要多久
     > --api 创建订单需要哪些字段
-    > --source api 429 和 110 的区别 -n 5
+    > --source help 429 和 110 的区别 -n 5
     > exit
 
 In interactive mode you can put flags before or after the question on the
@@ -26,7 +30,7 @@ import argparse
 import shlex
 import sys
 
-from rag_search import search_api_docs, search_api_faq, search_faq, search_rules
+from rag_search import search_all, search_api_docs, search_api_faq, search_faq, search_rules
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -38,9 +42,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("-n", "--top-k", type=int, default=3, help="Number of results per source (default 3)")
     parser.add_argument(
         "--source",
-        choices=("help", "api"),
-        default="help",
-        help="Corpus to search: help for Help Center, api for API docs (default: help)",
+        choices=("all", "help", "api"),
+        default="all",
+        help="Corpus to search: all for search_all's fan-out across every corpus (default), "
+             "help for Help Center only, api for API docs only",
     )
     parser.add_argument(
         "--api",
@@ -55,6 +60,13 @@ def build_parser() -> argparse.ArgumentParser:
         const="help",
         dest="source",
         help="Shortcut for --source help",
+    )
+    parser.add_argument(
+        "--all",
+        action="store_const",
+        const="all",
+        dest="source",
+        help="Shortcut for --source all (the default)",
     )
     parser.add_argument(
         "--carrier",
@@ -114,6 +126,39 @@ def _print_api_hits(title: str, hits: list[dict]):
         print(f"  {h['text']}")
 
 
+def _print_product_intro_hits(title: str, hits: list[dict]):
+    print(title)
+    if not hits:
+        print("(no results)")
+        return
+    for h in hits:
+        print(f"\n[{h['distance']:.3f}] {h['title']} - {h['section']}")
+        print(f"  Source: {h['source_path']}")
+        print(f"  {h['text']}")
+
+
+def _print_product_news_hits(title: str, hits: list[dict]):
+    print(title)
+    if not hits:
+        print("(no results)")
+        return
+    for h in hits:
+        tags = f" [{', '.join(h['entity_tags'])}]" if h.get("entity_tags") else ""
+        print(f"\n[{h['distance']:.3f}] {h['title']}{tags} (recency_rank={h.get('recency_rank')})")
+        print(f"  Source: {h['source_path']}")
+        print(f"  {h['text']}")
+
+
+def run_search_all(question: str):
+    result = search_all(question)
+    _print_help_hits("=== 帮助中心 standard_results (top 5) ===", result["帮助中心"]["standard_results"])
+    _print_faq_hits("\n=== 帮助中心 faq_results (top 2) ===", result["帮助中心"]["faq_results"])
+    _print_api_hits("\n=== API文档 standard_results (top 5) ===", result["API文档"]["standard_results"])
+    _print_faq_hits("\n=== API文档 faq_results (top 2) ===", result["API文档"]["faq_results"])
+    _print_product_intro_hits("\n=== 产品介绍 product_intro_results (top 5) ===", result["产品介绍"]["product_intro_results"])
+    _print_product_news_hits("\n=== 产品介绍 product_news_results (top 5) ===", result["产品介绍"]["product_news_results"])
+
+
 def run_query(
     question: str,
     top_k: int,
@@ -124,6 +169,26 @@ def run_query(
     faq_only: bool,
     rules_only: bool,
 ):
+    if source == "all":
+        ignored = []
+        if carrier:
+            ignored.append("--carrier")
+        if doc_type:
+            ignored.append("--doc-type")
+        if endpoint:
+            ignored.append("--endpoint")
+        if faq_only:
+            ignored.append("--faq-only")
+        if rules_only:
+            ignored.append("--rules-only")
+        if top_k != 3:
+            ignored.append("-n/--top-k")
+        if ignored:
+            print(f"Note: {', '.join(ignored)} only apply to --source help/api; ignoring for the default "
+                  f"search_all mode (its top_k is fixed at 5 standard + 2 FAQ per corpus, same as production).")
+        run_search_all(question)
+        return
+
     if source == "api":
         if carrier:
             print("Note: --carrier only applies to Help Center searches; ignoring it for --source api.")
@@ -171,7 +236,8 @@ def run_query(
 def interactive_loop():
     print("Interactive mode. Enter a question to search; enter exit / quit to leave.")
     print("Examples:")
-    print("  退票要多久 --carrier FR")
+    print("  退票要多久                          (default: search_all across every corpus)")
+    print("  --source help 退票要多久 --carrier FR")
     print("  --api 创建订单需要哪些字段")
     print("  --source api 429 和 110 的区别 -n 5\n")
     line_parser = build_parser()

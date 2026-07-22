@@ -176,8 +176,14 @@ def api_raw():
     parent = None
     parents_path = chunks_path.parent / "parents.jsonl"
     if parents_path.exists() and parents_path != chunks_path:
+        target_name = doc_path.name
         for p in chunk_diff.load_jsonl(parents_path):
-            if p.get("source_path", "").endswith(doc_path.name):
+            sp = p.get("source_path", "")
+            # Path-segment-boundary match, not a raw substring -- see
+            # chunk_diff.load_matching_chunks for the same fix and why a bare
+            # endswith(filename) false-matches sibling files like 搜索.md /
+            # 智能搜索.md.
+            if sp == target_name or sp.endswith("/" + target_name):
                 parent = p
                 break
 

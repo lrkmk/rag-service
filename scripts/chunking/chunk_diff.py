@@ -215,10 +215,17 @@ def load_matching_chunks(chunks_path: Path, doc_path: Path) -> list[dict]:
             if p.get("article_id") and p.get("source_path"):
                 parent_source_path[p["article_id"]] = p["source_path"]
 
+    # A bare str.endswith(filename) matches on raw characters, not path
+    # segments -- confirmed for real in booking-apis/: "智能搜索.md" and
+    # "比价搜索.md" both literally end with the substring "搜索.md", so
+    # viewing 搜索.md pulled in all three files' chunks (236 instead of its
+    # own share), making 搜索 and 智能搜索's raw JSONL views look identical/
+    # overlapping in the webapp. Requiring a "/" (or exact equality) right
+    # before the filename enforces a real path-segment boundary.
     matched = []
     for r in all_records:
         sp = r.get("source_path") or parent_source_path.get(r.get("parent_id"), "")
-        if sp.endswith(target_name):
+        if sp == target_name or sp.endswith("/" + target_name):
             matched.append(r)
     return matched
 
