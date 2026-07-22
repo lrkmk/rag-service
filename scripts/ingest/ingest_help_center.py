@@ -41,7 +41,16 @@ HELP_CENTER = os.path.join(REPO_ROOT, "doc", "帮助中心")
 DB_PATH = os.path.join(REPO_ROOT, "chroma_db")
 PARENTS_LOOKUP_PATH = os.path.join(REPO_ROOT, "scripts", "ingest", "parents_lookup.json")
 
-MODEL_NAME = "BAAI/bge-large-zh-v1.5"
+# BAAI/bge-m3 (multilingual, symmetric retrieval) as of 2026-07-22 —
+# replaces bge-large-zh-v1.5 (Chinese-only, asymmetric). Reason: this
+# corpus mixes Chinese prose with bare English proper nouns (airline
+# names, product terms) that bge-zh matched poorly; bge-m3 handles that
+# mixed case much better while matching or beating bge-zh on pure-Chinese
+# queries too (confirmed via the eval/*.jsonl Recall@k/MRR harness across
+# all 3 corpora before switching — see rag_search.py's MODEL_NAME comment
+# for the full rationale, kept there rather than duplicated in all 3
+# ingest scripts).
+MODEL_NAME = "BAAI/bge-m3"
 
 
 def _build_embedder():
@@ -54,7 +63,7 @@ def _build_embedder():
     when a cache hit is likely; falls back to a normal (online) load
     otherwise so the very first run still downloads normally.
     """
-    cache_hint = os.path.expanduser("~/.cache/huggingface/hub/models--BAAI--bge-large-zh-v1.5")
+    cache_hint = os.path.expanduser("~/.cache/huggingface/hub/models--BAAI--bge-m3")
     if os.path.isdir(cache_hint) and "HF_HUB_OFFLINE" not in os.environ:
         os.environ["HF_HUB_OFFLINE"] = "1"
         try:
@@ -67,13 +76,12 @@ def _build_embedder():
 
 
 # Chroma's built-in default embedder (all-MiniLM-L6-v2) is English-tuned and
-# performs poorly on Chinese text. This corpus is ~100% Chinese policy/FAQ
-# text, so a Chinese-specific model (BGE) outperforms a general multilingual
-# one. BGE's own docs recommend embedding *documents* (what we do here, at
-# ingest time) with no special prefix — the asymmetric instruction prefix
-# only applies to *queries*, handled separately in query_example.py.
-# Swap for embedding_functions.OpenAIEmbeddingFunction(...) or another
-# provider if you'd rather call a hosted API than run local inference.
+# performs poorly on Chinese text -- a general-purpose model doesn't cut it
+# here, hence BGE. bge-m3 is trained for symmetric/instruction-free
+# retrieval, so unlike the old bge-zh setup there's no separate instruction
+# prefix needed on the query side either (see rag_search.py's QUERY_INSTRUCTION,
+# now empty). Swap for embedding_functions.OpenAIEmbeddingFunction(...) or
+# another provider if you'd rather call a hosted API than run local inference.
 EMBEDDER = _build_embedder()
 
 

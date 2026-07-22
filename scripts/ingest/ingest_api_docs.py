@@ -33,7 +33,9 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fi
 API_DOCS_ROOT = os.path.join(REPO_ROOT, "doc", "API文档")
 DB_PATH = os.path.join(REPO_ROOT, "chroma_db")
 
-MODEL_NAME = "BAAI/bge-large-zh-v1.5"
+# BAAI/bge-m3 as of 2026-07-22 -- see rag_search.py's MODEL_NAME comment
+# for the full switch rationale (mixed Chinese/English content matching).
+MODEL_NAME = "BAAI/bge-m3"
 
 
 def _build_embedder():
@@ -41,7 +43,7 @@ def _build_embedder():
     HF_HUB_OFFLINE when the model is already cached, so a slow/unstable
     path to huggingface.co can't hang on a post-download freshness check
     that looks identical to "still embedding" from the terminal."""
-    cache_hint = os.path.expanduser("~/.cache/huggingface/hub/models--BAAI--bge-large-zh-v1.5")
+    cache_hint = os.path.expanduser("~/.cache/huggingface/hub/models--BAAI--bge-m3")
     if os.path.isdir(cache_hint) and "HF_HUB_OFFLINE" not in os.environ:
         os.environ["HF_HUB_OFFLINE"] = "1"
         try:

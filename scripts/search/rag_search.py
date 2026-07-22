@@ -37,8 +37,30 @@ PRODUCT_INTRO_ROOT = os.path.join(REPO_ROOT, "doc", "产品介绍")
 
 # Must match the model used in ingest_help_center.py's EMBEDDER — the two sides
 # have to produce vectors in the same space.
-MODEL_NAME = "BAAI/bge-large-zh-v1.5"
-QUERY_INSTRUCTION = "为这个句子生成表示以用于检索相关文章："
+#
+# Switched from BAAI/bge-large-zh-v1.5 (Chinese-only, asymmetric retrieval —
+# queries need an instruction prefix, documents don't) to BAAI/bge-m3
+# (multilingual, symmetric) on 2026-07-22. Trigger: the "IndiGo" case —
+# 产品介绍/Atlas资讯 content mixes Chinese prose with bare English proper
+# nouns (airline names, product terms), and bge-zh matched those very
+# poorly (measured ~0.86 cosine distance for a bare "IndiGo" query against
+# its own covering chunk, worse than an unrelated chunk in some cases) even
+# though the exact same chunk scored ~0.53 for a natural-language Chinese
+# query about the same fact. bge-m3 handles the bare-English-term case far
+# better (~0.55) while also being at least as good on pure-Chinese queries.
+# Confirmed via the full eval/*.jsonl harness before switching, not just
+# the one anecdotal case: bge-m3 beat bge-zh on Recall@3/Recall@5/MRR
+# across all three corpora (see scripts/eval/eval_retrieval.py output from
+# that comparison for the numbers).
+#
+# bge-m3 does NOT want the old asymmetric instruction prefix -- it was
+# trained for instruction-free/symmetric retrieval, and prefixing measurably
+# hurt its scores in the same test (bare "IndiGo": 0.55 -> 0.62 with the
+# prefix). QUERY_INSTRUCTION is kept defined (empty) rather than deleted so
+# embed_query()'s call site doesn't need touching if a future model needs
+# one again.
+MODEL_NAME = "BAAI/bge-m3"
+QUERY_INSTRUCTION = ""
 
 _model = None
 _client = None
@@ -358,7 +380,7 @@ def search_help_center_context(
     }
 
 
-def search_all(query: str, n_results: int = 5, faq_n_results: int = 2) -> dict:
+def search_all(query: str, n_results: int = 8, faq_n_results: int = 2) -> dict:
     """Fan a single query out across all three corpora (帮助中心/API文档/
     产品介绍) in one embedding pass, returning a small top-k from each
     labeled separately -- for when it isn't clear up front which corpus
